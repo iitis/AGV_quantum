@@ -12,10 +12,11 @@ num_of_stations = 2
 J_dict = {0: ("s0", "s1"), 1: ("s0", "s1"), 2: ("s1", "s0")}
 d_max = [10 for _ in J_dict.keys()]
 
-# CREATE DATA
+single_track_list = [("s0", "s1"), ("s1", "s0")] # it is easier to add "otherway" here. Later use some function
+
+# CREATE DATAFRAMES
 J = list(J_dict.keys())
 j_jp = list(itertools.permutations(J, r=2))
-
 
 stations = [f"s{i}" for i in range(num_of_stations)]
 s_sp = list(itertools.permutations(stations, r=2))
@@ -36,8 +37,7 @@ for j in J:
 del temp
 connections = pd.DataFrame(connections_data, index=J, columns=s_sp)
 
-# here tau_pass also encode existing paths as tau_pass(j, s, s') > 0 for all j, s, s'
-# alternatively we may introduce another dataframe with the same columns and rows
+# TO DO better, to include only existing routes
 tau_pass = pd.DataFrame([[1, -inf],
                          [1, -inf],
                          [-inf, 1]], index=J, columns=s_sp)
@@ -55,7 +55,7 @@ for j, way in itertools.product(J, s_sp):
         t_in_iter.append((j, way[1]))
 t_out_iter = t_in_iter  # list(itertools.product(J, stations))
 t_iter = t_in_iter + t_out_iter  # list(itertools.chain(t_in_iter, t_out_iter))
-print(t_iter)
+
 
 # basic constrains
 
@@ -85,7 +85,7 @@ for j in J:
             temp_out = [1 if (t[0] == j and t[1] == way[0]) else 0 for t in t_out_iter]
             temp = temp_in + temp_out
             MPT.append(temp)
-            MPT_b.append(tau_pass.at[j, way])
+            MPT_b.append(-1 * tau_pass.at[j, way])
 del temp_in, temp_out, temp
 
 MPT = np.array(MPT)
@@ -99,12 +99,35 @@ MH_b = []
 
 for way in s_sp:
     temp_df = connections.loc[connections[way] > 0]
+    if len(temp_df.index) <= 1: # there is no agvs that share way
+        continue
+    J_same_dir = list(itertools.permutations(list(temp_df[way].index), r=2))
+    for pair in J_same_dir:
+        temp = [1 if t == (pair[0], way[0]) else -1 if t == (pair[1], way[0]) else 0
+                for t in t_out_iter]
+        temp_in = [0 for _ in t_in_iter]
+        MH.append(temp_in + temp)
+        MH_b.append(M * y.at[(pair[1], pair[0]), way[0]] - tau_headway.at[pair, way])
+
+
+del temp_df, J_same_dir
+
+MH = np.array(MH)
+MH_b = np.array(MH_b)
+
+# single track line
+
+STL = []
+STL_b = []
+
 
 
 
 # CREATE PARAMETERS FOR LINEAR OPTIMISATION
 
-A_ub = MPT
-b_ub = MPT_b
+A_ub = np.concatenate((MPT, MH))
+b_ub = np.concatenate((MPT_b, MH_b))
+
+
 
 

@@ -21,3 +21,9 @@ def way_exist(agv_data: dict, agv: int, way: tuple) -> bool:
             return True
 
     return False
+
+
+def find_agvs_heading_opposite(connections: pd.DataFrame, single_track_list: list) -> list:
+    for way in list(connections.columns):
+        temp_df = connections.loc[connections[way] > 0]
+
