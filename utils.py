@@ -1,5 +1,6 @@
 from math import inf
 import itertools
+import networkx as nx
 import pandas as pd
 import numpy as np
 
@@ -57,8 +58,12 @@ def create_y_iterator(s_sp: list, connectivity: pd.DataFrame) -> list:
     return y_iter
 
 
-def create_z_iterator(s_sp: list, connectivity: pd.DataFrame) -> list:
+def create_z_iterator(graph: nx.Graph, s_sp: list, connectivity: pd.DataFrame) -> list:
     z_iter = []
     for way in s_sp:
-        pass
+        if graph.number_of_edges(way[0], way[1]) == 1:
+            temp_df = connectivity.loc[connectivity[way] > 0]
+            one = list(temp_df[way].index)
+            two = list(temp_df[way[::-1]])
+            pairs = itertools.product(one, two)
     return []

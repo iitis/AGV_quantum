@@ -38,7 +38,6 @@ tau_pass = tau_pass if tau_pass else {(j, way[0], way[1]): 1 for j in J for way 
 tau_headway = tau_headway if tau_headway else {(order[0], order[1], way[0], way[1]): 1 for order in j_jp for way in s_sp}
 tau_operation = tau_operation if tau_operation else {(j, station): 1 for j in J for station in stations}
 
-
 # CREATE GRAPH
 graph = nx.MultiGraph()
 graph.add_nodes_from(stations)
