@@ -14,12 +14,12 @@ def create_connectivity(agv: list, agv_dict: dict, s_sp: list) -> pd.DataFrame:
     return connections
 
 
-def create_t_iterator(agv:list, s_sp: list, connectivity: pd.DataFrame) -> list:
+def create_t_iterator(agv: list, s_sp: list, connectivity: pd.DataFrame, in_out: str) -> list:
     t_iter = []  # list(itertools.product(J, stations))
     for j, way in itertools.product(agv, s_sp):
         if connectivity.at[j, way] > 0:
-            t_iter.append((j, way[0]))
-            t_iter.append((j, way[1]))
+            t_iter.append((in_out, j, way[0]))
+            t_iter.append((in_out, j, way[1]))
     return t_iter
 
 
@@ -55,6 +55,7 @@ def create_y_iterator(s_sp: list, connectivity: pd.DataFrame) -> list:
         J_same_dir = list(itertools.permutations(list(temp_df[way].index), r=2))
         for pair in J_same_dir:
             y_iter.append((pair[0], pair[1], way[0]))
+            y_iter.append((pair[0], pair[1], way[1]))
     return y_iter
 
 
@@ -70,3 +71,7 @@ def create_z_iterator(graph: nx.Graph, s_sp: list, connectivity: pd.DataFrame) -
             pairs = list(itertools.product(one, two))
 
     return one
+
+
+def see_variables(vect: list, x_iter: list) -> dict:
+    return {x_iter[i]: vect[i] for i in range(len(x_iter))}
