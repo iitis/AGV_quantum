@@ -23,12 +23,18 @@ j_jp = list(itertools.permutations(J, r=2))
 s_sp = list(itertools.permutations(stations, r=2))
 connectivity = utils.create_connectivity(J, J_dict, s_sp)
 
+# CREATE GRAPH
+graph = nx.MultiGraph()
+graph.add_nodes_from(stations)
+graph.add_edges_from(tracks)
+
+# VARIABLE ITERATORS
 t_in_iter = utils.create_t_iterator(J, s_sp, connectivity)
 t_out_iter = utils.create_t_iterator(J, s_sp, connectivity)
 t_iter = t_in_iter + t_out_iter  # list(itertools.chain(t_in_iter, t_out_iter))
 
 y_iter = utils.create_y_iterator(s_sp, connectivity)
-z_iter = utils.create_z_iterator()
+z_iter = utils.create_z_iterator(graph, s_sp, connectivity)
 
 x_iter = t_iter + y_iter + z_iter
 
@@ -38,10 +44,6 @@ tau_pass = tau_pass if tau_pass else {(j, way[0], way[1]): 1 for j in J for way 
 tau_headway = tau_headway if tau_headway else {(order[0], order[1], way[0], way[1]): 1 for order in j_jp for way in s_sp}
 tau_operation = tau_operation if tau_operation else {(j, station): 1 for j in J for station in stations}
 
-# CREATE GRAPH
-graph = nx.MultiGraph()
-graph.add_nodes_from(stations)
-graph.add_edges_from(tracks)
 
 # EQUATIONS
 # basic constrains

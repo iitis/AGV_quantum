@@ -64,6 +64,9 @@ def create_z_iterator(graph: nx.Graph, s_sp: list, connectivity: pd.DataFrame) -
         if graph.number_of_edges(way[0], way[1]) == 1:
             temp_df = connectivity.loc[connectivity[way] > 0]
             one = list(temp_df[way].index)
-            two = list(temp_df[way[::-1]])
-            pairs = itertools.product(one, two)
-    return []
+            temp_df_2 = connectivity.loc[connectivity[way[::-1]] > 0]
+            print(temp_df_2)
+            two = list(temp_df_2[way[::-1]])
+            pairs = list(itertools.product(one, two))
+
+    return one
