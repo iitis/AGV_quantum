@@ -8,18 +8,21 @@ import networkx as nx
 def create_precedence_matrix_y(iterators: dict):
     y_iter = iterators["y"]
     t_iter = iterators["t"]
+    z_iter = iterators["z"]
     PVY = []
     PVY_b = []
 
-    for pair in itertools.combinations(y_iter, r=2):
-        if pair[0][2] == pair[1][2] and pair[0][0] == pair[1][1] and pair[0][1] == pair[1][0]:
+    for y1, y2 in itertools.combinations(y_iter, r=2):
+        if y1[2] == y2[2] and y1[0] == y2[1] and y1[1] == y2[0]:
             t_vect = [0 for _ in t_iter]
-            y_vect = [1 if (y == pair[0] or y == pair[1]) else 0 for y in y_iter]
-            PVY.append(t_vect + y_vect)
+            y_vect = [1 if (y == y1 or y == y2) else 0 for y in y_iter]
+            z_vect = [0 for _ in z_iter]
+            PVY.append(t_vect + y_vect + z_vect)
             PVY_b.append(1)
 
     PVY = np.array(PVY)
     PVY_b = np.array(PVY_b)
+
     return PVY, PVY_b
 
 
