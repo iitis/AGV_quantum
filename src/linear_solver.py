@@ -72,28 +72,33 @@ def create_bounds(initial_conditions, iterators):
     return bounds
 
 
-def create_minimal_headway_matrix(M, s_sp, connectivity, tau_headway, iterators):
+def create_minimal_headway_matrix(M: int, graph: nx.Graph,  tau_headway: dict, iterators: dict):
 
     t_in_iter = iterators["t_in"]
     t_out_iter = iterators["t_out"]
     y_iter = iterators["y"]
+    z_iter = iterators["z"]
 
     MH = []
     MH_b = []
 
-    for way in s_sp:
-        temp_df = connectivity.loc[connectivity[way] > 0]
-        if len(temp_df.index) <= 1:  # there is no agvs that share this way
-            continue
-        J_same_dir = list(itertools.permutations(list(temp_df[way].index), r=2))
-        for pair in J_same_dir:
-            t_out_vect = [1 if t == ("out", pair[0], way[0]) else -1 if t == ("out", pair[1], way[0]) else 0 for t in
-                          t_out_iter]
-            t_in_vect = [0 for _ in t_in_iter]
-            y_vect = [-1 * M if y == (pair[1], pair[0], way[0]) else 0 for y in y_iter]
-            MH.append(t_in_vect + t_out_vect + y_vect)
-            MH_b.append(-1 * tau_headway[(pair[0], pair[1], way[0], way[1])])
+    sp = None
+    passes_through = nx.get_node_attributes(graph, "passes_through")
+    for y in y_iter:  # TO DO better
+        for station in graph.neighbors(y[2]):
+            if y[0] in passes_through[station] and y[1] in passes_through[station]:
+                sp = station
+        if sp is None:
+            raise AssertionError("something broke")
 
+        t_in_vect = [0 for _ in t_in_iter]
+        t_out_vect = [1 if t == ("out", y[0], y[2]) else -1 if t == ("out", y[1], y[2]) else 0 for t in
+                      t_out_iter]
+        y_vect = [-1 * M if y == (y[1], y[0], y[2]) else 0 for y in y_iter]
+        z_vect = [0 for _ in z_iter]
+
+        MH.append(t_in_vect + t_out_vect + y_vect + z_vect)
+        MH_b.append(-1 * tau_headway[(y[0], y[1], y[2], sp)])
 
     MH = np.array(MH)
     MH_b = np.array(MH_b)
