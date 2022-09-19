@@ -24,7 +24,18 @@ class SingleStation(unittest.TestCase):
         graph = utils.create_graph(self.tracks, self.agv_routes)
         self.assertEqual(graph.number_of_edges(), 0)
         self.assertEqual(graph.number_of_nodes(), 1)
+
         self.assertEqual(nx.get_node_attributes(graph, "pass_through")["s0"], [0, 1])
+
+    def test_create_t_iter_single(self):
+        in_out = "in"
+        t_iter = utils.create_t_iterator(self.agv_routes, in_out)
+        self.assertEqual(t_iter, [(in_out, 0, "s0"), (in_out, 1, "s0")])
+
+    def test_create_y_iter_single(self):
+        graph = utils.create_graph(self.tracks, self.agv_routes)
+        y_iter = utils.create_y_iterator(graph)
+        self.assertEqual(y_iter, [(0, 1, "s0"), (1, 0, "s0")])
 
 
 class MultipleStationsNoOpposite(unittest.TestCase):
@@ -53,6 +64,17 @@ class MultipleStationsNoOpposite(unittest.TestCase):
         self.assertEqual(nx.get_node_attributes(graph, "pass_through")["s1"], [0])
         self.assertEqual(nx.get_node_attributes(graph, "pass_through")["s2"], [1])
         self.assertEqual(nx.get_node_attributes(graph, "pass_through")["s3"], [1])
+
+    def test_create_t_iter_multi(self):
+        in_out = "in"
+        t_iter = utils.create_t_iterator(self.agv_routes, in_out)
+        self.assertEqual(set(t_iter), {(in_out, 0, "s0"), (in_out, 1, "s0"), (in_out, 0, "s1"),
+                                       (in_out, 1, "s2"), (in_out, 1, "s3")})
+
+    def test_create_y_iter_multi(self):
+        graph = utils.create_graph(self.tracks, self.agv_routes)
+        y_iter = utils.create_y_iterator(graph)
+        print(y_iter)
 
 
 if __name__ == '__main__':

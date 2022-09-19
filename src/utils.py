@@ -5,7 +5,7 @@ import pandas as pd
 import numpy as np
 
 
-def create_stations_list(tracks: list[tuple]) -> list:
+def create_stations_list(tracks: list[tuple]) -> list[str]:
     stations = []
     for track in tracks:
         for station in track:
@@ -14,7 +14,7 @@ def create_stations_list(tracks: list[tuple]) -> list:
     return list(set(stations))
 
 
-def create_agv_list(agv_routes: dict) -> list:
+def create_agv_list(agv_routes: dict[int, tuple]) -> list[int]:
     return list(agv_routes.keys())
 
 
@@ -48,42 +48,13 @@ def create_t_iterator(agv_routes: dict[int, tuple], in_out: str) -> list:
     return t_iter
 
 
-
-
-
-def way_exist(agv_data: dict, agv: int, way: tuple) -> bool:
-    track = agv_data[agv]
-    for i in range(len(track)-1):
-        if (track[i], track[i+1]) == way:
-            return True
-    return False
-
-
-def delete_none(_dict: dict) -> dict:
-    """Delete None values recursively from all of the dictionaries, tuples, lists, sets"""
-    if isinstance(_dict, dict):
-        for key, value in list(_dict.items()):
-            if isinstance(value, (list, dict, tuple, set)):
-                _dict[key] = delete_none(value)
-            elif value is None or key is None:
-                del _dict[key]
-
-    elif isinstance(_dict, (list, set, tuple)):
-        _dict = type(_dict)(delete_none(item) for item in _dict if item is not None)
-
-    return _dict
-
-
-def create_y_iterator(s_sp: list, connectivity: pd.DataFrame) -> list:
+def create_y_iterator(graph: nx.Graph) -> list[tuple]:
     y_iter = []
-    for way in s_sp:
-        temp_df = connectivity.loc[connectivity[way] > 0]
-        if len(temp_df.index) <= 1:  # there is no agvs that share way
-            continue
-        J_same_dir = list(itertools.permutations(list(temp_df[way].index), r=2))
-        for pair in J_same_dir:
-            y_iter.append((pair[0], pair[1], way[0]))
-            y_iter.append((pair[0], pair[1], way[1]))
+    agv_pass_through = nx.get_node_attributes(graph, "pass_through")
+    for station in graph.nodes:
+        if len(agv_pass_through[station]) >= 2:
+            for pair in list(itertools.permutations(agv_pass_through[station], r=2)):
+                y_iter.append((pair[0], pair[1], station))
     return y_iter
 
 
@@ -125,3 +96,27 @@ def create_connectivity(agv: list, agv_dict: dict, s_sp: list) -> pd.DataFrame:
         connections_data.append(temp)
     connections = pd.DataFrame(connections_data, index=agv, columns=s_sp)
     return connections
+
+
+def way_exist(agv_data: dict, agv: int, way: tuple) -> bool:
+    track = agv_data[agv]
+    for i in range(len(track)-1):
+        if (track[i], track[i+1]) == way:
+            return True
+    return False
+
+
+
+def delete_none(_dict: dict) -> dict:
+    """Delete None values recursively from all of the dictionaries, tuples, lists, sets"""
+    if isinstance(_dict, dict):
+        for key, value in list(_dict.items()):
+            if isinstance(value, (list, dict, tuple, set)):
+                _dict[key] = delete_none(value)
+            elif value is None or key is None:
+                del _dict[key]
+
+    elif isinstance(_dict, (list, set, tuple)):
+        _dict = type(_dict)(delete_none(item) for item in _dict if item is not None)
+
+    return _dict
