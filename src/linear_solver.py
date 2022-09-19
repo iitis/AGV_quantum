@@ -26,25 +26,30 @@ def create_precedence_matrix_y(iterators: dict):
     return PVY, PVY_b
 
 
-def create_minimal_passing_time_matrix(J, s_sp, connectivity, tau_pass, iterators):
+def create_minimal_passing_time_matrix(agv_routes, graph: nx.Graph, tau_pass, iterators):
     t_in_iter = iterators["t_in"]
     t_out_iter = iterators["t_out"]
     y_iter = iterators["y"]
+    z_iter = iterators["z"]
 
     MPT = []
     MPT_b = []
+
+    J = utils.create_agv_list(agv_routes)
     for j in J:
-        for way in s_sp:
-            if connectivity.at[j, way] > 0:
-                t_in_vect = [-1 if (t[1] == j and t[2] == way[1]) else 0 for t in t_in_iter]
-                t_out_vect = [1 if (t[1] == j and t[2] == way[0]) else 0 for t in t_out_iter]
+        s_sp = [(agv_routes[j][i], agv_routes[j][i + 1]) for i in range(len(agv_routes[j]) - 1)]
+        for s, sp, _ in graph.edges:
+            if (s, sp) in s_sp:
+                t_in_vect = [-1 if (t[1] == j and t[2] == sp) else 0 for t in t_in_iter]
+                t_out_vect = [1 if (t[1] == j and t[2] == s) else 0 for t in t_out_iter]
                 y_vect = [0 for _ in y_iter]
-                temp = t_in_vect + t_out_vect + y_vect
-                MPT.append(temp)
-                MPT_b.append(-1 * tau_pass[(j, way[0], way[1])])
+                z_vect = [0 for _ in z_iter]
+                MPT.append(t_in_vect + t_out_vect + y_vect + z_vect)
+                MPT_b.append(-1 * tau_pass[(j, s, sp)])
 
     MPT = np.array(MPT)
     MPT_b = np.array(MPT_b)
+
     return MPT, MPT_b
 
 
@@ -72,7 +77,7 @@ def create_bounds(initial_conditions, iterators):
     return bounds
 
 
-def create_minimal_headway_matrix(M: int, graph: nx.Graph, tau_headway: dict, iterators: dict):
+def create_minimal_headway_matrix(M: int, graph: nx.Graph, agv_routes:dict, tau_headway: dict, iterators: dict):
 
     t_in_iter = iterators["t_in"]
     t_out_iter = iterators["t_out"]
@@ -82,24 +87,21 @@ def create_minimal_headway_matrix(M: int, graph: nx.Graph, tau_headway: dict, it
     MH = []
     MH_b = []
 
-    sp = None
-    passes_through = nx.get_node_attributes(graph, "passes_through")
-    for y in y_iter:  # TO DO better
-        if not len(list(graph.neighbors(y[2]))) == 0:
-            for station in graph.neighbors(y[2]):
-                if y[0] in passes_through[station] and y[1] in passes_through[station]:
-                    sp = station
-            if sp is None:
-                raise AssertionError("something broke")
 
-            t_in_vect = [0 for _ in t_in_iter]
-            t_out_vect = [1 if t == ("out", y[0], y[2]) else -1 if t == ("out", y[1], y[2]) else 0 for t in
-                          t_out_iter]
-            y_vect = [-1 * M if y == (y[1], y[0], y[2]) else 0 for y in y_iter]
-            z_vect = [0 for _ in z_iter]
+    for y in y_iter:
+        j1, j2 = y[0], y[1]
+        s_sp1 = [(agv_routes[j1][i], agv_routes[j1][i + 1]) for i in range(len(agv_routes[j1]) - 1)]
+        s_sp2 = [(agv_routes[j2][i], agv_routes[j2][i + 1]) for i in range(len(agv_routes[j2]) - 1)]
+        for s, sp, _ in graph.edges:
+            if (s, sp) in s_sp1 and (s, sp) in s_sp2:
+                t_in_vect = [0 for _ in t_in_iter]
+                t_out_vect = [1 if t == ("out", y[0], y[2]) else -1 if t == ("out", y[1], y[2]) else 0 for t in
+                              t_out_iter]
+                y_vect = [-1 * M if yp == (y[1], y[0], y[2]) else 0 for yp in y_iter]
+                z_vect = [0 for _ in z_iter]
 
-            MH.append(t_in_vect + t_out_vect + y_vect + z_vect)
-            MH_b.append(-1 * tau_headway[(y[0], y[1], y[2], sp)])
+                MH.append(t_in_vect + t_out_vect + y_vect + z_vect)
+                MH_b.append(-1 * tau_headway[(y[0], y[1], s, sp)])
 
     MH = np.array(MH)
     MH_b = np.array(MH_b)
@@ -144,7 +146,7 @@ def create_junction_condition_matrix(M, tracks, agv_routes, tau_operation, itera
 
 
 def solve(M: int, tracks: list, agv_routes: dict, d_max: dict,
-          tau_pass: dict, tau_headway: dict, tau_operation: dict, weights: dict, initial_conditions: dict):
+          tau_pass: dict, tau_headway: dict, tau_operation: dict, weights: dict):
 
     stations = utils.create_stations_list(tracks)
     J = utils.create_agv_list(agv_routes)
@@ -159,23 +161,25 @@ def solve(M: int, tracks: list, agv_routes: dict, d_max: dict,
 
     PVY, PVY_b = create_precedence_matrix_y(iterators)
 
-    MPT, MPT_b = create_minimal_passing_time_matrix(J, s_sp, connectivity, tau_pass, iterators)
-    MH, MH_b = create_minimal_headway_matrix(M, graph, tau_headway, iterators)
+    MPT, MPT_b = create_minimal_passing_time_matrix(agv_routes, graph, tau_pass, iterators)
+    MH, MH_b = create_minimal_headway_matrix(M, graph, agv_routes, tau_headway, iterators)
     JC, JC_b = create_junction_condition_matrix(M, tracks, agv_routes, tau_operation, iterators)
 
-    bounds = create_bounds(initial_conditions, iterators)
+    #bounds = create_bounds(initial_conditions, iterators)
 
-    #A_ub = np.concatenate((MPT, MH, JC))
-    #b_ub = np.concatenate((MPT_b, MH_b, JC_b))
-
-    A_ub = JC
-    b_ub = JC_b
+    if MPT.size >= 2 and MH.size >= 2:  # TO DO more sensible, for now is hack
+        A_ub = np.concatenate((MPT, MH, JC))
+        b_ub = np.concatenate((MPT_b, MH_b, JC_b))
+    else:
+        A_ub = JC
+        b_ub = JC_b
 
     A_eq = PVY
     b_eq = PVY_b
 
     t_in = {}
-    obj = {("out", 0, "s0"): weights[0]/d_max[0], ("out", 1, "s0"): weights[1] / d_max[1]}
+    s_final = "s0" if len(tracks[0]) == 1 else "s1"
+    obj = {("out", 0, s_final): weights[0]/d_max[0], ("out", 1, s_final): weights[1] / d_max[1]}
     c = [obj[v] if v in obj.keys() else 0 for v in iterators["x"]]
     res = linprog(c, A_ub=A_ub, b_ub=b_ub, A_eq=A_eq, b_eq=b_eq, integrality=[1 for _ in iterators["x"]])
     return res, iterators["x"]

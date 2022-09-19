@@ -22,6 +22,9 @@ tau_headway = {(0, 1, "s0", "s1"): 2, (1, 0, "s0", "s1"): 2}
 tau_operation = {(agv, station): 1 for agv in J for station in stations}
 
 res, x_iter = solve(M, tracks, agv_routes, d_max, tau_pass, tau_headway, tau_operation,
-                    weights, initial_conditions={})
+                    weights)
 
-print(utils.see_variables(res.x, x_iter))
+if res.success:
+    print(utils.see_variables(res.x, x_iter))
+else:
+    print(res.message)
