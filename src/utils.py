@@ -5,16 +5,7 @@ import pandas as pd
 import numpy as np
 
 
-def create_connectivity(agv: list, agv_dict: dict, s_sp: list) -> pd.DataFrame:
-    connections_data = []
-    for j in agv:
-        temp = [1 if way_exist(agv_dict, j, way) else 0 for way in s_sp]
-        connections_data.append(temp)
-    connections = pd.DataFrame(connections_data, index=agv, columns=s_sp)
-    return connections
-
-
-def create_stations_list(tracks: list) -> list:
+def create_stations_list(tracks: list[tuple]) -> list:
     stations = []
     for track in tracks:
         for station in track:
@@ -27,11 +18,13 @@ def create_agv_list(agv_routes: dict) -> list:
     return list(agv_routes.keys())
 
 
-def create_graph(tracks: list, stations: list, agv_routes: dict):
+def create_graph(tracks: list[tuple], agv_routes: dict[int, tuple]) -> nx.Graph:
+    stations = create_stations_list(tracks)
+
     graph = nx.MultiGraph()
     graph.add_nodes_from(stations)
     for track in tracks:
-        if isinstance(track, tuple):
+        if len(track) > 1:
             graph.add_edge(track[0], track[1])
 
     pass_through = {}
@@ -122,3 +115,13 @@ def create_iterators(agv: list, s_sp: list, connectivity: pd.DataFrame):
 
 def see_variables(vect: list, x_iter: list) -> dict:
     return {x_iter[i]: vect[i] for i in range(len(x_iter))}
+
+
+
+def create_connectivity(agv: list, agv_dict: dict, s_sp: list) -> pd.DataFrame:
+    connections_data = []
+    for j in agv:
+        temp = [1 if way_exist(agv_dict, j, way) else 0 for way in s_sp]
+        connections_data.append(temp)
+    connections = pd.DataFrame(connections_data, index=agv, columns=s_sp)
+    return connections
