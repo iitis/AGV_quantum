@@ -14,6 +14,31 @@ def create_connectivity(agv: list, agv_dict: dict, s_sp: list) -> pd.DataFrame:
     return connections
 
 
+def create_stations_list(tracks: list) -> list:
+    if all(isinstance(track, tuple) for track in tracks):
+        return list(set([station for track in tracks for station in track]))
+    else:
+        stations = []
+        for element in tracks:
+            if isinstance(element, tuple):
+                stations.append(element[0])
+                stations.append(element[1])
+            else:
+                stations.append(element)
+        return list(set(stations))
+
+
+def create_agv_list(agv_routes: dict) -> list:
+    return list(agv_routes.keys())
+
+
+def create_graph(tracks: list, stations: list):
+    graph = nx.MultiGraph()
+    graph.add_nodes_from(stations)
+    graph.add_edges_from(tracks)
+    return graph
+
+
 def create_t_iterator(agv: list, s_sp: list, connectivity: pd.DataFrame, in_out: str) -> list:
     t_iter = []  # list(itertools.product(J, stations))
     for j, way in itertools.product(agv, s_sp):
@@ -71,6 +96,18 @@ def create_z_iterator(graph: nx.Graph, s_sp: list, connectivity: pd.DataFrame) -
             pairs = list(itertools.product(one, two))
 
     return one
+
+
+def create_iterators(agv: list, s_sp: list, connectivity: pd.DataFrame):
+    y_iter = create_y_iterator(s_sp, connectivity)
+
+    t_in_iter = create_t_iterator(agv, s_sp, connectivity, "in")
+    t_out_iter = create_t_iterator(agv, s_sp, connectivity, "out")
+    t_iter = t_in_iter + t_out_iter
+
+    x_iter = t_iter + y_iter
+
+    return {"t_in": t_in_iter, "t_out": t_out_iter, "t": t_iter, "y": y_iter, "x": x_iter}
 
 
 def see_variables(vect: list, x_iter: list) -> dict:
