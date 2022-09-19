@@ -32,20 +32,36 @@ def create_agv_list(agv_routes: dict) -> list:
     return list(agv_routes.keys())
 
 
-def create_graph(tracks: list, stations: list):
+def create_graph(tracks: list, stations: list, agv_routes: dict):
     graph = nx.MultiGraph()
     graph.add_nodes_from(stations)
-    graph.add_edges_from(tracks)
+    for track in tracks:
+        if isinstance(track, tuple):
+            graph.add_edge(track[0], track[1])
+
+    pass_through = {}
+    for station in stations:
+        temp = []
+        for j in agv_routes.keys():
+            if station in agv_routes[j]:
+                temp.append(j)
+        pass_through[station] = temp
+
+    nx.set_node_attributes(graph, pass_through, "pass_through")
     return graph
 
 
 def create_t_iterator(agv: list, s_sp: list, connectivity: pd.DataFrame, in_out: str) -> list:
     t_iter = []  # list(itertools.product(J, stations))
-    for j, way in itertools.product(agv, s_sp):
-        if connectivity.at[j, way] > 0:
-            t_iter.append((in_out, j, way[0]))
-            t_iter.append((in_out, j, way[1]))
-    return t_iter
+    if len(s_sp) > 0:
+        for j, way in itertools.product(agv, s_sp):
+            if connectivity.at[j, way] > 0:
+                t_iter.append((in_out, j, way[0]))
+                t_iter.append((in_out, j, way[1]))
+        return t_iter
+    else:
+        return [(in_out, j, "s0") for j in agv]
+
 
 
 def way_exist(agv_data: dict, agv: int, way: tuple) -> bool:
