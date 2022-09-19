@@ -107,29 +107,33 @@ def create_minimal_headway_matrix(M: int, graph: nx.Graph,  tau_headway: dict, i
 
 # junction condition
 
-def create_junction_condition_matrix(M, J, j_jp, stations, tau_operation, iterators):
+def create_junction_condition_matrix(M, tracks, agv_routes, tau_operation, iterators):
     t_in_iter = iterators["t_in"]
     t_out_iter = iterators["t_out"]
     y_iter = iterators["y"]
+    z_iter = iterators["z"]
 
     JC = []
     JC_b = []
 
-    for pair in j_jp:
-        for station in stations:
-            t_in_vect = [-1 if t == ("in", pair[1], station) else 0 for t in t_in_iter]
-            t_out_vect = [1 if t == ("out", pair[0], station) else 0 for t in t_out_iter]
-            y_vect = [-1 * M if y == (pair[1], pair[0], station) else 0 for y in y_iter]
-            JC.append(t_in_vect + t_out_vect + y_vect)
-            JC_b.append(0)
+    stations = utils.create_stations_list(tracks)
+    J = utils.create_agv_list(agv_routes)
+
+    for y in y_iter:
+        t_in_vect = [-1 if t == ("in", y[1], y[2]) else 0 for t in t_in_iter]
+        t_out_vect = [1 if t == ("out", y[0], y[2]) else 0 for t in t_out_iter]
+        y_vect = [-1 * M if y == (y[1], y[0], y[2]) else 0 for y in y_iter]
+        JC.append(t_in_vect + t_out_vect + y_vect)
+        JC_b.append(0)
 
     for j in J:
         for station in stations:
             t_in_vect = [1 if t == ("in", j, station) else 0 for t in t_in_iter]
             t_out_vect = [-1 if t == ("out", j, station) else 0 for t in t_out_iter]
             y_vect = [0 for _ in y_iter]
-            JC.append(t_in_vect + t_out_vect + y_vect)
-            JC_b.append(-1 ^ tau_operation[(j, station)])
+            z_vect = [0 for _ in z_iter]
+            JC.append(t_in_vect + t_out_vect + y_vect + z_vect)
+            JC_b.append(-1 * tau_operation[(j, station)])
 
     JC = np.array(JC)
     JC_b = np.array(JC_b)
