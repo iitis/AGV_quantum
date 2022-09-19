@@ -17,7 +17,6 @@ def create_precedence_matrix_y(iterators: dict):
             y_vect = [1 if (y == pair[0] or y == pair[1]) else 0 for y in y_iter]
             PVY.append(t_vect + y_vect)
             PVY_b.append(1)
-    del t_vect, y_vect
 
     PVY = np.array(PVY)
     PVY_b = np.array(PVY_b)
@@ -92,7 +91,6 @@ def create_minimal_headway_matrix(M, s_sp, connectivity, tau_headway, iterators)
             MH.append(t_in_vect + t_out_vect + y_vect)
             MH_b.append(-1 * tau_headway[(pair[0], pair[1], way[0], way[1])])
 
-    del temp_df, J_same_dir, t_out_vect, t_in_vect, y_vect
 
     MH = np.array(MH)
     MH_b = np.array(MH_b)
