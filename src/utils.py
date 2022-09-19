@@ -15,17 +15,12 @@ def create_connectivity(agv: list, agv_dict: dict, s_sp: list) -> pd.DataFrame:
 
 
 def create_stations_list(tracks: list) -> list:
-    if all(isinstance(track, tuple) for track in tracks):
-        return list(set([station for track in tracks for station in track]))
-    else:
-        stations = []
-        for element in tracks:
-            if isinstance(element, tuple):
-                stations.append(element[0])
-                stations.append(element[1])
-            else:
-                stations.append(element)
-        return list(set(stations))
+    stations = []
+    for track in tracks:
+        for station in track:
+            stations.append(station)
+
+    return list(set(stations))
 
 
 def create_agv_list(agv_routes: dict) -> list:
@@ -51,16 +46,15 @@ def create_graph(tracks: list, stations: list, agv_routes: dict):
     return graph
 
 
-def create_t_iterator(agv: list, s_sp: list, connectivity: pd.DataFrame, in_out: str) -> list:
+def create_t_iterator(agv_routes: dict[int, tuple], in_out: str) -> list:
     t_iter = []  # list(itertools.product(J, stations))
-    if len(s_sp) > 0:
-        for j, way in itertools.product(agv, s_sp):
-            if connectivity.at[j, way] > 0:
-                t_iter.append((in_out, j, way[0]))
-                t_iter.append((in_out, j, way[1]))
-        return t_iter
-    else:
-        return [(in_out, j, "s0") for j in agv]
+
+    for j, route in agv_routes.items():
+        for station in route:
+            t_iter.append((in_out, j, station))
+    return t_iter
+
+
 
 
 
