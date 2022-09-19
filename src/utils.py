@@ -59,15 +59,21 @@ def create_y_iterator(graph: nx.Graph) -> list[tuple]:
 
 
 def create_z_iterator(graph: nx.Graph, agv_routes: dict[int, tuple]) -> list[tuple]:
-    stations = graph.nodes
-    agv_pass_through = nx.get_node_attributes(graph, "pass_through")
+    z_iter = []
     J = create_agv_list(agv_routes)
+    agv_routes_as_edges = {}
+    for j in J:
+        if len(agv_routes[j]) > 1:
+            s_sp = [(agv_routes[j][i], agv_routes[j][i+1]) for i in range(len(agv_routes[j])-1)]
+            agv_routes_as_edges[j] = s_sp
 
-    for pair in list(itertools.permutations(J, r=2)):
-        if len(agv_routes[pair[0]]) > 1 and len(agv_routes[pair[2]]) > 1:
-            s_sp0 = [(agv_routes[pair[0]][i], agv_routes[pair[0]][i+1]) for i in range(len(agv_routes[pair[0]])-1)]
-            s_sp1 = [(agv_routes[pair[1]][i], agv_routes[pair[1]][i+1]) for i in range(len(agv_routes[pair[1]])-1)]
+    for j1, j2 in list(itertools.permutations(J, r=2)):
+        if j1 in agv_routes_as_edges.keys() and j2 in agv_routes_as_edges.keys():
+            for s, sp in agv_routes_as_edges[j1]:
+                if graph.number_of_edges(s, sp) < 2 and (sp, s) in agv_routes_as_edges[j2]:
+                    z_iter.append((j1, j2, s, sp))
 
+    return z_iter
 
 
 def create_iterators(graph: nx.Graph, agv_routes: dict[int, tuple]) -> dict[str, list]:
@@ -78,9 +84,11 @@ def create_iterators(graph: nx.Graph, agv_routes: dict[int, tuple]) -> dict[str,
 
     y_iter = create_y_iterator(graph)
 
-    x_iter = t_iter + y_iter
+    z_iter = create_z_iterator(graph, agv_routes)
 
-    return {"t_in": t_in_iter, "t_out": t_out_iter, "t": t_iter, "y": y_iter, "x": x_iter}
+    x_iter = t_iter + y_iter + z_iter
+
+    return {"t_in": t_in_iter, "t_out": t_out_iter, "t": t_iter, "y": y_iter, "z": z_iter, "x": x_iter}
 
 
 def see_variables(vect: list, x_iter: list) -> dict:

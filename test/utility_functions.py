@@ -37,6 +37,11 @@ class SingleStation(unittest.TestCase):
         y_iter = utils.create_y_iterator(graph)
         self.assertEqual(y_iter, [(0, 1, "s0"), (1, 0, "s0")])
 
+    def test_create_z_iter_single(self):
+        graph = utils.create_graph(self.tracks, self.agv_routes)
+        z_iter = utils.create_z_iterator(graph, self.agv_routes)
+        self.assertEqual(z_iter, [])
+
 
 class MultipleStationsNoOpposite(unittest.TestCase):
 
@@ -76,14 +81,24 @@ class MultipleStationsNoOpposite(unittest.TestCase):
         y_iter = utils.create_y_iterator(graph)
         self.assertEqual(y_iter, [(0, 1, "s0"), (1, 0, "s0")])
 
+    def test_create_z_iter_multi(self):
+        graph = utils.create_graph(self.tracks, self.agv_routes)
+        z_iter = utils.create_z_iterator(graph, self.agv_routes)
+        self.assertEqual(z_iter, [])
+
 
 class TwoStationsOpposite(unittest.TestCase):
 
     @classmethod
     def setUpClass(cls):
         cls.M = 50
-        cls.tracks = [("s0", "s1"), ("s1", "s0"), ("s0", "s2"), ("s2", "s3")]
-        cls.agv_routes = {0: ("s0", "s1"), 1: ("s0", "s2", "s3")}
+        cls.tracks = [("s0", "s1"), ("s1", "s2"), ("s2", "s1")]
+        cls.agv_routes = {0: ("s0", "s1", "s2"), 1: ("s1", "s0"), 2: ("s2", "s1")}
+
+    def test_create_z_iter(self):
+        graph = utils.create_graph(self.tracks, self.agv_routes)
+        z_iter = utils.create_z_iterator(graph, self.agv_routes)
+        self.assertEqual(z_iter, [(0, 1, "s0", "s1"), (1, 0, "s1", "s0")])
 
 
 if __name__ == '__main__':
