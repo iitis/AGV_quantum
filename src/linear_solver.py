@@ -72,7 +72,7 @@ def create_bounds(initial_conditions, iterators):
     return bounds
 
 
-def create_minimal_headway_matrix(M: int, graph: nx.Graph,  tau_headway: dict, iterators: dict):
+def create_minimal_headway_matrix(M: int, graph: nx.Graph, tau_headway: dict, iterators: dict):
 
     t_in_iter = iterators["t_in"]
     t_out_iter = iterators["t_out"]
@@ -85,20 +85,21 @@ def create_minimal_headway_matrix(M: int, graph: nx.Graph,  tau_headway: dict, i
     sp = None
     passes_through = nx.get_node_attributes(graph, "passes_through")
     for y in y_iter:  # TO DO better
-        for station in graph.neighbors(y[2]):
-            if y[0] in passes_through[station] and y[1] in passes_through[station]:
-                sp = station
-        if sp is None:
-            raise AssertionError("something broke")
+        if not len(list(graph.neighbors(y[2]))) == 0:
+            for station in graph.neighbors(y[2]):
+                if y[0] in passes_through[station] and y[1] in passes_through[station]:
+                    sp = station
+            if sp is None:
+                raise AssertionError("something broke")
 
-        t_in_vect = [0 for _ in t_in_iter]
-        t_out_vect = [1 if t == ("out", y[0], y[2]) else -1 if t == ("out", y[1], y[2]) else 0 for t in
-                      t_out_iter]
-        y_vect = [-1 * M if y == (y[1], y[0], y[2]) else 0 for y in y_iter]
-        z_vect = [0 for _ in z_iter]
+            t_in_vect = [0 for _ in t_in_iter]
+            t_out_vect = [1 if t == ("out", y[0], y[2]) else -1 if t == ("out", y[1], y[2]) else 0 for t in
+                          t_out_iter]
+            y_vect = [-1 * M if y == (y[1], y[0], y[2]) else 0 for y in y_iter]
+            z_vect = [0 for _ in z_iter]
 
-        MH.append(t_in_vect + t_out_vect + y_vect + z_vect)
-        MH_b.append(-1 * tau_headway[(y[0], y[1], y[2], sp)])
+            MH.append(t_in_vect + t_out_vect + y_vect + z_vect)
+            MH_b.append(-1 * tau_headway[(y[0], y[1], y[2], sp)])
 
     MH = np.array(MH)
     MH_b = np.array(MH_b)
@@ -122,8 +123,9 @@ def create_junction_condition_matrix(M, tracks, agv_routes, tau_operation, itera
     for y in y_iter:
         t_in_vect = [-1 if t == ("in", y[1], y[2]) else 0 for t in t_in_iter]
         t_out_vect = [1 if t == ("out", y[0], y[2]) else 0 for t in t_out_iter]
-        y_vect = [-1 * M if y == (y[1], y[0], y[2]) else 0 for y in y_iter]
-        JC.append(t_in_vect + t_out_vect + y_vect)
+        y_vect = [-1 * M if yp == (y[1], y[0], y[2]) else 0 for yp in y_iter]
+        z_vect = [0 for _ in z_iter]
+        JC.append(t_in_vect + t_out_vect + y_vect + z_vect)
         JC_b.append(0)
 
     for j in J:
@@ -146,34 +148,36 @@ def solve(M: int, tracks: list, agv_routes: dict, d_max: dict,
 
     stations = utils.create_stations_list(tracks)
     J = utils.create_agv_list(agv_routes)
-    graph = utils.create_graph(tracks, stations)
+    graph = utils.create_graph(tracks, agv_routes)
 
     # BASIC ITERATORS
     j_jp = list(itertools.permutations(J, r=2))
     s_sp = list(itertools.permutations(stations, r=2))
     connectivity = utils.create_connectivity(J, agv_routes, s_sp)
 
-    iterators = utils.create_iterators(J, s_sp, connectivity)
+    iterators = utils.create_iterators(graph, agv_routes)
 
     PVY, PVY_b = create_precedence_matrix_y(iterators)
 
     MPT, MPT_b = create_minimal_passing_time_matrix(J, s_sp, connectivity, tau_pass, iterators)
-    MH, MH_b = create_minimal_headway_matrix(M, s_sp, connectivity, tau_headway, iterators)
-    JC, JC_b = create_junction_condition_matrix(M, J, j_jp, stations, tau_operation, iterators)
+    MH, MH_b = create_minimal_headway_matrix(M, graph, tau_headway, iterators)
+    JC, JC_b = create_junction_condition_matrix(M, tracks, agv_routes, tau_operation, iterators)
 
     bounds = create_bounds(initial_conditions, iterators)
 
+    #A_ub = np.concatenate((MPT, MH, JC))
+    #b_ub = np.concatenate((MPT_b, MH_b, JC_b))
 
-    A_ub = np.concatenate((MPT, MH, JC))
-    b_ub = np.concatenate((MPT_b, MH_b, JC_b))
+    A_ub = JC
+    b_ub = JC_b
 
     A_eq = PVY
     b_eq = PVY_b
 
     t_in = {}
-    obj = {("out", 0, "s1"): weights[0]/d_max[0], ("out", 1, "s0"): weights[1] / d_max[1]}
+    obj = {("out", 0, "s0"): weights[0]/d_max[0], ("out", 1, "s0"): weights[1] / d_max[1]}
     c = [obj[v] if v in obj.keys() else 0 for v in iterators["x"]]
-    res = linprog(c, A_ub=A_ub, b_ub=b_ub, A_eq=A_eq, b_eq=b_eq, bounds=bounds, integrality=[1 for _ in iterators["x"]])
+    res = linprog(c, A_ub=A_ub, b_ub=b_ub, A_eq=A_eq, b_eq=b_eq, integrality=[1 for _ in iterators["x"]])
     return res, iterators["x"]
 
 # it is moved by 2 units. I don't know why
