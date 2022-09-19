@@ -74,7 +74,16 @@ class MultipleStationsNoOpposite(unittest.TestCase):
     def test_create_y_iter_multi(self):
         graph = utils.create_graph(self.tracks, self.agv_routes)
         y_iter = utils.create_y_iterator(graph)
-        print(y_iter)
+        self.assertEqual(y_iter, [(0, 1, "s0"), (1, 0, "s0")])
+
+
+class TwoStationsOpposite(unittest.TestCase):
+
+    @classmethod
+    def setUpClass(cls):
+        cls.M = 50
+        cls.tracks = [("s0", "s1"), ("s1", "s0"), ("s0", "s2"), ("s2", "s3")]
+        cls.agv_routes = {0: ("s0", "s1"), 1: ("s0", "s2", "s3")}
 
 
 if __name__ == '__main__':

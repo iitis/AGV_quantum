@@ -58,26 +58,25 @@ def create_y_iterator(graph: nx.Graph) -> list[tuple]:
     return y_iter
 
 
-def create_z_iterator(graph: nx.Graph, s_sp: list, connectivity: pd.DataFrame) -> list:
-    z_iter = []
-    for way in s_sp:
-        if graph.number_of_edges(way[0], way[1]) == 1:
-            temp_df = connectivity.loc[connectivity[way] > 0]
-            one = list(temp_df[way].index)
-            temp_df_2 = connectivity.loc[connectivity[way[::-1]] > 0]
-            print(temp_df_2)
-            two = list(temp_df_2[way[::-1]])
-            pairs = list(itertools.product(one, two))
+def create_z_iterator(graph: nx.Graph, agv_routes: dict[int, tuple]) -> list[tuple]:
+    stations = graph.nodes
+    agv_pass_through = nx.get_node_attributes(graph, "pass_through")
+    J = create_agv_list(agv_routes)
 
-    return one
+    for pair in list(itertools.permutations(J, r=2)):
+        if len(agv_routes[pair[0]]) > 1 and len(agv_routes[pair[2]]) > 1:
+            s_sp0 = [(agv_routes[pair[0]][i], agv_routes[pair[0]][i+1]) for i in range(len(agv_routes[pair[0]])-1)]
+            s_sp1 = [(agv_routes[pair[1]][i], agv_routes[pair[1]][i+1]) for i in range(len(agv_routes[pair[1]])-1)]
 
 
-def create_iterators(agv: list, s_sp: list, connectivity: pd.DataFrame):
-    y_iter = create_y_iterator(s_sp, connectivity)
 
-    t_in_iter = create_t_iterator(agv, s_sp, connectivity, "in")
-    t_out_iter = create_t_iterator(agv, s_sp, connectivity, "out")
+def create_iterators(graph: nx.Graph, agv_routes: dict[int, tuple]) -> dict[str, list]:
+
+    t_in_iter = create_t_iterator(agv_routes,  "in")
+    t_out_iter = create_t_iterator(agv_routes, "out")
     t_iter = t_in_iter + t_out_iter
+
+    y_iter = create_y_iterator(graph)
 
     x_iter = t_iter + y_iter
 
@@ -88,7 +87,7 @@ def see_variables(vect: list, x_iter: list) -> dict:
     return {x_iter[i]: vect[i] for i in range(len(x_iter))}
 
 
-
+# DEPRECATED
 def create_connectivity(agv: list, agv_dict: dict, s_sp: list) -> pd.DataFrame:
     connections_data = []
     for j in agv:
@@ -104,19 +103,3 @@ def way_exist(agv_data: dict, agv: int, way: tuple) -> bool:
         if (track[i], track[i+1]) == way:
             return True
     return False
-
-
-
-def delete_none(_dict: dict) -> dict:
-    """Delete None values recursively from all of the dictionaries, tuples, lists, sets"""
-    if isinstance(_dict, dict):
-        for key, value in list(_dict.items()):
-            if isinstance(value, (list, dict, tuple, set)):
-                _dict[key] = delete_none(value)
-            elif value is None or key is None:
-                del _dict[key]
-
-    elif isinstance(_dict, (list, set, tuple)):
-        _dict = type(_dict)(delete_none(item) for item in _dict if item is not None)
-
-    return _dict
