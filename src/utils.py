@@ -14,6 +14,15 @@ def create_stations_list(tracks: list[tuple]) -> list[str]:
     return list(set(stations))
 
 
+def agv_routes_as_edges(agv_routes: dict[int, tuple]) -> dict[int, list]:  # TODO write test
+    return_dict = {}
+    for j in agv_routes.keys():
+        if len(agv_routes[j]) > 1:
+            s_sp = [(agv_routes[j][i], agv_routes[j][i + 1]) for i in range(len(agv_routes[j]) - 1)]
+            return_dict[j] = s_sp
+    return return_dict
+
+
 def create_agv_list(agv_routes: dict[int, tuple]) -> list[int]:
     return list(agv_routes.keys())
 
@@ -61,16 +70,12 @@ def create_y_iterator(graph: nx.Graph) -> list[tuple]:
 def create_z_iterator(graph: nx.Graph, agv_routes: dict[int, tuple]) -> list[tuple]:
     z_iter = []
     J = create_agv_list(agv_routes)
-    agv_routes_as_edges = {}
-    for j in J:
-        if len(agv_routes[j]) > 1:
-            s_sp = [(agv_routes[j][i], agv_routes[j][i+1]) for i in range(len(agv_routes[j])-1)]
-            agv_routes_as_edges[j] = s_sp
+    agv_routes_as_edges_dict = agv_routes_as_edges(agv_routes)
 
     for j1, j2 in list(itertools.permutations(J, r=2)):
-        if j1 in agv_routes_as_edges.keys() and j2 in agv_routes_as_edges.keys():
-            for s, sp in agv_routes_as_edges[j1]:
-                if graph.number_of_edges(s, sp) < 2 and (sp, s) in agv_routes_as_edges[j2]:
+        if j1 in agv_routes_as_edges_dict.keys() and j2 in agv_routes_as_edges_dict.keys():
+            for s, sp in agv_routes_as_edges_dict[j1]:
+                if graph.number_of_edges(s, sp) < 2 and (sp, s) in agv_routes_as_edges_dict[j2]:
                     z_iter.append((j1, j2, s, sp))
 
     return z_iter
