@@ -27,7 +27,23 @@ def test_line_fragemnt():
                         weights)
 
     if res.success:
-        print(utils.see_variables(res.x, x_iter))
+        sol = utils.see_variables(res.x, x_iter)
+        assert sol[('in', 0, 's0')] == 0.
+        assert sol[('out', 0, 's0')] == 1.
+        assert sol[('in', 0, 's1')] == 6.
+        assert sol[('out', 0, 's1')] == 7.
+
+        assert sol[('out', 1, 's0')] == 3.
+        assert sol[('in', 1, 's1')] == 8.
+        assert sol[('out', 1, 's1')] == 9.
+
+        assert sol[(0, 1, 's1')] == 1. 
+        assert sol[(1, 0, 's1')] == 0. 
+
+        assert sol[(0, 1, 's0')] == 1. 
+        assert sol[(1, 0, 's0')] == 0. 
+
+        # TO test objective val
     else:
         print(res.message)
 
