@@ -27,6 +27,24 @@ def create_agv_list(agv_routes: dict[int, tuple]) -> list[int]:
     return list(agv_routes.keys())
 
 
+def create_same_way_dict(agv_routes: dict[int, tuple]) -> dict[tuple, list]:
+    return_dict = {}
+
+    J = agv_routes.keys()
+    agv_routes_as_edges_dict = agv_routes_as_edges(agv_routes)
+
+    for j, jp in list(itertools.permutations(J, r=2)):
+        temp = []
+        for (s, sp) in agv_routes_as_edges_dict[j]:
+
+            if (s, sp) in agv_routes_as_edges_dict[jp]:
+                temp.append((s, sp))
+        if len(temp) > 0:
+            return_dict[(j, jp)] = temp
+
+    return return_dict
+
+
 def create_graph(tracks: list[tuple], agv_routes: dict[int, tuple]) -> nx.Graph:
     stations = create_stations_list(tracks)
 
