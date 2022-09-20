@@ -26,7 +26,7 @@ def create_precedence_matrix_y(iterators: dict):
     return PVY, PVY_b
 
 
-def create_minimal_passing_time_matrix(agv_routes, graph: nx.Graph, tau_pass, iterators):
+def create_minimal_passing_time_matrix(agv_routes, tau_pass, iterators):
     t_in_iter = iterators["t_in"]
     t_out_iter = iterators["t_out"]
     y_iter = iterators["y"]
@@ -38,14 +38,13 @@ def create_minimal_passing_time_matrix(agv_routes, graph: nx.Graph, tau_pass, it
     J = utils.create_agv_list(agv_routes)
     for j in J:
         s_sp = [(agv_routes[j][i], agv_routes[j][i + 1]) for i in range(len(agv_routes[j]) - 1)]
-        for s, sp, _ in graph.edges:
-            if (s, sp) in s_sp:
-                t_in_vect = [-1 if (t[1] == j and t[2] == sp) else 0 for t in t_in_iter]
-                t_out_vect = [1 if (t[1] == j and t[2] == s) else 0 for t in t_out_iter]
-                y_vect = [0 for _ in y_iter]
-                z_vect = [0 for _ in z_iter]
-                MPT.append(t_in_vect + t_out_vect + y_vect + z_vect)
-                MPT_b.append(-1 * tau_pass[(j, s, sp)])
+        for s, sp in s_sp:
+            t_in_vect = [-1 if (t[1] == j and t[2] == sp) else 0 for t in t_in_iter]
+            t_out_vect = [1 if (t[1] == j and t[2] == s) else 0 for t in t_out_iter]
+            y_vect = [0 for _ in y_iter]
+            z_vect = [0 for _ in z_iter]
+            MPT.append(t_in_vect + t_out_vect + y_vect + z_vect)
+            MPT_b.append(-1 * tau_pass[(j, s, sp)])
 
     MPT = np.array(MPT)
     MPT_b = np.array(MPT_b)
@@ -77,7 +76,7 @@ def create_bounds(initial_conditions, iterators):
     return bounds
 
 
-def create_minimal_headway_matrix(M: int, graph: nx.Graph, agv_routes:dict, tau_headway: dict, iterators: dict):
+def create_minimal_headway_matrix(M: int, tracks: list[tuple], agv_routes: dict, tau_headway: dict, iterators: dict):
 
     t_in_iter = iterators["t_in"]
     t_out_iter = iterators["t_out"]
@@ -87,21 +86,19 @@ def create_minimal_headway_matrix(M: int, graph: nx.Graph, agv_routes:dict, tau_
     MH = []
     MH_b = []
 
-
-    for y in y_iter:
-        j1, j2 = y[0], y[1]
+    for j1, j2, sy in y_iter:  # TO DO better and questions
         s_sp1 = [(agv_routes[j1][i], agv_routes[j1][i + 1]) for i in range(len(agv_routes[j1]) - 1)]
         s_sp2 = [(agv_routes[j2][i], agv_routes[j2][i + 1]) for i in range(len(agv_routes[j2]) - 1)]
-        for s, sp, _ in graph.edges:
+        for s, sp in tracks:
             if (s, sp) in s_sp1 and (s, sp) in s_sp2:
                 t_in_vect = [0 for _ in t_in_iter]
-                t_out_vect = [1 if t == ("out", y[0], y[2]) else -1 if t == ("out", y[1], y[2]) else 0 for t in
+                t_out_vect = [1 if t == ("out", j1, sy) else -1 if t == ("out", j2, sy) else 0 for t in
                               t_out_iter]
-                y_vect = [-1 * M if yp == (y[1], y[0], y[2]) else 0 for yp in y_iter]
+                y_vect = [-1 * M if yp == (j2, j1, sy) else 0 for yp in y_iter]
                 z_vect = [0 for _ in z_iter]
 
                 MH.append(t_in_vect + t_out_vect + y_vect + z_vect)
-                MH_b.append(-1 * tau_headway[(y[0], y[1], s, sp)])
+                MH_b.append(-1 * tau_headway[(j1, j2, s, sp)])
 
     MH = np.array(MH)
     MH_b = np.array(MH_b)
@@ -161,13 +158,14 @@ def solve(M: int, tracks: list, agv_routes: dict, d_max: dict,
 
     PVY, PVY_b = create_precedence_matrix_y(iterators)
 
-    MPT, MPT_b = create_minimal_passing_time_matrix(agv_routes, graph, tau_pass, iterators)
-    MH, MH_b = create_minimal_headway_matrix(M, graph, agv_routes, tau_headway, iterators)
+    MPT, MPT_b = create_minimal_passing_time_matrix(agv_routes, tau_pass, iterators)
+    MH, MH_b = create_minimal_headway_matrix(M, tracks, agv_routes, tau_headway, iterators)
     JC, JC_b = create_junction_condition_matrix(M, tracks, agv_routes, tau_operation, iterators)
 
     #bounds = create_bounds(initial_conditions, iterators)
 
     if MPT.size >= 2 and MH.size >= 2:  # TO DO more sensible, for now is hack
+
         A_ub = np.concatenate((MPT, MH, JC))
         b_ub = np.concatenate((MPT_b, MH_b, JC_b))
     else:
