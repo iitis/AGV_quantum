@@ -177,8 +177,8 @@ def solve(M: int, tracks: list, agv_routes: dict, d_max: dict,
     b_eq = PVY_b
 
     t_in = {}
-    s_final = "s0" if len(tracks[0]) == 1 else "s1"
-    obj = {("out", 0, s_final): weights[0]/d_max[0], ("out", 1, s_final): weights[1] / d_max[1]}
+    s_final = {j: agv_routes[j][-1] for j in J}
+    obj = {("out", j, s_final[j]): weights[j]/d_max[j] for j in J}
     c = [obj[v] if v in obj.keys() else 0 for v in iterators["x"]]
     res = linprog(c, A_ub=A_ub, b_ub=b_ub, A_eq=A_eq, b_eq=b_eq, integrality=[1 for _ in iterators["x"]])
     return res, iterators["x"]
