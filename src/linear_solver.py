@@ -52,30 +52,6 @@ def create_minimal_passing_time_matrix(agv_routes, tau_pass, iterators):
     return MPT, MPT_b
 
 
-def create_bounds(initial_conditions, iterators):
-    # given = {("in", 0, "s0"): 0, ("in", 1, "s0"): 1}
-    given = initial_conditions
-    t_in_iter = iterators["t_in"]
-    t_out_iter = iterators["t_out"]
-    y_iter = iterators["y"]
-    x_iter = iterators["x"]
-
-    y_min = [given[y] if y in given.keys() else 0 for y in y_iter]
-    y_max = [given[y] if y in given.keys() else 1 for y in y_iter]
-
-    t_in_min = [given[t] if t in given.keys() else 0 for t in t_in_iter]
-    t_in_max = [given[t] if t in given.keys() else None for t in t_in_iter]
-
-    t_out_min = [given[t] if t in given.keys() else 0 for t in t_out_iter]
-    t_out_max = [given[t] if t in given.keys() else None for t in t_out_iter]
-
-    x_min = t_in_min + t_out_min + y_min
-    x_max = t_in_max + t_out_max + y_max
-
-    bounds = [(x_min[i], x_max[i]) for i in range(len(x_iter))]
-    return bounds
-
-
 def create_minimal_headway_matrix(M: int, tracks: list[tuple], agv_routes: dict, tau_headway: dict, iterators: dict):
 
     if not all([len(track) > 1 for track in tracks]):
@@ -107,8 +83,6 @@ def create_minimal_headway_matrix(M: int, tracks: list[tuple], agv_routes: dict,
     MH_b = np.array(MH_b)
     return MH, MH_b
 
-
-# junction condition
 
 def create_junction_condition_matrix(M, tracks, agv_routes, tau_operation, iterators):
     t_in_iter = iterators["t_in"]
@@ -145,17 +119,40 @@ def create_junction_condition_matrix(M, tracks, agv_routes, tau_operation, itera
     return JC, JC_b
 
 
+def create_bounds(initial_conditions, iterators):
+    # given = {("in", 0, "s0"): 0, ("in", 1, "s0"): 1}
+    given = initial_conditions
+    t_in_iter = iterators["t_in"]
+    t_out_iter = iterators["t_out"]
+    y_iter = iterators["y"]
+    z_iter = iterators["z"]
+    x_iter = iterators["x"]
+
+    t_in_min = [given[t] if t in given.keys() else 0 for t in t_in_iter]
+    t_in_max = [None for _ in t_in_iter]
+
+    t_out_min = [given[t] if t in given.keys() else 0 for t in t_out_iter]
+    t_out_max = [given[t] if t in given.keys() else None for t in t_out_iter]
+
+    y_min = [given[y] if y in given.keys() else 0 for y in y_iter]
+    y_max = [1 for _ in y_iter]
+
+    z_min = [0 for _ in z_iter]
+    z_max = [1 for _ in z_iter]
+
+    x_min = t_in_min + t_out_min + y_min + z_min
+    x_max = t_in_max + t_out_max + y_max + z_max
+
+    bounds = [(x_min[i], x_max[i]) for i in range(len(x_iter))]
+    return bounds
+
+
 def solve(M: int, tracks: list, agv_routes: dict, d_max: dict,
           tau_pass: dict, tau_headway: dict, tau_operation: dict, weights: dict):
 
     stations = utils.create_stations_list(tracks)
     J = utils.create_agv_list(agv_routes)
     graph = utils.create_graph(tracks, agv_routes)
-
-    # BASIC ITERATORS
-    j_jp = list(itertools.permutations(J, r=2))
-    s_sp = list(itertools.permutations(stations, r=2))
-    connectivity = utils.create_connectivity(J, agv_routes, s_sp)
 
     iterators = utils.create_iterators(graph, agv_routes)
 
