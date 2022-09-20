@@ -24,7 +24,7 @@ def test_line_fragemnt():
     tau_operation = {(agv, station): 1 for agv in J for station in stations}
 
     res, x_iter = solve(M, tracks, agv_routes, d_max, tau_pass, tau_headway, tau_operation,
-                        weights)
+                        weights, initial_conditions={})
 
     if res.success:
         sol = utils.see_variables(res.x, x_iter)

@@ -2,6 +2,7 @@ from scipy.optimize import linprog
 import itertools
 import numpy as np
 from src import utils
+from typing import Optional
 import networkx as nx
 
 
@@ -148,7 +149,7 @@ def create_bounds(initial_conditions, iterators):
 
 
 def solve(M: int, tracks: list, agv_routes: dict, d_max: dict,
-          tau_pass: dict, tau_headway: dict, tau_operation: dict, weights: dict):
+          tau_pass: dict, tau_headway: dict, tau_operation: dict, weights: dict, initial_conditions: Optional[dict]):
 
     stations = utils.create_stations_list(tracks)
     J = utils.create_agv_list(agv_routes)
@@ -162,7 +163,7 @@ def solve(M: int, tracks: list, agv_routes: dict, d_max: dict,
     MH, MH_b = create_minimal_headway_matrix(M, tracks, agv_routes, tau_headway, iterators)
     JC, JC_b = create_junction_condition_matrix(M, tracks, agv_routes, tau_operation, iterators)
 
-    #bounds = create_bounds(initial_conditions, iterators)
+    bounds = create_bounds(initial_conditions, iterators)
 
     if MPT.size >= 2 and MH.size >= 2:  # TO DO more sensible, for now is hack
 

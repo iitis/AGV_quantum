@@ -24,7 +24,7 @@ def test_one_station():
 
 
     res, x_iter = solve(M, tracks, agv_routes, d_max, tau_pass, tau_headway, tau_operation,
-                        weights={0: 1, 1: 1/2})
+                        weights={0: 1, 1: 1/2}, initial_conditions={})
 
     if res.success:
         print(utils.see_variables(res.x, x_iter))
