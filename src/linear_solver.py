@@ -78,6 +78,9 @@ def create_bounds(initial_conditions, iterators):
 
 def create_minimal_headway_matrix(M: int, tracks: list[tuple], agv_routes: dict, tau_headway: dict, iterators: dict):
 
+    if not all([len(track) > 1 for track in tracks]):
+        return np.empty((0, 0)), np.empty((0, 0))
+
     t_in_iter = iterators["t_in"]
     t_out_iter = iterators["t_out"]
     y_iter = iterators["y"]
