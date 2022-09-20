@@ -30,3 +30,7 @@ def test_one_station():
         print(utils.see_variables(res.x, x_iter))
     else:
         print(res.message)
+
+
+if __name__ == "__main__":
+    test_one_station()

@@ -30,3 +30,7 @@ def test_line_fragemnt():
         print(utils.see_variables(res.x, x_iter))
     else:
         print(res.message)
+
+
+if __name__ == "__main__":
+    test_line_fragemnt()
