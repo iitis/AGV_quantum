@@ -34,5 +34,5 @@ class MultipleStationsNoOpposite(unittest.TestCase):
         #np.testing.assert_array_equal(PVY, np.array([[0, 0, 0, 0, 1, 1]]))
         #self.assertEqual(PVY_b, np.array([1]))
 
-if __name__ == '__main__':
-    unittest.main()
+#if __name__ == '__main__':
+#    unittest.main()

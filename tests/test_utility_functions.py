@@ -101,5 +101,5 @@ class TwoStationsOpposite(unittest.TestCase):
         self.assertEqual(z_iter, [(0, 1, "s0", "s1"), (1, 0, "s1", "s0")])
 
 
-if __name__ == '__main__':
-    unittest.main()
+#if __name__ == '__main__':
+#   unittest.main()
