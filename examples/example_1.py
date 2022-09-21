@@ -32,7 +32,7 @@ all_same_way = utils.create_same_way_dict(agv_routes)
 
 graph = utils.create_graph(tracks, agv_routes)
 
-d_max = {i: 10 for i in J}
+d_max = {i: 30 for i in J}
 tau_pass = {(j, s, sp): tracks_len[(s, sp)] for j in J for s, sp in agv_routes_as_edges[j]}
 tau_headway = {(j, jp, s, sp): 2 if (s, sp) != ("s2", "s3") and (s, sp) != ("s3", "s2") else 0
                for (j, jp) in all_same_way.keys() for (s, sp) in all_same_way[(j, jp)]}
