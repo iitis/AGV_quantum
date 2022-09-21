@@ -48,5 +48,15 @@ class MultipleStationsNoOpposite(unittest.TestCase):
         self.assertEqual(bounds, [(1, 11), (0, 10), (3, 13), (0, 10), (0, 10), (0, 10), (0, 10),
                                   (0, 10), (0, 10), (0, 10), (0, 1), (0, 1)])
 
+
+
+class TwoStationsOpposite(unittest.TestCase):
+
+    @classmethod
+    def setUpClass(cls):
+        cls.M = 50
+        cls.tracks = [("s0", "s1"), ("s1", "s2"), ("s2", "s1")]
+        cls.agv_routes = {0: ("s0", "s1", "s2"), 1: ("s1", "s0"), 2: ("s2", "s1")}
+
 #if __name__ == '__main__':
 #    unittest.main()
