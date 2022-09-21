@@ -3,7 +3,6 @@ import itertools
 import numpy as np
 from src import utils
 from typing import Optional
-import networkx as nx
 
 
 def create_precedence_matrix_y(iterators: dict):
@@ -120,7 +119,7 @@ def create_junction_condition_matrix(M, tracks, agv_routes, tau_operation, itera
     return JC, JC_b
 
 
-def create_bounds(initial_conditions, iterators):
+def create_bounds(initial_conditions, d_max, iterators):
     # given = {("in", 0, "s0"): 0, ("in", 1, "s0"): 1}
     given = initial_conditions
     t_in_iter = iterators["t_in"]
@@ -130,12 +129,12 @@ def create_bounds(initial_conditions, iterators):
     x_iter = iterators["x"]
 
     t_in_min = [given[t] if t in given.keys() else 0 for t in t_in_iter]
-    t_in_max = [None for _ in t_in_iter]
+    t_in_max = [t_in_min[i] + d_max[t[1]] for i, t in enumerate(t_in_iter)]
 
     t_out_min = [given[t] if t in given.keys() else 0 for t in t_out_iter]
-    t_out_max = [given[t] if t in given.keys() else None for t in t_out_iter]
+    t_out_max = [t_out_min[i] + d_max[t[1]] for i, t in enumerate(t_out_iter)]
 
-    y_min = [given[y] if y in given.keys() else 0 for y in y_iter]
+    y_min = [0 for y in y_iter]
     y_max = [1 for _ in y_iter]
 
     z_min = [0 for _ in z_iter]
@@ -163,7 +162,7 @@ def solve(M: int, tracks: list, agv_routes: dict, d_max: dict,
     MH, MH_b = create_minimal_headway_matrix(M, tracks, agv_routes, tau_headway, iterators)
     JC, JC_b = create_junction_condition_matrix(M, tracks, agv_routes, tau_operation, iterators)
 
-    bounds = create_bounds(initial_conditions, iterators)
+    bounds = create_bounds(initial_conditions, d_max, iterators)
 
     if MPT.size >= 2 and MH.size >= 2:  # TO DO more sensible, for now is hack
 
