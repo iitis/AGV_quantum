@@ -118,6 +118,15 @@ def see_variables(vect: list, x_iter: list) -> dict:
     return {x_iter[i]: vect[i] for i in range(len(x_iter))}
 
 
+def see_non_zero_variables(vect: list, x_iter: list) -> dict:
+    return_dict = {}
+    for i in range(len(x_iter)):
+        if vect[i] != 0:
+            return_dict[x_iter[i]] = vect[i]
+
+    return return_dict
+
+
 # DEPRECATED
 def create_connectivity(agv: list, agv_dict: dict, s_sp: list) -> pd.DataFrame:
     connections_data = []
