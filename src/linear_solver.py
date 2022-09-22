@@ -33,19 +33,19 @@ def create_precedence_matrix_z(iterators: dict):
 
     PVZ = []
     PVZ_b = []
+    if len(z_iter)>0:
+        for z1, z2 in itertools.combinations(z_iter, r=2):
+            if z1[0] == z2[1] and z1[1] == z2[0] and z1[2] == z2[3] and z1[3] == z2[2]:
+                t_vect = [0 for _ in t_iter]
+                y_vect = [0 for _ in y_iter]
+                z_vect = [1 if z == z1 or z == z2 else 0 for z in z_iter]
+                PVZ.append(t_vect + y_vect + z_vect)
+                PVZ_b.append(1)
 
-    for z1, z2 in itertools.combinations(z_iter, r=2):
-        if z1[0] == z2[1] and z1[1] == z2[0] and z1[2] == z2[3] and z1[3] == z2[2]:
-            t_vect = [0 for _ in t_iter]
-            y_vect = [0 for _ in y_iter]
-            z_vect = [1 if z == z1 or z == z2 else 0 for z in z_iter]
-            PVZ.append(t_vect + y_vect + z_vect)
-            PVZ_b.append(1)
+    PVZ = np.array(PVZ)
+    PVZ_b = np.array(PVZ_b)
 
-        PVZ = np.array(PVZ)
-        PVZ_b = np.array(PVZ_b)
-
-        return PVZ, PVZ_b
+    return PVZ, PVZ_b
 
 def create_minimal_passing_time_matrix(agv_routes, tau_pass, iterators):
     t_in_iter = iterators["t_in"]
