@@ -26,6 +26,27 @@ def create_precedence_matrix_y(iterators: dict):
     return PVY, PVY_b
 
 
+def create_precedence_matrix_z(iterators: dict):
+    y_iter = iterators["y"]
+    t_iter = iterators["t"]
+    z_iter = iterators["z"]
+
+    PVZ = []
+    PVZ_b = []
+
+    for z1, z2 in itertools.combinations(z_iter, r=2):
+        if z1[0] == z2[1] and z1[1] == z2[0] and z1[2] == z2[3] and z1[3] == z2[2]:
+            t_vect = [0 for _ in t_iter]
+            y_vect = [0 for _ in y_iter]
+            z_vect = [1 if z == z1 or z == z2 else 0 for z in z_iter]
+            PVZ.append(t_vect + y_vect + z_vect)
+            PVZ_b.append(1)
+
+        PVZ = np.array(PVZ)
+        PVZ_b = np.array(PVZ_b)
+
+        return PVZ, PVZ_b
+
 def create_minimal_passing_time_matrix(agv_routes, tau_pass, iterators):
     t_in_iter = iterators["t_in"]
     t_out_iter = iterators["t_out"]
@@ -153,6 +174,7 @@ def solve(M: int, tracks: list, agv_routes: dict, d_max: dict,
     iterators = utils.create_iterators(graph, agv_routes)
 
     PVY, PVY_b = create_precedence_matrix_y(iterators)
+    PVZ, PVZ_b = create_precedence_matrix_z(iterators)
 
     MPT, MPT_b = create_minimal_passing_time_matrix(agv_routes, tau_pass, iterators)
     MH, MH_b = create_minimal_headway_matrix(M, tracks, agv_routes, tau_headway, iterators)
@@ -168,8 +190,12 @@ def solve(M: int, tracks: list, agv_routes: dict, d_max: dict,
         A_ub = JC
         b_ub = JC_b
 
-    A_eq = PVY
-    b_eq = PVY_b
+    if PVZ.size > 0:
+        A_eq = np.concatenate((PVY, PVZ))
+        b_eq = np.concatenate((PVY_b, PVZ_b))
+    else:
+        A_eq = PVY
+        b_eq = PVY_b
 
     t_in = {}
     s_final = {j: agv_routes[j][-1] for j in J}
