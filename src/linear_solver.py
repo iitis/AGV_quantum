@@ -176,7 +176,7 @@ def solve(M: int, tracks: list, agv_routes: dict, d_max: dict,
     obj = {("out", j, s_final[j]): weights[j]/d_max[j] for j in J}
     c = [obj[v] if v in obj.keys() else 0 for v in iterators["x"]]
     res = linprog(c, A_ub=A_ub, b_ub=b_ub, A_eq=A_eq, b_eq=b_eq, integrality=[1 for _ in iterators["x"]])
-    return res, iterators["x"]
+    return res, iterators
 
 # it is moved by 2 units. I don't know why
 
