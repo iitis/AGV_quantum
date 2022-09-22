@@ -101,7 +101,7 @@ def create_junction_condition_matrix(M, tracks, agv_routes, tau_operation, itera
         JC_b.append(0)
 
     for j in J:
-        for station in stations:
+        for station in agv_routes[j]:
             t_in_vect = [1 if t == ("in", j, station) else 0 for t in t_in_iter]
             t_out_vect = [-1 if t == ("out", j, station) else 0 for t in t_out_iter]
             y_vect = [0 for _ in y_iter]
