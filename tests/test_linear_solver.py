@@ -49,33 +49,54 @@ class MultipleStationsNoOpposite(unittest.TestCase):
         cls.tau_pass = {(j, s, sp): tracks_len[(s, sp)] for j in J for s, sp in agv_routes_as_edges[j]}
         cls.tau_operation = {(agv, station): 2 for agv in J for station in stations}
 
-    def test_preference_variables_y_multi(self):
-        PVY, PVY_b = linear_solver.create_precedence_matrix_y(self.iterators)
-        # TO DO later
-        #np.testing.assert_array_equal(PVY, np.array([[0, 0, 0, 0, 1, 1]]))
-        #self.assertEqual(PVY_b, np.array([1]))
+        cls.x_iter = cls.iterators["x"]
 
     def test_tau_headway(self):
-
         self.assertEqual(self.tau_headway, {(1, 2, "s2", "s3"): 2, (2, 1, "s2", "s3"): 2})
 
     def test_create_bounds_multi(self):
-        bounds = linear_solver.create_bounds(self.initial_conditions, self.d_max, self.iterators) # TODO
-        # self.assertEqual(bounds, [(1, self.d_max[0] + 1), (0, self.d_max[0]), (3, self.d_max[0] + 3),
-        #                          (0, self.d_max[0]), (0, self.d_max[0]), (0, self.d_max[0]), (0, self.d_max[0]),
-        #                          (0, self.d_max[0]), (0, self.d_max[0]), (0, self.d_max[0]), (0, 1), (0, 1)])
+        bounds = linear_solver.create_bounds(self.initial_conditions, self.d_max, self.iterators)  # TODO
+
+    def test_preference_variables_y_multi(self):
+        PVY, PVY_b = linear_solver.create_precedence_matrix_y(self.iterators)
+        self.assertEqual(PVY.shape, (3, len(self.x_iter)))
+        equations_list = [utils.see_non_zero_variables(PVY[i], self.x_iter) for i in range(PVY.shape[0])]
+        self.assertIn({(1, 0, "s0"): 1, (0, 1, "s0"): 1}, equations_list)
+        self.assertIn({(1, 2, "s2"): 1, (2, 1, "s2"): 1}, equations_list)
+        self.assertIn({(1, 2, "s3"): 1, (2, 1, "s3"): 1}, equations_list)
+        self.assertTrue(np.array_equal(PVY_b, np.array([1 for _ in range(PVY.shape[0])])))
+
 
     def test_headway_matrix(self):
-        x_iter = self.iterators["x"]
         MH, MH_b = linear_solver.create_minimal_headway_matrix(self.M, self.tracks, self.agv_routes,
                                                                self.tau_headway, self.iterators)
-        self.assertEqual(MH.shape, (2, 20))
+        self.assertEqual(MH.shape, (2, len(self.x_iter)))
+        equations_list = [utils.see_non_zero_variables(MH[i], self.x_iter) for i in range(MH.shape[0])]
+        self.assertIn({("out", 1, "s2"): 1, ("out", 2, "s2"): -1, (2, 1, "s2"): -1 * self.M}, equations_list)
+        self.assertIn({("out", 1, "s2"): -1, ("out", 2, "s2"): 1, (1, 2, "s2"): -1 * self.M}, equations_list)
+        self.assertTrue(np.array_equal(MH_b, np.array([-1 * tau_h for tau_h in self.tau_headway.values()])))
+
+    def test_passing_time_matrix(self):
+        MPT, MPT_b = linear_solver.create_minimal_passing_time_matrix(self.agv_routes, self.tau_pass, self.iterators)
+        self.assertEqual(MPT.shape, (4, len(self.x_iter)))
+        equations_list = [utils.see_non_zero_variables(MPT[i], self.x_iter) for i in range(MPT.shape[0])]
+        self.assertIn({("out", 0, "s0"): 1, ("in", 0, "s1"): -1}, equations_list)
+        self.assertIn({("out", 1, "s0"): 1, ("in", 1, "s2"): -1}, equations_list)
+        self.assertIn({("out", 1, "s2"): 1, ("in", 1, "s3"): -1}, equations_list)
+        self.assertIn({("out", 2, "s2"): 1, ("in", 2, "s3"): -1}, equations_list)
+        self.assertTrue(np.array_equal(MPT_b, np.array([-1 * tau_p for tau_p in self.tau_pass.values()])))
+
+    def test_junction_condition_matrix(self):
+        JC, JC_b = linear_solver.create_junction_condition_matrix(self.M, self.tracks, self.agv_routes,
+                                                                  self.tau_operation, self.iterators)
+        self.assertEqual(len(self.iterators["y"]), 6)
+        self.assertEqual(JC.shape, (13, len(self.x_iter)))
 
     def test_solve(self):
         res, x_iter = linear_solver.solve(self.M, self.tracks, self.agv_routes, self.d_max,
                                           self.tau_pass, self.tau_headway, self.tau_operation,
                                           self.weights, self.initial_conditions)
-        #self.assertTrue(res.success)
+        self.assertTrue(res.success)
 
 
 class TwoStationsOpposite(unittest.TestCase):
@@ -116,7 +137,12 @@ class TwoStationsOpposite(unittest.TestCase):
                                           self.tau_pass, self.tau_headway, self.tau_operation,
                                           self.weights, initial_conditions={})
 
-        #self.assertTrue(res.success)
+        self.assertTrue(res.success)
+
+
+class TestZeroDistance(unittest.TestCase):
+    pass
+
 
 if __name__ == '__main__':
     unittest.main()
