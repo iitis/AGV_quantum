@@ -136,6 +136,28 @@ def create_junction_condition_matrix(M, tracks, agv_routes, tau_operation, itera
     return JC, JC_b
 
 
+def create_single_line_matrix(M, iterators):
+    t_in_iter = iterators["t_in"]
+    t_out_iter = iterators["t_out"]
+    y_iter = iterators["y"]
+    z_iter = iterators["z"]
+
+    SL = []
+    SL_b = []
+
+    for z in z_iter:
+        t_in_vect = [1 if t[0] == z[0] and t[1] == z[3] else 0 for t in t_in_iter]
+        t_out_vect = [-1 if t[0] == z[1] and t[1] == z[3] else 0 for t in t_out_iter]
+        y_vect = [0 for _ in y_iter]
+        z_vect = [-1 * M if zp == (z[1], z[0], z[3], z[2]) else 0 for zp in z_iter]
+        SL.append(t_in_vect + t_out_vect + y_vect + z_vect)
+        SL_b.append(0)
+
+    SL = np.array(SL)
+    SL_b = np.array(SL_b)
+
+    return SL, SL_b
+
 def create_bounds(initial_conditions, d_max, iterators):
     # given = {("in", 0, "s0"): 0, ("in", 1, "s0"): 1}
     given = initial_conditions
@@ -179,13 +201,17 @@ def solve(M: int, tracks: list, agv_routes: dict, d_max: dict,
     MPT, MPT_b = create_minimal_passing_time_matrix(agv_routes, tau_pass, iterators)
     MH, MH_b = create_minimal_headway_matrix(M, tracks, agv_routes, tau_headway, iterators)
     JC, JC_b = create_junction_condition_matrix(M, tracks, agv_routes, tau_operation, iterators)
+    SL, SL_b = create_single_line_matrix(M, iterators)
 
     bounds = create_bounds(initial_conditions, d_max, iterators)
 
     if MPT.size >= 2 and MH.size >= 2:  # TO DO more sensible, for now is hack
-
-        A_ub = np.concatenate((MPT, MH, JC))
-        b_ub = np.concatenate((MPT_b, MH_b, JC_b))
+        if SL.size>0:
+            A_ub = np.concatenate((MPT, MH, JC, SL))
+            b_ub = np.concatenate((MPT_b, MH_b, JC_b, SL_b))
+        else:
+            A_ub = np.concatenate((MPT, MH, JC))
+            b_ub = np.concatenate((MPT_b, MH_b, JC_b))
     else:
         A_ub = JC
         b_ub = JC_b
@@ -201,7 +227,7 @@ def solve(M: int, tracks: list, agv_routes: dict, d_max: dict,
     s_final = {j: agv_routes[j][-1] for j in J}
     obj = {("out", j, s_final[j]): weights[j]/d_max[j] for j in J}
     c = [obj[v] if v in obj.keys() else 0 for v in iterators["x"]]
-    res = linprog(c, A_ub=A_ub, b_ub=b_ub, A_eq=A_eq, b_eq=b_eq, integrality=[1 for _ in iterators["x"]])
+    res = linprog(c, A_ub=A_ub, b_ub=b_ub, A_eq=A_eq, b_eq=b_eq, bounds = bounds, integrality=[1 for _ in iterators["x"]])
     return res, iterators
 
 # it is moved by 2 units. I don't know why
