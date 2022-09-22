@@ -23,11 +23,11 @@ def test_line_fragemnt():
     tau_headway = {(0, 1, "s0", "s1"): 2, (1, 0, "s0", "s1"): 2}
     tau_operation = {(agv, station): 1 for agv in J for station in stations}
 
-    res, x_iter = solve(M, tracks, agv_routes, d_max, tau_pass, tau_headway, tau_operation,
+    res, iterators = solve(M, tracks, agv_routes, d_max, tau_pass, tau_headway, tau_operation,
                         weights, initial_conditions={})
 
     if res.success:
-        sol = utils.see_variables(res.x, x_iter)
+        sol = utils.see_variables(res.x, iterators["x"])
         assert sol[('in', 0, 's0')] == 0.
         assert sol[('out', 0, 's0')] == 1.
         assert sol[('in', 0, 's1')] == 6.
