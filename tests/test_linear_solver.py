@@ -25,6 +25,9 @@ class SingleStation(unittest.TestCase):
         self.assertEqual(bounds, [(1, self.d_max[0] + 1), (2, self.d_max[0] + 2), (0, self.d_max[0]),
                                   (0, self.d_max[0]), (0, 1), (0, 1)])
 
+    def test_single_line_matrix_single(self):
+        SL, SL_b = linear_solver.create_single_line_matrix(self.M, self.iterators)
+        self.assertTrue(np.array_equal(SL, np.array([])))
 
 class MultipleStationsNoOpposite(unittest.TestCase):
 
@@ -92,14 +95,16 @@ class MultipleStationsNoOpposite(unittest.TestCase):
         self.assertEqual(len(self.iterators["y"]), 6)
         self.assertEqual(JC.shape, (13, len(self.x_iter)))
 
+    def test_single_line_matrix(self):
+        SL, SL_b = linear_solver.create_single_line_matrix(self.M, self.iterators)
+        self.assertTrue(np.array_equal(SL, np.array([])))
+
     def test_solve(self):
         res, iterators = linear_solver.solve(self.M, self.tracks, self.agv_routes, self.d_max,
                                           self.tau_pass, self.tau_headway, self.tau_operation,
                                           self.weights, self.initial_conditions)
         self.assertTrue(res.success)
-        sol = utils.see_variables(res.x, self.x_iter)
-        print(sol)
-        utils.nice_print(sol, self.agv_routes, self.iterators)
+
 
 
 class TwoStationsOpposite(unittest.TestCase):
@@ -108,7 +113,7 @@ class TwoStationsOpposite(unittest.TestCase):
     def setUpClass(cls):
 
         cls.M = 50
-        cls.tracks = [("s0", "s1"), ("s1", "s2"), ("s2", "s1")]
+        cls.tracks = [("s0", "s1"), ("s1", "s2")]
         cls.agv_routes = {0: ("s0", "s1"), 1: ("s0", "s1", "s2"), 2: ("s2", "s1")}
         cls.graph = utils.create_graph(cls.tracks, cls.agv_routes)
         cls.iterators = utils.create_iterators(cls.graph, cls.agv_routes)
@@ -125,15 +130,28 @@ class TwoStationsOpposite(unittest.TestCase):
         cls.tau_pass = {(j, s, sp): tracks_len[(s, sp)] for j in J for s, sp in agv_routes_as_edges[j]}
         cls.tau_operation = {(agv, station): 2 for agv in J for station in stations}
 
+        cls.x_iter = cls.iterators["x"]
+
     def test_tau_headway(self):
 
         self.assertEqual(self.tau_headway, {(0, 1, "s0", "s1"): 2, (1, 0, "s0", "s1"): 2})
 
     def test_headway_matrix(self):
-
         MH, MH_b = linear_solver.create_minimal_headway_matrix(self.M, self.tracks, self.agv_routes,
                                                                self.tau_headway, self.iterators)
-        self.assertEqual(MH.shape, (2, 24))
+        self.assertEqual(MH.shape, (2, len(self.x_iter)))
+        equations_list = [utils.see_non_zero_variables(MH[i], self.x_iter) for i in range(MH.shape[0])]
+        self.assertIn({("out", 0, "s0"): 1, ("out", 1, "s0"): -1, (1, 0, "s0"): -1 * self.M}, equations_list)
+        self.assertIn({("out", 0, "s0"): -1, ("out", 1, "s0"): 1, (0, 1, "s0"): -1 * self.M}, equations_list)
+        self.assertTrue(np.array_equal(MH_b, np.array([-1 * tau_h for tau_h in self.tau_headway.values()])))
+
+    def test_single_line_matrix(self):
+        SL, SL_b = linear_solver.create_single_line_matrix(self.M, self.iterators)
+        self.assertEqual(SL.shape, (2, len(self.x_iter)))
+        self.assertTrue(np.array_equal(SL_b, np.array([0 for _ in range(SL.shape[0])])))
+        equations_list = [utils.see_non_zero_variables(SL[i], self.x_iter) for i in range(SL.shape[0])]
+        self.assertIn({("in", 1, "s2"): 1, ("out", 2, "s2"): -1, (1, 2, "s1", "s2"): -1 * self.M}, equations_list)
+        self.assertIn({('in', 2, 's1'): 1, ('out', 1, 's1'): -1, (2, 1, 's2', 's1'): -1 * self.M}, equations_list)
 
     def test_solve(self):
         res, iterators = linear_solver.solve(self.M, self.tracks, self.agv_routes, self.d_max,
@@ -141,7 +159,9 @@ class TwoStationsOpposite(unittest.TestCase):
                                           self.weights, initial_conditions={})
 
         self.assertTrue(res.success)
-
+        sol = utils.see_variables(res.x, self.x_iter)
+        print(sol)
+        utils.nice_print(sol, self.agv_routes, self.iterators)
 
 class TestZeroDistance(unittest.TestCase):
     pass
