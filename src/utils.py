@@ -1,4 +1,4 @@
-from math import inf
+from collections import OrderedDict
 import itertools
 import networkx as nx
 import pandas as pd
@@ -125,6 +125,41 @@ def see_non_zero_variables(vect: list, x_iter: list) -> dict:
             return_dict[x_iter[i]] = vect[i]
 
     return return_dict
+
+
+def nice_print(sol: dict, agv_routes: dict, iterators: dict):
+    y_iter = iterators["y"]
+    z_iter = iterators["z"]
+
+
+    J = create_agv_list(agv_routes)
+    L = {}
+    for j in J:
+        for x in sol.keys():
+            if x[0] == "in" and x[1] == j:
+                L[x] = sol[x]
+                for x2 in sol.keys():
+                    if x2[0] == "out" and x2[1] == j and x2[2] == x[2]:
+                        L[x2] = sol[x2]
+                        continue
+        print(f"{j} :", L)
+        L.clear()
+
+    for y in y_iter:
+        for x in sol.keys():
+            if y == x:
+                L[y] = sol[x]
+                continue
+    print("y : ", L)
+    L.clear()
+
+    for z in z_iter:
+        for x in sol.keys():
+            if z == x:
+                L[z] = sol[x]
+                continue
+    print("z : ", L)
+    L.clear()
 
 
 # DEPRECATED
