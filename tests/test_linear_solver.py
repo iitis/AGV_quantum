@@ -93,10 +93,13 @@ class MultipleStationsNoOpposite(unittest.TestCase):
         self.assertEqual(JC.shape, (13, len(self.x_iter)))
 
     def test_solve(self):
-        res, x_iter = linear_solver.solve(self.M, self.tracks, self.agv_routes, self.d_max,
+        res, iterators = linear_solver.solve(self.M, self.tracks, self.agv_routes, self.d_max,
                                           self.tau_pass, self.tau_headway, self.tau_operation,
                                           self.weights, self.initial_conditions)
         self.assertTrue(res.success)
+        sol = utils.see_variables(res.x, self.x_iter)
+        print(sol)
+        utils.nice_print(sol, self.agv_routes, self.iterators)
 
 
 class TwoStationsOpposite(unittest.TestCase):
@@ -133,7 +136,7 @@ class TwoStationsOpposite(unittest.TestCase):
         self.assertEqual(MH.shape, (2, 24))
 
     def test_solve(self):
-        res, x_iter = linear_solver.solve(self.M, self.tracks, self.agv_routes, self.d_max,
+        res, iterators = linear_solver.solve(self.M, self.tracks, self.agv_routes, self.d_max,
                                           self.tau_pass, self.tau_headway, self.tau_operation,
                                           self.weights, initial_conditions={})
 
