@@ -22,9 +22,8 @@ def test_one_station():
     tau_headway = {}
     tau_operation = {(agv, station): 1 for agv in J for station in stations}
 
-
-    res, iterators = solve(M, tracks, agv_routes, d_max, tau_pass, tau_headway, tau_operation,
-                        weights={0: 1, 1: 1/2}, initial_conditions={})
+    res, iterators = solve(M, tracks, {}, agv_routes, d_max, tau_pass, tau_headway, tau_operation,
+                           weights={0: 1, 1: 1/2}, initial_conditions={})
 
     if res.success:
         sol = utils.see_variables(res.x, iterators["x"])

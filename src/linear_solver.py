@@ -195,6 +195,7 @@ def solve(M: int, tracks: list, tracks_len: dict, agv_routes: dict, d_max: dict,
 
     iterators = utils.create_iterators(graph, agv_routes)
 
+    initial_conditions = {t_in: 0 for t_in in iterators["t_in"]} if not initial_conditions else initial_conditions
     v_in, v_out = utils.create_v_in_out(tracks_len, agv_routes, tau_operation, iterators, initial_conditions)
 
     PVY, PVY_b = create_precedence_matrix_y(iterators)
