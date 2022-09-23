@@ -26,6 +26,7 @@ class SingleStation(unittest.TestCase):
         SL, SL_b = linear_solver.create_single_line_matrix(self.M, self.iterators)
         self.assertTrue(np.array_equal(SL, np.array([])))
 
+
 class MultipleStationsNoOpposite(unittest.TestCase):
 
     @classmethod
@@ -65,7 +66,6 @@ class MultipleStationsNoOpposite(unittest.TestCase):
         self.assertIn({(1, 2, "s3"): 1, (2, 1, "s3"): 1}, equations_list)
         self.assertTrue(np.array_equal(PVY_b, np.array([1 for _ in range(PVY.shape[0])])))
 
-
     def test_headway_matrix(self):
         MH, MH_b = linear_solver.create_minimal_headway_matrix(self.M, self.tracks, self.agv_routes,
                                                                self.tau_headway, self.iterators)
@@ -94,6 +94,15 @@ class MultipleStationsNoOpposite(unittest.TestCase):
     def test_single_line_matrix(self):
         SL, SL_b = linear_solver.create_single_line_matrix(self.M, self.iterators)
         self.assertTrue(np.array_equal(SL, np.array([])))
+
+    def test_no_overtake_matrix(self):
+        NO, NO_b = linear_solver.create_no_overtake_matrix(self.agv_routes, self.tau_headway, self.iterators)
+        self.assertEqual(NO.shape, (2, len(self.x_iter)))
+        equations_list = [utils.see_non_zero_variables(NO[i], self.x_iter) for i in range(NO.shape[0])]
+        self.assertIn({(1, 2, 's2'): 1, (1, 2, 's3'): -1}, equations_list)
+        self.assertIn({(2, 1, 's2'): 1, (2, 1, 's3'): -1}, equations_list)
+        self.assertTrue(np.array_equal(NO_b, np.array([0 for _ in range(NO.shape[0])])))
+
 
     def test_solve(self):
         res, iterators = linear_solver.solve(self.M, self.tracks, self. tracks_len, self.agv_routes, self.d_max,
@@ -149,12 +158,20 @@ class TwoStationsOpposite(unittest.TestCase):
         self.assertIn({("in", 1, "s2"): 1, ("out", 2, "s2"): -1, (1, 2, "s1", "s2"): -1 * self.M}, equations_list)
         self.assertIn({('in', 2, 's1'): 1, ('out', 1, 's1'): -1, (2, 1, 's2', 's1'): -1 * self.M}, equations_list)
 
+
+    def test_no_overtake_matrix(self):
+        NO, NO_b = linear_solver.create_no_overtake_matrix(self.agv_routes, self.tau_headway, self.iterators)
+        for i in range(NO.shape[0]):
+            print(utils.see_non_zero_variables(NO[i], self.x_iter))
+
     def test_solve(self):
         res, iterators = linear_solver.solve(self.M, self.tracks, self.tracks_len, self.agv_routes, self.d_max,
                                           self.tau_pass, self.tau_headway, self.tau_operation,
                                           self.weights, initial_conditions={})
 
+        print(res.message)
         self.assertTrue(res.success)
+
         sol = utils.see_variables(res.x, self.x_iter)
         print(sol)
         utils.nice_print(sol, self.agv_routes, self.iterators)

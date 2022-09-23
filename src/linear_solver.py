@@ -47,6 +47,38 @@ def create_precedence_matrix_z(iterators: dict):
 
     return PVZ, PVZ_b
 
+
+def create_no_overtake_matrix(agv_routes: dict, tau_headway: dict, iterators: dict):
+    t_iter = iterators["t"]
+    y_iter = iterators["y"]
+    z_iter = iterators["z"]
+
+    agv_routes_as_edges = utils.agv_routes_as_edges(agv_routes)
+
+    NO = []
+    NO_b = []
+
+    for j, jp, s, sp in z_iter:
+        for z_s in [s, sp]:
+            t_vect = [0 for _ in t_iter]
+            y_vect = [-1 if y_j == j and y_jp == jp and y_s == z_s else 0 for y_j, y_jp, y_s in y_iter]
+            z_vect = [1 if (j, jp, s, sp) == zp else 0 for zp in z_iter]
+            NO.append(t_vect + y_vect + z_vect)
+            NO_b.append(0)
+
+    for j, jp, s, sp in tau_headway:
+        t_vect = [0 for _ in t_iter]
+        y_vect = [1 if y_j == j and y_jp == jp and y_s == s else -1 if y_j == j and y_jp == jp and y_s == sp else 0
+                  for y_j, y_jp, y_s in y_iter]
+        z_vect = [0 for _ in z_iter]
+        NO.append(t_vect + y_vect + z_vect)
+        NO_b.append(0)
+
+    NO = np.array(NO)
+    NO_b = np.array(NO_b)
+
+    return NO, NO_b
+
 def create_minimal_passing_time_matrix(agv_routes, tau_pass, iterators):
     t_in_iter = iterators["t_in"]
     t_out_iter = iterators["t_out"]
@@ -200,6 +232,7 @@ def solve(M: int, tracks: list, tracks_len: dict, agv_routes: dict, d_max: dict,
 
     PVY, PVY_b = create_precedence_matrix_y(iterators)
     PVZ, PVZ_b = create_precedence_matrix_z(iterators)
+    NO, NO_b = create_no_overtake_matrix(agv_routes, tau_headway, iterators)
 
     MPT, MPT_b = create_minimal_passing_time_matrix(agv_routes, tau_pass, iterators)
     MH, MH_b = create_minimal_headway_matrix(M, tracks, agv_routes, tau_headway, iterators)
@@ -219,9 +252,13 @@ def solve(M: int, tracks: list, tracks_len: dict, agv_routes: dict, d_max: dict,
         A_ub = JC
         b_ub = JC_b
 
-    if PVZ.size > 0:
-        A_eq = np.concatenate((PVY, PVZ))
-        b_eq = np.concatenate((PVY_b, PVZ_b))
+    if NO.size > 0:
+        if PVZ.size > 0:
+            A_eq = np.concatenate((PVY, PVZ, NO))
+            b_eq = np.concatenate((PVY_b, PVZ_b, NO_b))
+        else:
+            A_eq = np.concatenate((PVY, NO))
+            b_eq = np.concatenate((PVY_b, NO_b))
     else:
         A_eq = PVY
         b_eq = PVY_b
