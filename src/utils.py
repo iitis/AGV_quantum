@@ -184,6 +184,9 @@ def create_v_in_out(tracks_len: dict, agv_routes: dict, tau_operation: dict, ite
     v_out = {(j, s): v_in[(j, s)] + tau_operation[(j, s)] for _, j, s in t_in_iter}
     return v_in, v_out
 
+# def print_equations(A_ub: np.ndarray, b_ub: np.ndarray, A_eq: np.ndarray, b_eq, iterators):
+
+
 # DEPRECATED
 def create_connectivity(agv: list, agv_dict: dict, s_sp: list) -> pd.DataFrame:
     connections_data = []

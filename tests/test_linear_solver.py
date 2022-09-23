@@ -111,8 +111,70 @@ class MultipleStationsNoOpposite(unittest.TestCase):
         self.assertTrue(res.success)
 
 
-
 class TwoStationsOpposite(unittest.TestCase):
+
+    @classmethod
+    def setUpClass(cls):
+        cls.M = 50
+        cls.tracks = [("s0", "s1")]
+        cls.agv_routes = {0: ("s0", "s1"), 1: ("s1", "s0")}
+        cls.tracks_len = {("s0", "s1"): 1, ("s1", "s0"): 1}
+        cls.graph = utils.create_graph(cls.tracks, cls.agv_routes)
+        cls.iterators = utils.create_iterators(cls.graph, cls.agv_routes)
+
+        cls.initial_conditions = {("in", 0, "s0"): 0, ("in", 1, "s0"): 0}
+        cls.d_max = {j: 100 for j in cls.agv_routes.keys()}
+        cls.weights = {j: 1 for j in cls.agv_routes.keys()}
+
+        all_same_way = utils.create_same_way_dict(cls.agv_routes)
+        J = utils.create_agv_list(cls.agv_routes)
+        stations = utils.create_stations_list(cls.tracks)
+        agv_routes_as_edges = utils.agv_routes_as_edges(cls.agv_routes)
+
+        cls.tau_headway = {(j, jp, s, sp): 2 for (j, jp) in all_same_way.keys() for (s, sp) in all_same_way[(j, jp)]}
+        cls.tau_pass = {(j, s, sp): cls.tracks_len[(s, sp)] for j in J for s, sp in agv_routes_as_edges[j]}
+        cls.tau_operation = {(agv, station): 2 for agv in J for station in stations}
+
+        cls.x_iter = cls.iterators["x"]
+
+    def test_equations(self):
+        PVY, PVY_b = linear_solver.create_precedence_matrix_y(self.iterators)
+        PVZ, PVZ_b = linear_solver.create_precedence_matrix_z(self.iterators)
+        NO, NO_b = linear_solver.create_no_overtake_matrix(self.agv_routes, self.tau_headway, self.iterators)
+
+        MPT, MPT_b = linear_solver.create_minimal_passing_time_matrix(self.agv_routes, self.tau_pass, self.iterators)
+        MH, MH_b = linear_solver.create_minimal_headway_matrix(self.M, self.tracks, self.agv_routes, self.tau_headway, self.iterators)
+        JC, JC_b = linear_solver.create_junction_condition_matrix(self.M, self.tracks, self.agv_routes, self.tau_operation, self.iterators)
+        SL, SL_b = linear_solver.create_single_line_matrix(self.M, self.iterators)
+
+        if MPT.size >= 2 and MH.size >= 2:  # TO DO more sensible, for now is hack
+            if SL.size > 0:
+                A_ub = np.concatenate((MPT, MH, JC, SL))
+                b_ub = np.concatenate((MPT_b, MH_b, JC_b, SL_b))
+            else:
+                A_ub = np.concatenate((MPT, MH, JC))
+                b_ub = np.concatenate((MPT_b, MH_b, JC_b))
+        else:
+            A_ub = JC
+            b_ub = JC_b
+
+        if NO.size > 0:
+            if PVZ.size > 0:
+                A_eq = np.concatenate((PVY, PVZ, NO))
+                b_eq = np.concatenate((PVY_b, PVZ_b, NO_b))
+            else:
+                A_eq = np.concatenate((PVY, NO))
+                b_eq = np.concatenate((PVY_b, NO_b))
+        else:
+            A_eq = PVY
+            b_eq = PVY_b
+
+        for i in range(A_eq.shape[0]):
+            print(utils.see_non_zero_variables(A_eq[i], self.x_iter))
+        print(b_eq)
+        print(A_eq)
+
+class OneSameWayOneOpposite(unittest.TestCase):
 
     @classmethod
     def setUpClass(cls):
@@ -161,15 +223,15 @@ class TwoStationsOpposite(unittest.TestCase):
 
     def test_no_overtake_matrix(self):
         NO, NO_b = linear_solver.create_no_overtake_matrix(self.agv_routes, self.tau_headway, self.iterators)
-        for i in range(NO.shape[0]):
-            print(utils.see_non_zero_variables(NO[i], self.x_iter))
+
 
     def test_solve(self):
         res, iterators = linear_solver.solve(self.M, self.tracks, self.tracks_len, self.agv_routes, self.d_max,
                                           self.tau_pass, self.tau_headway, self.tau_operation,
                                           self.weights, initial_conditions={})
 
-        print(res.message)
+
+
         self.assertTrue(res.success)
 
         sol = utils.see_variables(res.x, self.x_iter)
