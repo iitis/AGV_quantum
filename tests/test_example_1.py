@@ -9,12 +9,13 @@ def test_line_fragemnt():
     0 ->  --------------------------
     """
 
-
     M = 50
     tracks = [("s0", "s1"), ("s1", "s0")]
     agv_routes = {0: ("s0", "s1"), 1: ("s0", "s1")}
     weights = {0: 1, 1: 1}
+    tracks_len = {("s0", "s1"): 1, ("s1", "s0"): 1}
 
+    initial_conditions = {("in", 0, "s0"): 0, ("in", 1, "s0"): 1}
     stations = utils.create_stations_list(tracks)
     J = utils.create_agv_list(agv_routes)
 
@@ -23,8 +24,8 @@ def test_line_fragemnt():
     tau_headway = {(0, 1, "s0", "s1"): 2, (1, 0, "s0", "s1"): 2}
     tau_operation = {(agv, station): 1 for agv in J for station in stations}
 
-    res, iterators = solve(M, tracks, agv_routes, d_max, tau_pass, tau_headway, tau_operation,
-                        weights, initial_conditions={})
+    res, iterators = solve(M, tracks, tracks_len, agv_routes, d_max, tau_pass, tau_headway, tau_operation,
+                           weights, initial_conditions)
 
     if res.success:
         sol = utils.see_variables(res.x, iterators["x"])
