@@ -165,6 +165,10 @@ def nice_print(sol: dict, agv_routes: dict, iterators: dict):
 def create_v_in_out(tracks_len: dict, agv_routes: dict, tau_operation: dict, iterators: dict, initial_conditions: dict):
     t_in_iter = iterators["t"]
 
+    if not tracks_len:
+        return {(j, s): initial_conditions[("in", j, s)] for _, j, s in t_in_iter}, \
+               {(j, s): initial_conditions[("in", j, s)] + tau_operation[j,s] for _, j, s in t_in_iter}
+
     J = create_agv_list(agv_routes)
     v = {}
 
