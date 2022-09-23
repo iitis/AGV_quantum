@@ -49,7 +49,19 @@ class MultipleStationsNoOpposite(unittest.TestCase):
     def setUpClass(cls):
         cls.M = 50
         cls.tracks = [("s0", "s1"), ("s1", "s0"), ("s0", "s2"), ("s2", "s3")]
+        cls.tracks_len = {("s0", "s1"): 1, ("s1", "s0"): 1,
+                          ("s0", "s2"): 1, ("s2", "s0"): 1,
+                          ("s2", "s3"): 1, ("s3", "s2"): 1}
+
         cls.agv_routes = {0: ("s0", "s1"), 1: ("s0", "s2", "s3")}
+        cls.graph = utils.create_graph(cls.tracks, cls.agv_routes)
+        cls.iterators = utils.create_iterators(cls.graph, cls.agv_routes)
+        cls.d_max = {j: 10 for j in cls.agv_routes.keys()}
+        cls.initial_conditions = {("in", 0, "s0"): 0, ("in", 1, "s0"): 2}
+
+        cls.J = utils.create_agv_list(cls.agv_routes)
+        cls.stations = utils.create_stations_list(cls.tracks)
+        cls.tau_operation = {(agv, station): 2 for agv in cls.J for station in cls.stations}
 
     def test_create_lists_multi(self):
         stations = utils.create_stations_list(self.tracks)
@@ -86,6 +98,12 @@ class MultipleStationsNoOpposite(unittest.TestCase):
         z_iter = utils.create_z_iterator(graph, self.agv_routes)
         self.assertEqual(z_iter, [])
 
+    def test_v_in_out(self):
+        v_in, v_out = utils.create_v_in_out(self.tracks_len, self.agv_routes, self.tau_operation,
+                                            self.iterators, self.initial_conditions)
+        self.assertEqual(v_in, {(0, "s0"): 0, (0, "s1"): 3, (1, "s0"): 2, (1, "s2"): 5, (1, "s3"): 8})
+        self.assertEqual(v_out, {(0, 's0'): 2, (0, 's1'): 5, (1, 's0'): 4, (1, 's2'): 7, (1, 's3'): 10})
+
 
 class TwoStationsOpposite(unittest.TestCase):
 
@@ -101,5 +119,5 @@ class TwoStationsOpposite(unittest.TestCase):
         self.assertEqual(z_iter, [(0, 1, "s0", "s1"), (1, 0, "s1", "s0")])
 
 
-#if __name__ == '__main__':
-#   unittest.main()
+if __name__ == '__main__':
+    unittest.main()

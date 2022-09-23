@@ -162,6 +162,24 @@ def nice_print(sol: dict, agv_routes: dict, iterators: dict):
     L.clear()
 
 
+def create_v_in_out(tracks_len: dict, agv_routes: dict, tau_operation: dict, iterators: dict, initial_conditions: dict):
+    t_in_iter = iterators["t"]
+
+    J = create_agv_list(agv_routes)
+    v = {}
+
+    for j in J:
+        for i, s in enumerate(agv_routes[j]):
+            if i == 0:
+                v[(j, s)] = initial_conditions[("in", j, s)]
+            else:
+                s_before = agv_routes[j][i-1]
+                v[(j, s)] = v[(j, agv_routes[j][i-1])] + tau_operation[(j, s_before)] + tracks_len[(s_before, s)]
+
+    v_in = v
+    v_out = {(j, s): v_in[(j, s)] + tau_operation[(j, s)] for _, j, s in t_in_iter}
+    return v_in, v_out
+
 # DEPRECATED
 def create_connectivity(agv: list, agv_dict: dict, s_sp: list) -> pd.DataFrame:
     connections_data = []
