@@ -32,7 +32,7 @@ all_same_way = utils.create_same_way_dict(agv_routes)
 
 graph = utils.create_graph(tracks, agv_routes)
 
-d_max = {i: 10 for i in J}
+d_max = {i: 40 for i in J}
 tau_pass = {(j, s, sp): tracks_len[(s, sp)] for j in J for s, sp in agv_routes_as_edges[j]}
 tau_headway = {(j, jp, s, sp): 2 if (s, sp) != ("s2", "s3") and (s, sp) != ("s3", "s2") else 0
                for (j, jp) in all_same_way.keys() for (s, sp) in all_same_way[(j, jp)]}
@@ -44,7 +44,7 @@ initial_conditions = {("in", 0, "s0"): 0, ("in", 1, "s0"): 0, ("in", 2, "s4"): 8
 
 weights = {j: 1 for j in J}
 
-res, iterators = solve(M, tracks, agv_routes, d_max, tau_pass, tau_headway, tau_operation,
+res, iterators = solve(M, tracks, tracks_len, agv_routes, d_max, tau_pass, tau_headway, tau_operation,
                     weights, initial_conditions)
 
 if res.success:

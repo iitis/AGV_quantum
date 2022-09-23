@@ -158,22 +158,22 @@ def create_single_line_matrix(M, iterators):
 
     return SL, SL_b
 
-def create_bounds(initial_conditions, d_max, iterators):
+
+def create_bounds(v_in, v_out, d_max, iterators):
     # given = {("in", 0, "s0"): 0, ("in", 1, "s0"): 1}
-    given = initial_conditions
     t_in_iter = iterators["t_in"]
     t_out_iter = iterators["t_out"]
     y_iter = iterators["y"]
     z_iter = iterators["z"]
     x_iter = iterators["x"]
 
-    t_in_min = [given[t] if t in given.keys() else 0 for t in t_in_iter]
-    t_in_max = [t_in_min[i] + d_max[t[1]] for i, t in enumerate(t_in_iter)]
+    t_in_min = [v_in[(j, s)] for _, j, s in t_in_iter]
+    t_in_max = [v_in[(j, s)] + d_max[j] for _, j, s in t_in_iter]
 
-    t_out_min = [given[t] if t in given.keys() else 0 for t in t_out_iter]
-    t_out_max = [t_out_min[i] + d_max[t[1]] for i, t in enumerate(t_out_iter)]
+    t_out_min = [v_out[(j, s)] for _, j, s in t_out_iter]
+    t_out_max = [v_out[(j, s)] + d_max[j] for _, j, s in t_out_iter]
 
-    y_min = [0 for y in y_iter]
+    y_min = [0 for _ in y_iter]
     y_max = [1 for _ in y_iter]
 
     z_min = [0 for _ in z_iter]
@@ -186,7 +186,7 @@ def create_bounds(initial_conditions, d_max, iterators):
     return bounds
 
 
-def solve(M: int, tracks: list, agv_routes: dict, d_max: dict,
+def solve(M: int, tracks: list, tracks_len: dict, agv_routes: dict, d_max: dict,
           tau_pass: dict, tau_headway: dict, tau_operation: dict, weights: dict, initial_conditions: Optional[dict]):
 
     stations = utils.create_stations_list(tracks)
@@ -194,6 +194,8 @@ def solve(M: int, tracks: list, agv_routes: dict, d_max: dict,
     graph = utils.create_graph(tracks, agv_routes)
 
     iterators = utils.create_iterators(graph, agv_routes)
+
+    v_in, v_out = utils.create_v_in_out(tracks_len, agv_routes, tau_operation, iterators, initial_conditions)
 
     PVY, PVY_b = create_precedence_matrix_y(iterators)
     PVZ, PVZ_b = create_precedence_matrix_z(iterators)
@@ -203,7 +205,7 @@ def solve(M: int, tracks: list, agv_routes: dict, d_max: dict,
     JC, JC_b = create_junction_condition_matrix(M, tracks, agv_routes, tau_operation, iterators)
     SL, SL_b = create_single_line_matrix(M, iterators)
 
-    bounds = create_bounds(initial_conditions, d_max, iterators)
+    bounds = create_bounds(v_in, v_out, d_max, iterators)
 
     if MPT.size >= 2 and MH.size >= 2:  # TO DO more sensible, for now is hack
         if SL.size>0:
