@@ -48,7 +48,7 @@ res, iterators = solve(M, tracks, tracks_len, agv_routes, d_max, tau_pass, tau_h
                     weights, initial_conditions)
 
 if res.success:
-    sol = utils.see_variables(res.x, iterators["x"])
-    utils.nice_print(sol, agv_routes, iterators)
+    v_in, v_out = utils.create_v_in_out(tracks_len, agv_routes, tau_operation, iterators, initial_conditions)
+    utils.nice_print(res, agv_routes, weights, d_max,  v_in, v_out, iterators)
 else:
     print(res.message)

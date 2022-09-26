@@ -127,11 +127,12 @@ def see_non_zero_variables(vect: list, x_iter: list) -> dict:
     return return_dict
 
 
-def nice_print(sol: dict, agv_routes: dict, iterators: dict):
+def nice_print(res, agv_routes: dict, weights: dict, d_max: dict, v_in: dict, v_out: dict, iterators: dict):
     y_iter = iterators["y"]
     z_iter = iterators["z"]
+    x_iter = iterators["x"]
 
-
+    sol = see_variables(res.x, x_iter)
     J = create_agv_list(agv_routes)
     L = {}
     for j in J:
@@ -160,6 +161,10 @@ def nice_print(sol: dict, agv_routes: dict, iterators: dict):
                 continue
     print("z : ", L)
     L.clear()
+
+    print("weights : ", weights)
+    print("d_max : ", d_max)
+    print("objective function : ", res.fun)
 
 
 def create_v_in_out(tracks_len: dict, agv_routes: dict, tau_operation: dict, iterators: dict, initial_conditions: dict):
