@@ -178,10 +178,10 @@ def create_single_line_matrix(M, iterators):
     SL_b = []
 
     for j1, j2, s, sp in z_iter:
-        t_in_vect = [1 if j_t == z[0] and t[2] == z[3] else 0 for _, j_t, s_t  in t_in_iter]
-        t_out_vect = [-1 if t[1] == z[1] and t[2] == z[3] else 0 for t in t_out_iter]
+        t_in_vect = [1 if j_t == j1 and s_t == sp else 0 for _, j_t, s_t in t_in_iter]
+        t_out_vect = [-1 if j_t == j2 and s_t == sp else 0 for _, j_t, s_t in t_out_iter]
         y_vect = [0 for _ in y_iter]
-        z_vect = [-1 * M if zp == z else 0 for zp in z_iter]
+        z_vect = [-1 * M if zp == (j2, j1, sp, s) else 0 for zp in z_iter]
         SL.append(t_in_vect + t_out_vect + y_vect + z_vect)
         SL_b.append(0)
 

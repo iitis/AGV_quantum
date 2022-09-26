@@ -217,8 +217,8 @@ class OneSameWayOneOpposite(unittest.TestCase):
         self.assertEqual(SL.shape, (2, len(self.x_iter)))
         self.assertTrue(np.array_equal(SL_b, np.array([0 for _ in range(SL.shape[0])])))
         equations_list = [utils.see_non_zero_variables(SL[i], self.x_iter) for i in range(SL.shape[0])]
-        self.assertIn({("in", 1, "s2"): 1, ("out", 2, "s2"): -1, (1, 2, "s1", "s2"): -1 * self.M}, equations_list)
-        self.assertIn({('in', 2, 's1'): 1, ('out', 1, 's1'): -1, (2, 1, 's2', 's1'): -1 * self.M}, equations_list)
+        self.assertIn({("in", 1, "s2"): 1, ("out", 2, "s2"): -1, (2, 1, "s2", "s1"): -1 * self.M}, equations_list)
+        self.assertIn({('in', 2, 's1'): 1, ('out', 1, 's1'): -1, (1, 2, 's1', 's2'): -1 * self.M}, equations_list)
 
 
     def test_no_overtake_matrix(self):
