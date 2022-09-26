@@ -221,7 +221,6 @@ def create_bounds(v_in, v_out, d_max, iterators):
 def solve(M: int, tracks: list, tracks_len: dict, agv_routes: dict, d_max: dict,
           tau_pass: dict, tau_headway: dict, tau_operation: dict, weights: dict, initial_conditions: Optional[dict]):
 
-    stations = utils.create_stations_list(tracks)
     J = utils.create_agv_list(agv_routes)
     graph = utils.create_graph(tracks, agv_routes)
 
@@ -242,7 +241,7 @@ def solve(M: int, tracks: list, tracks_len: dict, agv_routes: dict, d_max: dict,
     bounds = create_bounds(v_in, v_out, d_max, iterators)
 
     if MPT.size >= 2 and MH.size >= 2:  # TO DO more sensible, for now is hack
-        if SL.size>0:
+        if SL.size > 0:
             A_ub = np.concatenate((MPT, MH, JC, SL))
             b_ub = np.concatenate((MPT_b, MH_b, JC_b, SL_b))
         else:
@@ -263,12 +262,11 @@ def solve(M: int, tracks: list, tracks_len: dict, agv_routes: dict, d_max: dict,
         A_eq = PVY
         b_eq = PVY_b
 
-    t_in = {}
     s_final = {j: agv_routes[j][-1] for j in J}
     obj = {("out", j, s_final[j]): weights[j]/d_max[j] for j in J}
     c = [obj[v] if v in obj.keys() else 0 for v in iterators["x"]]
     res = linprog(c, A_ub=A_ub, b_ub=b_ub, A_eq=A_eq, b_eq=b_eq, bounds = bounds, integrality=[1 for _ in iterators["x"]])
     return res, iterators
 
-# it is moved by 2 units. I don't know why
+
 
