@@ -22,14 +22,13 @@ def test_one_station():
     tau_headway = {}
     tau_operation = {(agv, station): 1 for agv in J for station in stations}
 
-    res, iterators = solve(M, tracks, {}, agv_routes, d_max, tau_pass, tau_headway, tau_operation,
-                           weights={0: 1, 1: 1/2}, initial_conditions={})
+    weights = {0: 1, 1: 1 / 2}
+    initial_conditions = {}
+    tracks_len = {}
 
-    if res.success:
-        sol = utils.see_variables(res.x, iterators["x"])
-        utils.nice_print(sol, agv_routes, iterators)
-    else:
-        print(res.message)
+    res, iterators = solve(M, tracks, {}, agv_routes, d_max, tau_pass, tau_headway, tau_operation,
+                           weights, initial_conditions)
+    assert res.success
 
 if __name__ == "__main__":
     test_one_station()
