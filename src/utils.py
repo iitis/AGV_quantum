@@ -127,33 +127,24 @@ def see_non_zero_variables(vect: list, x_iter: list) -> dict:
     return return_dict
 
 
-def get_times(res, agv_routes: dict, iterators: dict, rev: list = []):
+def get_data4plot(res, agv_routes: dict, iterators: dict, complete_path, complete_path_rev, rev: list = []):
 
     x_iter = iterators["x"]
     sol = see_variables(res.x, x_iter)
     J = create_agv_list(agv_routes)
-
-    complete_path = [0,2,8,10,16, 18,18,20,25, 27, 31, 33, 37, 39]
-
     times = {j: [] for j in J} 
     paths = {j: [] for j in J}
     
     for j in J:
-        k = 0 
-        for s in ['s0', 's1', 's2', 's3', 's4', 's5', 's6']:
+        for s in agv_routes[j]:
             if j in rev:
-                order = ["out", "in"]
+                path = complete_path_rev
             else:
-                order = ["in", "out"]
-            for way in order:
-                try:    
-                    times[j].append(sol[(f'{way}', j, f'{s}')])
-                    paths[j].append(complete_path[k])
-                except:
-                    0.
-                k = k+1
-
-    return times, paths, complete_path
+                path = complete_path
+            for way in ["in", "out"]:   
+                times[j].append(sol[(f'{way}', j, f'{s}')])
+                paths[j].append(path[f"{s}_{way}"])
+    return times, paths
 
 
 def nice_print(res, agv_routes: dict, weights: dict, d_max: dict, v_in: dict, v_out: dict, iterators: dict):

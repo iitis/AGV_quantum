@@ -48,11 +48,16 @@ weights = {j: 1 for j in J}
 res, iterators = solve(M, tracks, tracks_len, agv_routes, d_max, tau_pass, tau_headway, tau_operation,
                     weights, initial_conditions)
 
+#these are paths tof the train diagram plot
+complete_path = {"s0_in":0,"s0_out":2,"s1_in":8,"s1_out":10,"s2_in":16, "s2_out":18,"s3_in":18,"s3_out":20,"s4_in":25, "s4_out":27, "s5_in":31, "s5_out":33, "s6_in":37, "s6_out":39}
+complete_path_rev = {"s0_out":0,"s0_in":2,"s1_out":8,"s1_in":10,"s2_out":16, "s2_in":18,"s3_out":18,"s3_in":20,"s4_out":25, "s4_in":27, "s5_out":31, "s5_in":33, "s6_out":37, "s6_in":39}
+path_locs = [0,2,8,10,16, 18,18,20,25, 27, 31, 33, 37, 39]
+
 if res.success:
     v_in, v_out = utils.create_v_in_out(tracks_len, agv_routes, tau_operation, iterators, initial_conditions)
     utils.nice_print(res, agv_routes, weights, d_max,  v_in, v_out, iterators)
-    times, paths, complete_path = utils.get_times(res, agv_routes, iterators, rev = [2,3,5])
-    train_diagram.plot_train_diagram(times, paths, complete_path)
+    times, paths = utils.get_data4plot(res, agv_routes, iterators, complete_path, complete_path_rev, rev = [2,3,5])
+    train_diagram.plot_train_diagram(times, paths, path_locs)
     
 else:
     print(res.message)
