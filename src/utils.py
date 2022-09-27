@@ -127,6 +127,30 @@ def see_non_zero_variables(vect: list, x_iter: list) -> dict:
     return return_dict
 
 
+def get_times(res, agv_routes: dict, iterators: dict, rev: list = []):
+
+    x_iter = iterators["x"]
+    sol = see_variables(res.x, x_iter)
+    J = create_agv_list(agv_routes)
+
+    times = {j: [] for j in J} 
+    for j in J:
+        paths = []
+        for s in ['s0', 's1', 's2', 's3', 's4', 's5', 's6']:
+            if j in rev:
+                order = ["out", "in"]
+            else:
+                order = ["in", "out"]
+            for way in order:
+                paths.append(way+", "+s)
+                try:    
+                    times[j].append(sol[(f'{way}', j, f'{s}')])
+                except:
+                    times[j].append(-10000)
+
+    return times, paths
+
+
 def nice_print(res, agv_routes: dict, weights: dict, d_max: dict, v_in: dict, v_out: dict, iterators: dict):
     y_iter = iterators["y"]
     z_iter = iterators["z"]

@@ -230,13 +230,8 @@ class OneSameWayOneOpposite(unittest.TestCase):
                                           self.tau_pass, self.tau_headway, self.tau_operation,
                                           self.weights, initial_conditions={})
 
-
-
         self.assertTrue(res.success)
 
-        sol = utils.see_variables(res.x, self.x_iter)
-        print(sol)
-        utils.nice_print(sol, self.agv_routes, self.iterators)
 
 
 class TestZeroDistance(unittest.TestCase):
