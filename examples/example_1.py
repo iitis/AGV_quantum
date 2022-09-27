@@ -51,8 +51,8 @@ res, iterators = solve(M, tracks, tracks_len, agv_routes, d_max, tau_pass, tau_h
 if res.success:
     v_in, v_out = utils.create_v_in_out(tracks_len, agv_routes, tau_operation, iterators, initial_conditions)
     utils.nice_print(res, agv_routes, weights, d_max,  v_in, v_out, iterators)
-    times, paths = utils.get_times(res, agv_routes, iterators, rev = [2,3,5])
-    train_diagram.plot_train_diagram(times, paths)
+    times, paths, complete_path = utils.get_times(res, agv_routes, iterators, rev = [2,3,5])
+    train_diagram.plot_train_diagram(times, paths, complete_path)
     
 else:
     print(res.message)
