@@ -203,7 +203,6 @@ def annealing(
                 )
             elif method == "hyb":
                 sampleset = hybrid_anneal(bqm)
-
     if store:
         if os.path.exists(file_name):
             print("Overwriting results")
@@ -220,19 +219,22 @@ if __name__ == "__main__":
     lhs_eq = [[-1, 5]]
     rhs_eq = [15]
     bnd = [(0, 8), (0, 10)]
-    lp = LinearProg(obj, lhs_ineq, rhs_ineq, lhs_eq, rhs_eq, bnd)
+    lp = LinearProg(
+        c=obj, bounds=bnd, A_ub=lhs_ineq, b_ub=rhs_ineq, A_eq=lhs_eq, b_eq=rhs_eq
+    )
     opt = linprog(
         c=obj,
+        bounds=bnd,
         A_ub=lhs_ineq,
         b_ub=rhs_ineq,
         A_eq=lhs_eq,
         b_eq=rhs_eq,
-        bounds=bnd,
         integrality=[1] * lp.nvars,
     )
     print("Linear solver results")
     print("x:", opt.x, "obj:", opt.fun)
     p = 2
+
     lp._to_bqm(p)
     lp._to_cqm()
 

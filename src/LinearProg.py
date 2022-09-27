@@ -4,7 +4,12 @@ from pyqubo import LogEncInteger
 
 
 class LinearProg:
-    def __init__(self, c, A_ub, b_ub, A_eq, b_eq, bounds):
+    def __init__(self, c, bounds, A_ub=None, b_ub=None, A_eq=None, b_eq=None):
+        assert not (A_ub is None and A_eq is None), "Both can not be None."
+        assert not (A_ub is not None and b_ub is None), "Enter b_ub."
+        assert not (A_ub is None and b_ub is not None), "Enter A_ub."
+        assert not (A_eq is not None and b_eq is None), "Enter b_eq."
+        assert not (A_eq is None and b_eq is not None), "Enter b_eq."
         self.c = c
         self.A_ub = A_ub
         self.b_ub = b_ub
@@ -12,6 +17,7 @@ class LinearProg:
         self.b_eq = b_eq
         self.bounds = bounds
         self.nvars = 0
+        self.num_eq = 0
         self.var_names = []
         self.set_vars()
         self.bqm = None
@@ -41,6 +47,7 @@ class LinearProg:
         ind = 0
         vars = []
         for (lb, ub) in self.bounds:
+            print(lb, ub)
             if lb == 0 and ub == 1:
                 vars.append(Binary(f"x_{ind}"))
             else:
@@ -50,32 +57,37 @@ class LinearProg:
         pyqubo_obj = sum(var * coef for var, coef in zip(vars, c) if coef != 0)
         H += Placeholder("obj") * pyqubo_obj
 
-        for i in range(len(A_eq)):
-            expr = sum(
-                A_eq[i][j] * vars[j] for j in range(self.nvars) if A_eq[i][j] != 0
-            )
-            expr -= b_eq[i]
-            H += Constraint(Placeholder(f"eq_{i}") * expr ** 2, f"eq_{i}")
+        num_eq = 0
+        if A_eq is not None:
+            for i in range(len(A_eq)):
+                expr = sum(
+                    A_eq[i][j] * vars[j] for j in range(self.nvars) if A_eq[i][j] != 0
+                )
+                expr -= b_eq[i]
+                H += Constraint(Placeholder(f"eq_{num_eq}") * expr ** 2, f"eq_{num_eq}")
+                num_eq += 1
+        if A_ub is not None:
+            for i in range(len(A_ub)):
+                expr = sum(
+                    A_ub[i][j] * vars[j] for j in range(self.nvars) if A_ub[i][j] != 0
+                )
+                expr -= b_ub[i]
+                slack = LogEncInteger(
+                    f"eq_{num_eq}",
+                    (0, LinearProg._get_slack_ub(vars, A_ub[i], b_ub[i])),
+                )
+                H += Constraint(
+                    Placeholder(f"eq_{num_eq}") * (expr + slack) ** 2,
+                    f"eq_{num_eq}",
+                )
+                num_eq += 1
 
-        for i in range(len(A_ub)):
-            expr = sum(
-                A_ub[i][j] * vars[j] for j in range(self.nvars) if A_ub[i][j] != 0
-            )
-            expr -= b_ub[i]
-            slack = LogEncInteger(
-                f"eq_{i+len(A_eq)}",
-                (0, LinearProg._get_slack_ub(vars, A_ub[i], b_ub[i])),
-            )
-            H += Constraint(
-                Placeholder(f"eq_{i+len(A_eq)}") * (expr + slack) ** 2,
-                f"eq_{i+len(A_eq)}",
-            )
-
+        self.num_eq = num_eq
         pyqubo_model = H.compile()
         if pdict == None:
-            pdict = {f"eq_{i}": 2 for i in range(len(A_eq) + len(A_ub))}
+            pdict = {f"eq_{i}": 2 for i in range(self.num_eq)}
         elif type(pdict) == int:
-            pdict = {f"eq_{i}": pdict for i in range(len(A_eq) + len(A_ub))}
+            pdict = {f"eq_{i}": pdict for i in range(self.num_eq)}
         pdict["obj"] = 1
         self.bqm = pyqubo_model.to_bqm(feed_dict=pdict)
 
@@ -149,18 +161,22 @@ class LinearProg:
         dimod_obj = sum(var * coef for var, coef in zip(vars, c) if coef != 0)
         cqm.set_objective(dimod_obj)
 
-        for i in range(len(A_eq)):
-            expr = sum(
-                A_eq[i][j] * vars[j] for j in range(self.nvars) if A_eq[i][j] != 0
-            )
-            new_c = expr == b_eq[i]
-            cqm.add_constraint(new_c, label=f"eq_{i}")
-
-        for i in range(len(A_ub)):
-            expr = sum(
-                A_ub[i][j] * vars[j] for j in range(self.nvars) if A_ub[i][j] != 0
-            )
-            new_c = expr <= b_ub[i]
-            cqm.add_constraint(new_c, label=f"eq_{i + len(A_eq)}")
-
+        num_eq = 0
+        if A_eq is not None:
+            for i in range(len(A_eq)):
+                expr = sum(
+                    A_eq[i][j] * vars[j] for j in range(self.nvars) if A_eq[i][j] != 0
+                )
+                new_c = expr == b_eq[i]
+                cqm.add_constraint(new_c, label=f"eq_{num_eq}")
+                num_eq += 1
+        if A_ub is not None:
+            for i in range(len(A_ub)):
+                expr = sum(
+                    A_ub[i][j] * vars[j] for j in range(self.nvars) if A_ub[i][j] != 0
+                )
+                new_c = expr <= b_ub[i]
+                cqm.add_constraint(new_c, label=f"eq_{num_eq}")
+                num_eq += 1
+        self.num_eq = num_eq
         self.cqm = cqm

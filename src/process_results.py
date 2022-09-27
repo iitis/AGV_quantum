@@ -96,12 +96,17 @@ def analyze_constraints(
     """
 
     result = {}
-    for i in range(len(lp.A_eq)):
-        expr = sum(lp.A_eq[i][j] * sample[lp.var_names[j]] for j in range(lp.nvars))
-        result[f"eq_{i}"] = expr == lp.b_eq[i]
+    num_eq = 0
+    if lp.A_eq is not None:
+        for i in range(len(lp.A_eq)):
+            expr = sum(lp.A_eq[i][j] * sample[lp.var_names[j]] for j in range(lp.nvars))
+            result[f"eq_{num_eq}"] = expr == lp.b_eq[i]
+            num_eq += 1
 
-    for i in range(len(lp.A_ub)):
-        expr = sum(lp.A_ub[i][j] * sample[lp.var_names[j]] for j in range(lp.nvars))
-        result[f"eq_{i+len(lp.A_eq)}"] = expr <= lp.b_ub[i]
+    if lp.A_ub is not None:
+        for i in range(len(lp.A_ub)):
+            expr = sum(lp.A_ub[i][j] * sample[lp.var_names[j]] for j in range(lp.nvars))
+            result[f"eq_{num_eq}"] = expr <= lp.b_ub[i]
+            num_eq += 1
 
     return result, sum(x == True for x in result.values())

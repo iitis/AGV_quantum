@@ -13,7 +13,7 @@ class BQMConverter(unittest.TestCase):
         lhs_eq = [[-1, 5]]
         rhs_eq = [15]
         bnd = [(0, 8), (0, 10)]
-        self.lp = LinearProg.LinearProg(obj,lhs_ineq, rhs_ineq,lhs_eq,rhs_eq,bnd)
+        self.lp = LinearProg.LinearProg(c=obj, bounds=bnd, A_ub=lhs_ineq, b_ub=rhs_ineq, A_eq=lhs_eq, b_eq=rhs_eq)
         self.p=2
         self.lp._to_bqm(self.p)
         self.lp._to_cqm()
