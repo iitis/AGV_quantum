@@ -23,6 +23,7 @@ class LinearProg:
         self.bqm = None
         self.interpreter = None
         self.cqm = None
+        self.Q = None
 
     def set_vars(self):
         """Sets the number of variables and variable names"""
@@ -180,3 +181,13 @@ class LinearProg:
                 num_eq += 1
         self.num_eq = num_eq
         self.cqm = cqm
+
+    def _to_Q_matrix(self, pdict):
+        """Makes conversion to Q matrix
+
+        :param pdict: dictionary for penalties
+        :type pdict: dict or int
+        """
+        if self.bqm is None:
+            self.bqm = self._to_bqm(pdict)
+        self.Q = self.bqm.to_numpy_matrix(self.bqm.variables)

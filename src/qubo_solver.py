@@ -222,6 +222,14 @@ if __name__ == "__main__":
     lp = LinearProg(
         c=obj, bounds=bnd, A_ub=lhs_ineq, b_ub=rhs_ineq, A_eq=lhs_eq, b_eq=rhs_eq
     )
+    p = 2  # Penalty coefficient, it can also be a dictionary
+    # Conversions
+    lp._to_bqm(p)
+    lp._to_cqm()
+    lp._to_Q_matrix(p)
+
+    #print(lp.Q)
+
     opt = linprog(
         c=obj,
         bounds=bnd,
@@ -233,10 +241,6 @@ if __name__ == "__main__":
     )
     print("Linear solver results")
     print("x:", opt.x, "obj:", opt.fun)
-    p = 2
-
-    lp._to_bqm(p)
-    lp._to_cqm()
 
     dict_list = annealing(lp, "sim", "test_1", load=False, store=True)
     soln = next((l for l in dict_list if l["feasible"]), None)
