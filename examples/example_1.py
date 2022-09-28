@@ -3,18 +3,11 @@ from src.linear_solver import solve
 from src.linear_solver import make_linear_problem
 from src import train_diagram
 from src.qubo_solver import annealing
-import neal
-import dimod
-from dwave.system import (
-    EmbeddingComposite,
-    DWaveSampler,
-    LeapHybridSampler,
-    LeapHybridCQMSampler,
-)
-from scipy.optimize import linprog
+import numpy as np
 
+from scipy.optimize import linprog
 from src.LinearProg import LinearProg
-from src.process_results import get_results, load_results, store_result
+from src.process_results import get_results, load_results, print_results, store_result
 
 
 M = 50
@@ -83,7 +76,7 @@ else:
 # QUBO
 
 lp = LinearProg(c=obj, bounds=bounds, A_ub=A_ub, b_ub=b_ub, A_eq=A_eq, b_eq=b_eq)
-p = 2  # Penalty coefficient, it can also be a dictionary
+p = 5 # Penalty coefficient, it can also be a dictionary
 
 lp._to_bqm(p)
 lp._to_cqm()
@@ -98,20 +91,28 @@ opt = linprog(
         b_eq=b_eq,
         integrality=[1] * lp.nvars
     )
-print("Linear solver results")
-print("x:", opt.x, "obj:", opt.fun)
-
-dict_list = annealing(lp, "sim", "7_AGV", load=False, store=True)
-soln = next((l for l in dict_list if l["feasible"]), None)
-print("Simulated annealing results")
-print("x:", list(soln["sample"].values()), "obj:", soln["objective"])
-
+print("-----------------------------------------------------")
+print("Size of Q: ", len(lp.Q))
+print("Number of nonzero elements:", np.count_nonzero(lp.Q))
+print("-----------------------------------------------------")
+print("Linear solver results:")
+print("obj:", opt.fun, "x:", opt.x)
+print("-----------------------------------------------------")
 dict_list = annealing(lp, "cqm", "7_AGV", load=True, store=False)
-soln = next((l for l in dict_list if l["feasible"]), None)
-print("CQM results")
-print("x:", list(soln["sample"].values()), "obj:", soln["objective"])
+print("CQM results:")
+print_results(dict_list)
+
+
+"""
+dict_list = annealing(lp, "sim", "7_AGV", load=False, store=False)
+print("Simulated annealing results")
+print_results(dict_list)
+
+dict_list = annealing(lp, "hyb", "7_AGV", load=False, store=True)
+print("QPU results")
+print_results(dict_list)
 
 dict_list = annealing(lp, "real", "7_AGV", load=True, store=False)
-soln = next((l for l in dict_list if l["feasible"]), None)
 print("QPU results")
-print("x:", list(soln["sample"].values()), "obj:", soln["objective"])
+print_results(dict_list)
+"""
