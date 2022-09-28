@@ -180,12 +180,16 @@ def annealing(
         )
     else:
         file_name = get_file_name(input_name, method)
+        print(file_name)
     if load:
         try:
             sampleset = load_results(file_name)
-        except FileNotFoundError:
-            print("File does not exist")
-            exit()
+        except:
+            try:
+                sampleset = load_results("examples/"+file_name)
+            except FileNotFoundError:
+                print("File does not exist")
+                exit()
     else:
         if method == "cqm":
             cqm = lp.cqm
