@@ -63,6 +63,7 @@ def create_graph(tracks: list[tuple], agv_routes: dict[int, tuple]) -> nx.Graph:
         pass_through[station] = temp
 
     nx.set_node_attributes(graph, pass_through, "pass_through")
+
     return graph
 
 
@@ -78,7 +79,7 @@ def create_t_iterator(agv_routes: dict[int, tuple], in_out: str) -> list:
 def create_y_iterator(graph: nx.Graph) -> list[tuple]:
     y_iter = []
     agv_pass_through = nx.get_node_attributes(graph, "pass_through")
-    for station in graph.nodes:
+    for station in sorted(graph.nodes):
         if len(agv_pass_through[station]) >= 2:
             for pair in list(itertools.permutations(agv_pass_through[station], r=2)):
                 y_iter.append((pair[0], pair[1], station))
