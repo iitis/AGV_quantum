@@ -105,9 +105,10 @@ class MultipleStationsNoOpposite(unittest.TestCase):
 
 
     def test_solve(self):
-        res, iterators = linear_solver.solve(self.M, self.tracks, self. tracks_len, self.agv_routes, self.d_max,
+        c, A_ub, b_ub, A_eq, b_eq, bounds, iterators = linear_solver.make_linear_problem(self.M, self.tracks, self. tracks_len, self.agv_routes, self.d_max,
                                           self.tau_pass, self.tau_headway, self.tau_operation,
                                           self.weights, self.initial_conditions)
+        res, iterators = linear_solver.solve(c, A_ub, b_ub, A_eq, b_eq, bounds, iterators)
         self.assertTrue(res.success)
 
 
@@ -226,9 +227,10 @@ class OneSameWayOneOpposite(unittest.TestCase):
 
 
     def test_solve(self):
-        res, iterators = linear_solver.solve(self.M, self.tracks, self.tracks_len, self.agv_routes, self.d_max,
+        c, A_ub, b_ub, A_eq, b_eq, bounds, iterators = linear_solver.make_linear_problem(self.M, self.tracks, self. tracks_len, self.agv_routes, self.d_max,
                                           self.tau_pass, self.tau_headway, self.tau_operation,
                                           self.weights, initial_conditions={})
+        res, iterators = linear_solver.solve(c, A_ub, b_ub, A_eq, b_eq, bounds, iterators)
 
         self.assertTrue(res.success)
 

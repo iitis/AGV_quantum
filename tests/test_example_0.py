@@ -1,4 +1,5 @@
 from src import utils
+from src.linear_solver import make_linear_problem
 from src.linear_solver import solve
 
 
@@ -26,8 +27,10 @@ def test_one_station():
     initial_conditions = {}
     tracks_len = {}
 
-    res, iterators = solve(M, tracks, {}, agv_routes, d_max, tau_pass, tau_headway, tau_operation,
+    c, A_ub, b_ub, A_eq, b_eq, bounds, iterators = make_linear_problem(M, tracks, {}, agv_routes, d_max, tau_pass, tau_headway, tau_operation,
                            weights, initial_conditions)
+
+    res, iterators = solve(c, A_ub, b_ub, A_eq, b_eq, bounds, iterators)
     assert res.success
 
 if __name__ == "__main__":

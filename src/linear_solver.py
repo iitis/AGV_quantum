@@ -1,3 +1,4 @@
+from curses import A_LEFT
 from scipy.optimize import linprog
 import itertools
 import numpy as np
@@ -218,7 +219,7 @@ def create_bounds(v_in, v_out, d_max, iterators):
     return bounds
 
 
-def solve(M: int, tracks: list, tracks_len: dict, agv_routes: dict, d_max: dict,
+def make_linear_problem(M: int, tracks: list, tracks_len: dict, agv_routes: dict, d_max: dict,
           tau_pass: dict, tau_headway: dict, tau_operation: dict, weights: dict, initial_conditions: Optional[dict]):
 
     J = utils.create_agv_list(agv_routes)
@@ -265,8 +266,13 @@ def solve(M: int, tracks: list, tracks_len: dict, agv_routes: dict, d_max: dict,
     s_final = {j: agv_routes[j][-1] for j in J}
     obj = {("out", j, s_final[j]): weights[j]/d_max[j] for j in J}
     c = [obj[v] if v in obj.keys() else 0 for v in iterators["x"]]
-    res = linprog(c, A_ub=A_ub, b_ub=b_ub, A_eq=A_eq, b_eq=b_eq, bounds = bounds, integrality=[1 for _ in iterators["x"]])
-    return res, iterators
+    return c, A_ub, b_ub, A_eq, b_eq, bounds, iterators
+
+
+
+def solve(c, A_ub, b_ub, A_eq, b_eq, bounds, iterators):
+        res = linprog(c, A_ub=A_ub, b_ub=b_ub, A_eq=A_eq, b_eq=b_eq, bounds = bounds, integrality=[1 for _ in iterators["x"]])
+        return res, iterators
 
 
 

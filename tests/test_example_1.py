@@ -1,5 +1,6 @@
 from src import utils
 from src.linear_solver import solve
+from src.linear_solver import make_linear_problem
 
 
 def test_line_fragemnt():
@@ -24,8 +25,10 @@ def test_line_fragemnt():
     tau_headway = {(0, 1, "s0", "s1"): 2, (1, 0, "s0", "s1"): 2}
     tau_operation = {(agv, station): 1 for agv in J for station in stations}
 
-    res, iterators = solve(M, tracks, tracks_len, agv_routes, d_max, tau_pass, tau_headway, tau_operation,
+    c, A_ub, b_ub, A_eq, b_eq, bounds, iterators = make_linear_problem(M, tracks, tracks_len, agv_routes, d_max, tau_pass, tau_headway, tau_operation,
                            weights, initial_conditions)
+
+    res, iterators = solve(c, A_ub, b_ub, A_eq, b_eq, bounds, iterators)
 
     if res.success:
         sol = utils.see_variables(res.x, iterators["x"])
