@@ -48,7 +48,6 @@ class LinearProg:
         ind = 0
         vars = []
         for (lb, ub) in self.bounds:
-            print(lb, ub)
             if lb == 0 and ub == 1:
                 vars.append(Binary(f"x_{ind}"))
             else:
