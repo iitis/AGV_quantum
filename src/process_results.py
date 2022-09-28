@@ -97,16 +97,25 @@ def analyze_constraints(
 
     result = {}
     num_eq = 0
+
     if lp.A_eq is not None:
         for i in range(len(lp.A_eq)):
             expr = sum(lp.A_eq[i][j] * sample[lp.var_names[j]] for j in range(lp.nvars))
             result[f"eq_{num_eq}"] = expr == lp.b_eq[i]
             num_eq += 1
-
     if lp.A_ub is not None:
         for i in range(len(lp.A_ub)):
             expr = sum(lp.A_ub[i][j] * sample[lp.var_names[j]] for j in range(lp.nvars))
             result[f"eq_{num_eq}"] = expr <= lp.b_ub[i]
             num_eq += 1
 
-    return result, sum(x == True for x in result.values())
+    return result, sum(x == False for x in result.values())
+
+def print_results(dict_list):
+    soln = next((l for l in dict_list if l["feasible"]), None)
+    if soln is not None:
+        print("obj:", soln["objective"], "x:", list(soln["sample"].values()))
+    else:
+        print("No feasible solution")
+        for d in dict_list[:10]:
+            print("Energy:", d["energy"], "Objective:", d["objective"], "Feasible", d["feasible"], "Broken constraints:", d["feas_constraints"][1])

@@ -17,7 +17,7 @@ from src.process_results import get_results, load_results, store_result
 def sim_anneal(
     bqm: dimod.BinaryQuadraticModel,
     beta_range=(5, 100),
-    num_sweeps=4000,
+    num_sweeps=100,
     num_reads=1000,
 ) -> dimod.sampleset.SampleSet:
     """Runs simulated annealing experiment
@@ -94,7 +94,7 @@ def hybrid_anneal(bqm: dimod.BinaryQuadraticModel) -> dimod.sampleset.SampleSet:
     :rtype: dimod.SampleSet
     """
     sampler = LeapHybridSampler()
-    return sampler.sample_qubo(bqm)
+    return sampler.sample(bqm)
 
 
 def get_file_name(
@@ -193,7 +193,7 @@ def annealing(
         else:
             bqm = lp.bqm
             if method == "sim":
-                sampleset = sim_anneal(bqm, num_sweeps=10000, num_reads=1000)
+                sampleset = sim_anneal(bqm, num_sweeps=1000, num_reads=1000)
             elif method == "real":
                 sampleset = real_anneal(
                     bqm,
