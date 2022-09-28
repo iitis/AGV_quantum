@@ -4,7 +4,7 @@ import itertools
 import numpy as np
 from src import utils
 from typing import Optional
-
+import time
 
 def create_precedence_matrix_y(iterators: dict):
     y_iter = iterators["y"]
@@ -271,7 +271,11 @@ def make_linear_problem(M: int, tracks: list, tracks_len: dict, agv_routes: dict
 
 
 def solve(c, A_ub, b_ub, A_eq, b_eq, bounds, iterators):
+        start = time.time()
         res = linprog(c, A_ub=A_ub, b_ub=b_ub, A_eq=A_eq, b_eq=b_eq, bounds = bounds, integrality=[1 for _ in iterators["x"]])
+        end = time.time()
+        elapsed_time = end-start
+        print('Execution time of linear solver:', elapsed_time, 'seconds')
         return res, iterators
 
 
