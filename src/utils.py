@@ -155,6 +155,7 @@ def nice_print(res, agv_routes: dict, weights: dict, d_max: dict, v_in: dict, v_
 
     sol = see_variables(res.x, x_iter)
     J = create_agv_list(agv_routes)
+    s_final = {j: agv_routes[j][-1] for j in J}
     L = {}
     for j in J:
         for x in sol.keys():
@@ -164,7 +165,10 @@ def nice_print(res, agv_routes: dict, weights: dict, d_max: dict, v_in: dict, v_
                     if x2[0] == "out" and x2[1] == j and x2[2] == x[2]:
                         L[x2] = sol[x2]
                         continue
-        print(f"{j} :", L)
+        v_out_j = v_out[j, s_final[j]]
+        diff = L[('out', j, s_final[j])] - v_out[j, s_final[j]]
+        print(f"{j} :", L, f"; v_out({j}, {s_final[j]}): {v_out_j} ; "
+                           f"difference: {diff} ; contribution: {weights[j] * (diff/d_max[j])}")
         L.clear()
 
     for y in y_iter:
@@ -172,7 +176,7 @@ def nice_print(res, agv_routes: dict, weights: dict, d_max: dict, v_in: dict, v_
             if y == x:
                 L[y] = sol[x]
                 continue
-    print("y : ", L)
+    print("y :", L)
     L.clear()
 
     for z in z_iter:
@@ -180,12 +184,12 @@ def nice_print(res, agv_routes: dict, weights: dict, d_max: dict, v_in: dict, v_
             if z == x:
                 L[z] = sol[x]
                 continue
-    print("z : ", L)
+    print("z :", L)
     L.clear()
 
-    print("weights : ", weights)
-    print("d_max : ", d_max)
-    print("objective function : ", res.fun)
+    print("weights :", weights)
+    print("d_max :", d_max)
+    print("objective function :", res.fun)
 
 
 def create_v_in_out(tracks_len: dict, agv_routes: dict, tau_operation: dict, iterators: dict, initial_conditions: dict):
