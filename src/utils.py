@@ -157,6 +157,7 @@ def nice_print(res, agv_routes: dict, weights: dict, d_max: dict, v_in: dict, v_
     J = create_agv_list(agv_routes)
     s_final = {j: agv_routes[j][-1] for j in J}
     L = {}
+    contributions_sum = 0
     for j in J:
         for x in sol.keys():
             if x[0] == "in" and x[1] == j:
@@ -167,8 +168,10 @@ def nice_print(res, agv_routes: dict, weights: dict, d_max: dict, v_in: dict, v_
                         continue
         v_out_j = v_out[j, s_final[j]]
         diff = L[('out', j, s_final[j])] - v_out[j, s_final[j]]
+        contribution = weights[j] * (diff/d_max[j])
+        contributions_sum += contribution
         print(f"{j} :", L, f"; v_out({j}, {s_final[j]}): {v_out_j} ; "
-                           f"difference: {diff} ; contribution: {weights[j] * (diff/d_max[j])}")
+                           f"difference: {diff} ; contribution: {contribution}")
         L.clear()
 
     for y in y_iter:
@@ -190,6 +193,7 @@ def nice_print(res, agv_routes: dict, weights: dict, d_max: dict, v_in: dict, v_
     print("weights :", weights)
     print("d_max :", d_max)
     print("objective function :", res.fun)
+    print("sum of contributions:", contributions_sum)
 
 
 def create_v_in_out(tracks_len: dict, agv_routes: dict, tau_operation: dict, iterators: dict, initial_conditions: dict):
