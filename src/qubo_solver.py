@@ -155,6 +155,7 @@ def annealing(
     method: str,
     input_name: str,
     real_anneal_var_dict=None,
+    sim_anneal_var_dict=None,
     load=False,
     store=True,
 ) -> list[dict]:
@@ -201,8 +202,14 @@ def annealing(
         else:
             bqm = lp.bqm
             if method == "sim":
+                if sim_anneal_var_dict is not None:
+                    num_sweeps = sim_anneal_var_dict["num_sweeps"]
+                    num_reads = sim_anneal_var_dict["num_reads"]
+                else:
+                    num_sweeps = 1000
+                    num_reads = 1000
                 sampleset = sim_anneal(
-                    bqm, beta_range=(5, 100), num_sweeps=1000, num_reads=1000
+                    bqm, beta_range=(5, 100), num_sweeps=num_sweeps, num_reads=num_reads
                 )
             elif method == "real":
                 sampleset = real_anneal(

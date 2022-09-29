@@ -101,7 +101,9 @@ print("-----------------------------------------------------")
 dict_list = annealing(lp, "cqm", "7_AGV", load=True, store=False)
 print("CQM results:")
 print_results(dict_list)
-dict_list = annealing(lp, "sim", "7_AGV", load=False, store=False)
+
+sdict={"num_sweeps":10, "num_reads":1000}
+dict_list = annealing(lp, "sim", "7_AGV", sim_anneal_var_dict=sdict, load=False, store=False)
 print("Simulated annealing results")
 print_results(dict_list)
 

@@ -86,7 +86,9 @@ print("Number of nonzero elements:", np.count_nonzero(lp.Q))
 print("-----------------------------------------------------")
 print("Linear solver results:")
 print("obj:", opt.fun, "x:", opt.x)
-dict_list = annealing(lp, "sim", "2_AGV", load=False, store=False)
+
+sdict={"num_sweeps":10, "num_reads":1000}
+dict_list = annealing(lp, "sim", "2_AGV", sim_anneal_var_dict=sdict, load=False, store=False)
 print("Simulated annealing results")
 print_results(dict_list)
 
