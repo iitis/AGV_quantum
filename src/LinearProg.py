@@ -86,7 +86,7 @@ class LinearProg:
         pyqubo_model = H.compile()
         if pdict == None:
             pdict = {f"eq_{i}": 2 for i in range(self.num_eq)}
-        elif type(pdict) == int:
+        elif type(pdict) == int or type(pdict) == float:
             pdict = {f"eq_{i}": pdict for i in range(self.num_eq)}
         pdict["obj"] = 1
         self.bqm = pyqubo_model.to_bqm(feed_dict=pdict)

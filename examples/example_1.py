@@ -76,11 +76,12 @@ else:
 # QUBO
 
 lp = LinearProg(c=obj, bounds=bounds, A_ub=A_ub, b_ub=b_ub, A_eq=A_eq, b_eq=b_eq)
-p = 5 # Penalty coefficient, it can also be a dictionary
+p = 0.05 # Penalty coefficient, it can also be a dictionary
 
 lp._to_bqm(p)
 lp._to_cqm()
 lp._to_Q_matrix(p)
+
 
 opt = linprog(
         c=obj,
@@ -101,13 +102,11 @@ print("-----------------------------------------------------")
 dict_list = annealing(lp, "cqm", "7_AGV", load=True, store=False)
 print("CQM results:")
 print_results(dict_list)
-
-
-"""
 dict_list = annealing(lp, "sim", "7_AGV", load=False, store=False)
 print("Simulated annealing results")
 print_results(dict_list)
 
+"""
 dict_list = annealing(lp, "hyb", "7_AGV", load=False, store=True)
 print("QPU results")
 print_results(dict_list)
