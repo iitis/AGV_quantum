@@ -27,7 +27,9 @@ tracks_len = {("s0", "s1"): 6, ("s1", "s0"): 6,
               ("s5", "s6"): 4, ("s6", "s5"): 4}
 
 agv_routes = {0: ("s0", "s1", "s2", "s3"),
-              1: ("s0", "s1", "s2")}
+              1: ("s0", "s1", "s2"),
+              2: ("s4", "s3", "s2", "s1"),
+              3: ("s4", "s3", "s2", "s1", "s0")}
 
 stations = utils.create_stations_list(tracks)
 J = utils.create_agv_list(agv_routes)
@@ -36,14 +38,15 @@ all_same_way = utils.create_same_way_dict(agv_routes)
 
 graph = utils.create_graph(tracks, agv_routes)
 
-d_max = {i: 10 for i in J}
+d_max = {i: 20 for i in J}
 tau_pass = {(j, s, sp): tracks_len[(s, sp)] for j in J for s, sp in agv_routes_as_edges[j]}
 tau_headway = {(j, jp, s, sp): 2 if (s, sp) != ("s2", "s3") and (s, sp) != ("s3", "s2") else 0
                for (j, jp) in all_same_way.keys() for (s, sp) in all_same_way[(j, jp)]}
 
 tau_operation = {(agv, station): 2 for agv in J for station in stations}
 
-initial_conditions = {("in", 0, "s0"): 0, ("in", 1, "s0"): 0}
+initial_conditions = {("in", 0, "s0"): 0, ("in", 1, "s0"): 0, ("in", 2, "s4"): 8, ("in", 3, "s4"): 9,
+                     }
 
 weights = {j: 1 for j in J}
 
@@ -67,7 +70,7 @@ else:
 # QUBO
 
 lp = LinearProg(c=obj, bounds=bounds, A_ub=A_ub, b_ub=b_ub, A_eq=A_eq, b_eq=b_eq)
-p = 0.05 # TODO 1/p???? or it is multipled by some constant size dependent?
+p = 2. # TODO 1/p???? or it is multipled by some constant size dependent?
 
 lp._to_bqm(p)
 lp._to_cqm()
@@ -88,16 +91,16 @@ print("Number of nonzero elements:", np.count_nonzero(lp.Q))
 print("-----------------------------------------------------")
 print("Linear solver results:")
 print("obj:", opt.fun, "x:", opt.x)
-dict_list = annealing(lp, "sim", "2_AGV", load=False, store=False)
+dict_list = annealing(lp, "sim", "4_AGV", load=False, store=False)
 print("Simulated annealing results")
 print_results(dict_list)
 
 """
-dict_list = annealing(lp, "hyb", "2_AGV", load=False, store=True)
+dict_list = annealing(lp, "hyb", "4_AGV", load=False, store=True)
 print("QPU results")
 print_results(dict_list)
 
-dict_list = annealing(lp, "real", "2_AGV", load=True, store=False)
+dict_list = annealing(lp, "real", "4_AGV", load=True, store=False)
 print("QPU results")
 print_results(dict_list)
 """
