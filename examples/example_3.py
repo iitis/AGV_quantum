@@ -65,7 +65,7 @@ else:
 # QUBO
 
 lp = LinearProg(c=obj, bounds=bounds, A_ub=A_ub, b_ub=b_ub, A_eq=A_eq, b_eq=b_eq)
-p = 0.05 # TODO 1/p???? or it is multipled by some constant size dependent?
+p = 0.01
 
 lp._to_bqm(p)
 lp._to_cqm()
@@ -87,8 +87,8 @@ print("-----------------------------------------------------")
 print("Linear solver results:")
 print("obj:", opt.fun, "x:", opt.x)
 
-sdict={"num_sweeps":10, "num_reads":1000}
-dict_list = annealing(lp, "sim", "2_AGV", sim_anneal_var_dict=sdict, load=False, store=False)
+sdict={"num_sweeps":100, "num_reads":1000}
+dict_list = annealing(lp, "sim", "2_AGV", sim_anneal_var_dict=sdict, load=True, store=False)
 print("Simulated annealing results")
 print_results(dict_list)
 

@@ -117,18 +117,9 @@ def print_results(dict_list):
     soln = next((l for l in dict_list if l["feasible"]), None)
     if soln is not None:
         print("obj:", soln["objective"], "x:", list(soln["sample"].values()))
-        for d in dict_list:
-            if d["feasible"]:
-                print(
-                    "Energy:",
-                    d["energy"],
-                    "Objective:",
-                    d["objective"],
-                    "Feasible",
-                    d["feasible"],
-                    "Broken constraints:",
-                    d["feas_constraints"][1],
-                )
+        print("First 10 solutions")
+        for d in dict_list[:10]:
+            print(d)
     else:
         print("No feasible solution")
         for d in dict_list[:10]:
