@@ -197,7 +197,7 @@ def annealing(
         else:
             bqm = lp.bqm
             if method == "sim":
-                sampleset = sim_anneal(bqm, num_sweeps=1000, num_reads=1000)
+                sampleset = sim_anneal(bqm, num_sweeps=50_000, num_reads=50_000)
             elif method == "real":
                 sampleset = real_anneal(
                     bqm,

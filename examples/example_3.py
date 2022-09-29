@@ -59,10 +59,7 @@ path_locs = [0,2,8,10,16, 18,18,20,25, 27, 31, 33, 37, 39]
 # linear solver
 if res.success:
     v_in, v_out = utils.create_v_in_out(tracks_len, agv_routes, tau_operation, iterators, initial_conditions)
-    utils.nice_print(res, agv_routes, weights, d_max,  v_in, v_out, iterators)
-    times, paths = utils.get_data4plot(res, agv_routes, iterators, complete_path, complete_path_rev, rev = [2,3,5])
-    train_diagram.plot_train_diagram(times, paths, path_locs)
-    
+    utils.nice_print(res, agv_routes, weights, d_max,  v_in, v_out, iterators)  
 else:
     print(res.message)
 
@@ -70,7 +67,7 @@ else:
 # QUBO
 
 lp = LinearProg(c=obj, bounds=bounds, A_ub=A_ub, b_ub=b_ub, A_eq=A_eq, b_eq=b_eq)
-p = 0.1 # Penalty coefficient, it can also be a dictionary
+p = 0.1 # TODO 1/p???? Penalty coefficient, it can also be a dictionary
 
 lp._to_bqm(p)
 lp._to_cqm()
