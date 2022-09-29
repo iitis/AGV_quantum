@@ -11,14 +11,14 @@ from dwave.system import (
 from scipy.optimize import linprog
 
 from src.LinearProg import LinearProg
-from src.process_results import get_results, load_results, store_result
+from src.process_results import get_results, load_results, print_results, store_result
 
 
 def sim_anneal(
     bqm: dimod.BinaryQuadraticModel,
-    beta_range=(5, 100),
-    num_sweeps=100,
-    num_reads=1000,
+    beta_range,
+    num_sweeps,
+    num_reads,
 ) -> dimod.sampleset.SampleSet:
     """Runs simulated annealing experiment
 
@@ -35,7 +35,11 @@ def sim_anneal(
     """
     s = neal.SimulatedAnnealingSampler()
     sampleset = s.sample(
-        bqm, beta_range, num_sweeps, num_reads, beta_schedule_type="geometric"
+        bqm,
+        beta_range=beta_range,
+        num_sweeps=num_sweeps,
+        num_reads=num_reads,
+        beta_schedule_type="geometric",
     )
     return sampleset
 
@@ -186,7 +190,7 @@ def annealing(
             sampleset = load_results(file_name)
         except:
             try:
-                sampleset = load_results("examples/"+file_name)
+                sampleset = load_results("examples/" + file_name)
             except FileNotFoundError:
                 print("File does not exist")
                 exit()
@@ -197,7 +201,9 @@ def annealing(
         else:
             bqm = lp.bqm
             if method == "sim":
-                sampleset = sim_anneal(bqm, num_sweeps=3_000, num_reads=3_000)
+                sampleset = sim_anneal(
+                    bqm, beta_range=(5, 100), num_sweeps=1000, num_reads=1000
+                )
             elif method == "real":
                 sampleset = real_anneal(
                     bqm,
@@ -226,13 +232,13 @@ if __name__ == "__main__":
     lp = LinearProg(
         c=obj, bounds=bnd, A_ub=lhs_ineq, b_ub=rhs_ineq, A_eq=lhs_eq, b_eq=rhs_eq
     )
-    p = 0.2  # Penalty coefficient, it can also be a dictionary
+    p = 5  # Penalty coefficient, it can also be a dictionary
     # Conversions
     lp._to_bqm(p)
     lp._to_cqm()
     lp._to_Q_matrix(p)
 
-    #print(lp.Q)
+    # print(lp.Q)
 
     opt = linprog(
         c=obj,
@@ -249,14 +255,4 @@ if __name__ == "__main__":
     dict_list = annealing(lp, "sim", "test_1", load=False, store=True)
     soln = next((l for l in dict_list if l["feasible"]), None)
     print("Simulated annealing results")
-    print("x:", list(soln["sample"].values()), "obj:", soln["objective"])
-
-    dict_list = annealing(lp, "cqm", "test_1", load=True, store=False)
-    soln = next((l for l in dict_list if l["feasible"]), None)
-    print("CQM results")
-    print("x:", list(soln["sample"].values()), "obj:", soln["objective"])
-
-    dict_list = annealing(lp, "real", "test_1", load=True, store=False)
-    soln = next((l for l in dict_list if l["feasible"]), None)
-    print("QPU results")
-    print("x:", list(soln["sample"].values()), "obj:", soln["objective"])
+    print_results(dict_list)

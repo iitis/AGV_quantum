@@ -46,7 +46,7 @@ def get_results(sampleset: dimod.SampleSet, prob: LinearProg) -> list[dict[str, 
         rdict["sample"] = sample
         rdict["feas_constraints"] = analyze_constraints(prob, sample)
         dict_list.append(rdict)
-    return sorted(dict_list, key=lambda d: d["energy"])
+    return sorted(dict_list, key=lambda d: d["objective"])
 
 
 def store_result(input_name: str, file_name: str, sampleset: dimod.SampleSet):
@@ -103,19 +103,42 @@ def analyze_constraints(
             expr = sum(lp.A_eq[i][j] * sample[lp.var_names[j]] for j in range(lp.nvars))
             result[f"eq_{num_eq}"] = expr == lp.b_eq[i]
             num_eq += 1
+    """
     if lp.A_ub is not None:
         for i in range(len(lp.A_ub)):
             expr = sum(lp.A_ub[i][j] * sample[lp.var_names[j]] for j in range(lp.nvars))
             result[f"eq_{num_eq}"] = expr <= lp.b_ub[i]
             num_eq += 1
-
+    """
     return result, sum(x == False for x in result.values())
+
 
 def print_results(dict_list):
     soln = next((l for l in dict_list if l["feasible"]), None)
     if soln is not None:
         print("obj:", soln["objective"], "x:", list(soln["sample"].values()))
+        for d in dict_list:
+            if d["feasible"]:
+                print(
+                    "Energy:",
+                    d["energy"],
+                    "Objective:",
+                    d["objective"],
+                    "Feasible",
+                    d["feasible"],
+                    "Broken constraints:",
+                    d["feas_constraints"][1],
+                )
     else:
         print("No feasible solution")
         for d in dict_list[:10]:
-            print("Energy:", d["energy"], "Objective:", d["objective"], "Feasible", d["feasible"], "Broken constraints:", d["feas_constraints"][1])
+            print(
+                "Energy:",
+                d["energy"],
+                "Objective:",
+                d["objective"],
+                "Feasible",
+                d["feasible"],
+                "Broken constraints:",
+                d["feas_constraints"][1],
+            )

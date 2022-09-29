@@ -73,13 +73,15 @@ class LinearProg:
                 )
                 expr -= b_ub[i]
                 slack = LogEncInteger(
-                    f"eq_{num_eq}",
+                    f"eq_{num_eq}_slack",
                     (0, LinearProg._get_slack_ub(vars, A_ub[i], b_ub[i])),
                 )
+
                 H += Constraint(
                     Placeholder(f"eq_{num_eq}") * (expr + slack) ** 2,
                     f"eq_{num_eq}",
                 )
+
                 num_eq += 1
 
         self.num_eq = num_eq
