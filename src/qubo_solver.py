@@ -197,7 +197,7 @@ def annealing(
         else:
             bqm = lp.bqm
             if method == "sim":
-                sampleset = sim_anneal(bqm, num_sweeps=50_000, num_reads=50_000)
+                sampleset = sim_anneal(bqm, num_sweeps=5_000, num_reads=5_000)
             elif method == "real":
                 sampleset = real_anneal(
                     bqm,
@@ -226,7 +226,7 @@ if __name__ == "__main__":
     lp = LinearProg(
         c=obj, bounds=bnd, A_ub=lhs_ineq, b_ub=rhs_ineq, A_eq=lhs_eq, b_eq=rhs_eq
     )
-    p = 2  # Penalty coefficient, it can also be a dictionary
+    p = 0.2  # Penalty coefficient, it can also be a dictionary
     # Conversions
     lp._to_bqm(p)
     lp._to_cqm()

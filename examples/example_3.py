@@ -67,7 +67,7 @@ else:
 # QUBO
 
 lp = LinearProg(c=obj, bounds=bounds, A_ub=A_ub, b_ub=b_ub, A_eq=A_eq, b_eq=b_eq)
-p = 0.1 # TODO 1/p???? Penalty coefficient, it can also be a dictionary
+p = 0.05 # TODO 1/p???? or it is multipled by some constant size dependent?
 
 lp._to_bqm(p)
 lp._to_cqm()
