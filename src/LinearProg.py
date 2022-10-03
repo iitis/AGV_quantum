@@ -1,6 +1,8 @@
 import dimod
 from cpp_pyqubo import Binary, Constraint, Placeholder
 from pyqubo import LogEncInteger
+from pyqubo import Binary
+import numpy as np
 
 
 class LinearProg:
@@ -30,7 +32,7 @@ class LinearProg:
         self.nvars = len(self.bounds)
         self.var_names = [f"x_{i}" for i in range(self.nvars)]
 
-    def _to_bqm(self, pdict=None):
+    def _to_bqm_and_qubo(self, pdict=None):
         """Converts linear program into binary quadratic model
 
         :param pdict: Dictionary of penalties
@@ -91,6 +93,7 @@ class LinearProg:
         elif type(pdict) == int or type(pdict) == float:
             pdict = {f"eq_{i}": pdict for i in range(self.num_eq)}
         pdict["obj"] = 1
+        self.qubo = pyqubo_model.to_qubo(feed_dict=pdict)
         self.bqm = pyqubo_model.to_bqm(feed_dict=pdict)
 
         def interpreter(sampleset: dimod.SampleSet):
@@ -183,12 +186,36 @@ class LinearProg:
         self.num_eq = num_eq
         self.cqm = cqm
 
-    def _to_Q_matrix(self, pdict):
-        """Makes conversion to Q matrix
+    def _count_qubits(self):
+        vars = self.bqm.variables
+        return len(vars) 
 
-        :param pdict: dictionary for penalties
-        :type pdict: dict or int
-        """
-        if self.bqm is None:
-            self.bqm = self._to_bqm(pdict)
-        self.Q = self.bqm.to_numpy_matrix(self.bqm.variables)
+
+    def _count_quadratic_couplings(self):
+        vars = self.bqm.variables
+        s = np.size(vars)
+        count = 0
+        for i in range(s):
+            for j in range(i+1, s):
+                try:
+                    self.bqm.quadratic[(vars[i], vars[j])]
+                    count = count + 1
+                except:
+                   0
+        return count            
+
+
+    def _count_linear_fields(self):
+        vars = self.bqm.variables
+        s = np.size(vars)
+        count = 0
+        for i in range(s):
+            try:
+                self.bqm.linear[vars[i]]
+                count = count + 1
+            except:
+                0    
+        return count                 
+
+    
+

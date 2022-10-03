@@ -65,11 +65,10 @@ else:
 # QUBO
 
 lp = LinearProg(c=obj, bounds=bounds, A_ub=A_ub, b_ub=b_ub, A_eq=A_eq, b_eq=b_eq)
-p = 3.
+p = 2.
 
-lp._to_bqm(p)
-lp._to_cqm()
-lp._to_Q_matrix(p)
+lp._to_bqm_and_qubo(p)
+#lp._to_cqm()
 
 
 opt = linprog(
@@ -82,8 +81,9 @@ opt = linprog(
         integrality=[1] * lp.nvars
     )
 print("-----------------------------------------------------")
-print("Size of Q: ", len(lp.Q))
-print("Number of nonzero elements:", np.count_nonzero(lp.Q))
+print("Number of q-bits", lp._count_qubits())
+print("Number of couplings Js:", lp._count_quadratic_couplings())
+print("Number of local filds hs:", lp._count_linear_fields())
 print("-----------------------------------------------------")
 print("Linear solver results:")
 print("obj:", opt.fun, "x:", opt.x)
