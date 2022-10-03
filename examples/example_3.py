@@ -71,6 +71,10 @@ lp._to_bqm_and_qubo(p)
 #lp._to_cqm()
 
 
+# this is QUBO
+lp.qubo
+
+
 opt = linprog(
         c=obj,
         bounds=bounds,
