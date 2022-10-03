@@ -1,13 +1,13 @@
 from src import utils
 from src.linear_solver import solve
 from src.linear_solver import make_linear_problem
-from src import train_diagram
 from src.qubo_solver import annealing
 import numpy as np
+import dimod
 
 from scipy.optimize import linprog
 from src.LinearProg import LinearProg
-from src.process_results import get_results, load_results, print_results, store_result
+from src.process_results import print_results
 
 
 M = 20
@@ -65,11 +65,12 @@ else:
 # QUBO
 
 lp = LinearProg(c=obj, bounds=bounds, A_ub=A_ub, b_ub=b_ub, A_eq=A_eq, b_eq=b_eq)
-p = 0.1
+p = 3.
 
 lp._to_bqm(p)
 lp._to_cqm()
 lp._to_Q_matrix(p)
+
 
 opt = linprog(
         c=obj,
@@ -87,8 +88,8 @@ print("-----------------------------------------------------")
 print("Linear solver results:")
 print("obj:", opt.fun, "x:", opt.x)
 
-sdict={"num_sweeps":10000, "num_reads":1000}
-dict_list = annealing(lp, "sim", "2_AGV", sim_anneal_var_dict=sdict, load=True, store=True)
+sdict={"num_sweeps":10_000, "num_reads":10_000}
+dict_list = annealing(lp, "sim", "2_AGV", sim_anneal_var_dict=sdict, load=False, store=True)
 print("Simulated annealing results")
 print_results(dict_list)
 

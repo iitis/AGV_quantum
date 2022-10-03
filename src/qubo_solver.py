@@ -239,13 +239,11 @@ if __name__ == "__main__":
     lp = LinearProg(
         c=obj, bounds=bnd, A_ub=lhs_ineq, b_ub=rhs_ineq, A_eq=lhs_eq, b_eq=rhs_eq
     )
-    p = 5  # Penalty coefficient, it can also be a dictionary
+    p = 2  # Penalty coefficient, it can also be a dictionary
     # Conversions
     lp._to_bqm(p)
     lp._to_cqm()
     lp._to_Q_matrix(p)
-
-    # print(lp.Q)
 
     opt = linprog(
         c=obj,
