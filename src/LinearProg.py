@@ -32,7 +32,7 @@ class LinearProg:
         self.nvars = len(self.bounds)
         self.var_names = [f"x_{i}" for i in range(self.nvars)]
 
-    def _to_bqm_and_qubo(self, pdict=None):
+    def _to_bqm_qubo_ising(self, pdict=None):
         """Converts linear program into binary quadratic model
 
         :param pdict: Dictionary of penalties
@@ -94,6 +94,7 @@ class LinearProg:
             pdict = {f"eq_{i}": pdict for i in range(self.num_eq)}
         pdict["obj"] = 1
         self.qubo = pyqubo_model.to_qubo(feed_dict=pdict)
+        self.ising = pyqubo_model.to_ising(feed_dict=pdict)
         self.bqm = pyqubo_model.to_bqm(feed_dict=pdict)
 
         def interpreter(sampleset: dimod.SampleSet):
@@ -192,30 +193,25 @@ class LinearProg:
 
 
     def _count_quadratic_couplings(self):
-        vars = self.bqm.variables
-        s = np.size(vars)
+        """
+        returns number of copulings - Js
+        """
         count = 0
-        for i in range(s):
-            for j in range(i+1, s):
-                try:
-                    self.bqm.quadratic[(vars[i], vars[j])]
-                    count = count + 1
-                except:
-                   0
-        return count            
+        for J in self.bqm.quadratic.values():
+            if J != 0:
+                count = count + 1
+        return count
 
 
     def _count_linear_fields(self):
-        vars = self.bqm.variables
-        s = np.size(vars)
+        """
+        return number of local fields hs
+        """ 
         count = 0
-        for i in range(s):
-            try:
-                self.bqm.linear[vars[i]]
+        for h in self.bqm.linear.values():
+            if h != 0:
                 count = count + 1
-            except:
-                0    
-        return count                 
+        return count             
 
     
 

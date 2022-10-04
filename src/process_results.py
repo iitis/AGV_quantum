@@ -94,7 +94,6 @@ def analyze_constraints(
     the number of satisfied constraints
     :rtype: tuple[dict[str, bool], int]
     """
-
     result = {}
     num_eq = 0
 
