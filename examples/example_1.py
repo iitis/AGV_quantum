@@ -76,7 +76,7 @@ else:
 # QUBO
 
 lp = LinearProg(c=obj, bounds=bounds, A_ub=A_ub, b_ub=b_ub, A_eq=A_eq, b_eq=b_eq)
-p = 2.85
+p = 2.5
 lp._to_bqm_qubo_ising(p)
 lp._to_cqm()
 
@@ -105,7 +105,7 @@ print_results(dict_list)
 simulation = True
 
 if simulation:
-    sdict={"num_sweeps":1000, "num_reads":1000}
+    sdict={"num_sweeps":10_000, "num_reads":1_000, "beta_range":(0.0001, 100)}
     dict_list = annealing(lp, "sim", "7_AGV", sim_anneal_var_dict=sdict, load=False, store=False)
     print("Simulated annealing results")
     print_results(dict_list)

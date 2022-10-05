@@ -205,11 +205,13 @@ def annealing(
                 if sim_anneal_var_dict is not None:
                     num_sweeps = sim_anneal_var_dict["num_sweeps"]
                     num_reads = sim_anneal_var_dict["num_reads"]
+                    r = sim_anneal_var_dict["beta_range"]
                 else:
                     num_sweeps = 1000
                     num_reads = 1000
+                    r = (1,100)
                 sampleset = sim_anneal(
-                    bqm, beta_range=(0.0001, 100), num_sweeps=num_sweeps, num_reads=num_reads
+                    bqm, beta_range=r, num_sweeps=num_sweeps, num_reads=num_reads
                 )
             elif method == "real":
                 sampleset = real_anneal(

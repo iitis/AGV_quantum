@@ -92,7 +92,7 @@ print("-----------------------------------------------------")
 print("Linear solver results:")
 print("obj:", opt.fun, "x:", opt.x)
 
-sdict={"num_sweeps":1_000, "num_reads":500}
+sdict={"num_sweeps":1_000, "num_reads":500, "beta_range":(0.01, 20)}
 dict_list = annealing(lp, "sim", "2_AGV", sim_anneal_var_dict=sdict, load=False, store=True)
 print("Simulated annealing results")
 print_results(dict_list)
