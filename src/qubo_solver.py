@@ -209,7 +209,7 @@ def annealing(
                     num_sweeps = 1000
                     num_reads = 1000
                 sampleset = sim_anneal(
-                    bqm, beta_range=(5, 100), num_sweeps=num_sweeps, num_reads=num_reads
+                    bqm, beta_range=(0.0001, 100), num_sweeps=num_sweeps, num_reads=num_reads
                 )
             elif method == "real":
                 sampleset = real_anneal(
