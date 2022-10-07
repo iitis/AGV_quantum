@@ -4,6 +4,7 @@ from src.linear_solver import make_linear_problem
 from src.qubo_solver import annealing
 import numpy as np
 import dimod
+import pickle
 
 from scipy.optimize import linprog
 from src.LinearProg import LinearProg
@@ -67,12 +68,16 @@ else:
 lp = LinearProg(c=obj, bounds=bounds, A_ub=A_ub, b_ub=b_ub, A_eq=A_eq, b_eq=b_eq)
 p = 2.75
 
+with open("lp.pkl", "wb") as f:
+    pickle.dump(lp, f)
+
 lp._to_bqm_qubo_ising(p)
 #lp._to_cqm()
 
 
 # this is QUBO
-lp.qubo
+with open("qubo.pkl", "wb") as f:
+    pickle.dump(lp.qubo, f)
 
 
 opt = linprog(
@@ -96,6 +101,7 @@ sdict={"num_sweeps":1_000, "num_reads":500, "beta_range":(0.01, 20)}
 dict_list = annealing(lp, "sim", "2_AGV", sim_anneal_var_dict=sdict, load=False, store=True)
 print("Simulated annealing results")
 print_results(dict_list)
+
 
 """
 dict_list = annealing(lp, "hyb", "2_AGV", load=False, store=True)
