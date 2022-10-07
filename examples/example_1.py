@@ -102,7 +102,7 @@ dict_list = annealing(lp, "cqm", "7_AGV", load=True, store=False)
 print("CQM results:")
 print_results(dict_list)
 
-simulation = True
+simulation = False
 
 if simulation:
     sdict={"num_sweeps":10_000, "num_reads":1_000, "beta_range":(0.0001, 100)}
