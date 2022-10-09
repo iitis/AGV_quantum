@@ -14,7 +14,7 @@ with open("../examples/qubo.pkl", "rb") as f:
     qubo = pickle.load(f)
 """
 
-# TODO rewrite for ising
+
 
 
 def add_zero_h_qubo(lp: LinearProg) -> LinearProg:
