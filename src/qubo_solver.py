@@ -231,35 +231,3 @@ def annealing(
     return get_results(sampleset, prob=lp)
 
 
-if __name__ == "__main__":
-    obj = [-1, -2]
-    lhs_ineq = [[2, 1], [-4, 5], [1, -2]]
-    rhs_ineq = [20, 10, 2]
-    lhs_eq = [[-1, 5]]
-    rhs_eq = [15]
-    bnd = [(0, 8), (0, 10)]
-    lp = LinearProg(
-        c=obj, bounds=bnd, A_ub=lhs_ineq, b_ub=rhs_ineq, A_eq=lhs_eq, b_eq=rhs_eq
-    )
-    p = 2  # Penalty coefficient, it can also be a dictionary
-    # Conversions
-    lp._to_bqm(p)
-    lp._to_cqm()
-    lp._to_Q_matrix(p)
-
-    opt = linprog(
-        c=obj,
-        bounds=bnd,
-        A_ub=lhs_ineq,
-        b_ub=rhs_ineq,
-        A_eq=lhs_eq,
-        b_eq=rhs_eq,
-        integrality=[1] * lp.nvars,
-    )
-    print("Linear solver results")
-    print("x:", opt.x, "obj:", opt.fun)
-
-    dict_list = annealing(lp, "sim", "test_1", load=False, store=True)
-    soln = next((l for l in dict_list if l["feasible"]), None)
-    print("Simulated annealing results")
-    print_results(dict_list)

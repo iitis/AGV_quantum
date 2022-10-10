@@ -1,3 +1,5 @@
+# 4 AGV example
+
 from src import utils
 from src.linear_solver import solve
 from src.linear_solver import make_linear_problem
@@ -11,7 +13,7 @@ from src.LinearProg import LinearProg
 from src.process_results import get_results, load_results, print_results, store_result
 
 
-M = 50
+M = 30
 tracks = [("s0", "s1"), ("s1", "s0"),
           ("s1", "s2"), ("s2", "s1"),
           ("s2", "s3"), ("s3", "s2"),
@@ -30,10 +32,11 @@ tracks_len = {("s0", "s1"): 6, ("s1", "s0"): 6,
 agv_routes = {0: ("s0", "s1", "s2", "s3"),
               1: ("s0", "s1", "s2"),
               2: ("s4", "s3", "s2", "s1"),
-              3: ("s4", "s3", "s2", "s1", "s0"),
+              #3: ("s4", "s3", "s2", "s1", "s0"),
               4: ("s2", "s3"),
-              5: ("s6", "s5", "s4", "s3"),
-              6: ("s5", "s6")}
+              #5: ("s6", "s5", "s4", "s3"),
+              #6: ("s5", "s6")
+              }
 
 stations = utils.create_stations_list(tracks)
 J = utils.create_agv_list(agv_routes)
@@ -42,15 +45,18 @@ all_same_way = utils.create_same_way_dict(agv_routes)
 
 graph = utils.create_graph(tracks, agv_routes)
 
-d_max = {i: 40 for i in J}
+d_max = {i: 10 for i in J}
 tau_pass = {(j, s, sp): tracks_len[(s, sp)] for j in J for s, sp in agv_routes_as_edges[j]}
 tau_headway = {(j, jp, s, sp): 2 if (s, sp) != ("s2", "s3") and (s, sp) != ("s3", "s2") else 0
                for (j, jp) in all_same_way.keys() for (s, sp) in all_same_way[(j, jp)]}
 
 tau_operation = {(agv, station): 2 for agv in J for station in stations}
 
-initial_conditions = {("in", 0, "s0"): 0, ("in", 1, "s0"): 0, ("in", 2, "s4"): 8, ("in", 3, "s4"): 9,
-                      ("in", 4, "s2"): 15, ("in", 5, "s6"): 0, ("in", 6, "s5"): 0}
+initial_conditions = {("in", 0, "s0"): 0, ("in", 1, "s0"): 0, ("in", 2, "s4"): 8, 
+                      #("in", 3, "s4"): 9,
+                      ("in", 4, "s2"): 15, 
+                      # ("in", 5, "s6"): 0, ("in", 6, "s5"): 0
+                      }
 
 weights = {j: 1 for j in J}
 
@@ -67,8 +73,8 @@ path_locs = [0,2,8,10,16, 18,18,20,25, 27, 31, 33, 37, 39]
 if res.success:
     v_in, v_out = utils.create_v_in_out(tracks_len, agv_routes, tau_operation, iterators, initial_conditions)
     utils.nice_print(res, agv_routes, weights, d_max,  v_in, v_out, iterators)
-    times, paths = utils.get_data4plot(res, agv_routes, iterators, complete_path, complete_path_rev, rev = [2,3,5])
-    train_diagram.plot_train_diagram(times, paths, path_locs)
+    #times, paths = utils.get_data4plot(res, agv_routes, iterators, complete_path, complete_path_rev, rev = [2,3,5])
+    #train_diagram.plot_train_diagram(times, paths, path_locs)
     
 else:
     print(res.message)
@@ -77,9 +83,9 @@ else:
 # QUBO
 
 lp = LinearProg(c=obj, bounds=bounds, A_ub=A_ub, b_ub=b_ub, A_eq=A_eq, b_eq=b_eq)
-p = 2.5
+p =1.
 
-with open("../lp_big.pkl", "wb") as f:
+with open("../lp_small.pkl", "wb") as f:
     pickle.dump(lp, f)
 
 lp._to_bqm_qubo_ising(p)
@@ -103,24 +109,27 @@ print("-----------------------------------------------------")
 print("Linear solver results:")
 print("obj:", opt.fun, "x:", opt.x)
 print("-----------------------------------------------------")
-dict_list = annealing(lp, "cqm", "7_AGV", load=True, store=False)
-print("CQM results:")
-print_results(dict_list)
 
-simulation = False
+
+simulation = True
 
 if simulation:
-    sdict={"num_sweeps":10_000, "num_reads":1_000, "beta_range":(0.0001, 100)}
-    dict_list = annealing(lp, "sim", "7_AGV", sim_anneal_var_dict=sdict, load=False, store=False)
+    sdict={"num_sweeps":75_000, "num_reads":10_000, "beta_range":(0.0001, 100)}
+    dict_list = annealing(lp, "sim", "4_AGV", sim_anneal_var_dict=sdict, load=False, store=False)
     print("Simulated annealing results")
     print_results(dict_list)
 
 """
-dict_list = annealing(lp, "hyb", "7_AGV", load=False, store=True)
+dict_list = annealing(lp, "cqm", "4_AGV", load=False, store=False)
+print("CQM results:")
+print_results(dict_list)
+
+
+dict_list = annealing(lp, "hyb", "4_AGV", load=False, store=True)
 print("QPU results")
 print_results(dict_list)
 
-dict_list = annealing(lp, "real", "7_AGV", load=True, store=False)
+dict_list = annealing(lp, "real", "4_AGV", load=True, store=False)
 print("QPU results")
 print_results(dict_list)
 """

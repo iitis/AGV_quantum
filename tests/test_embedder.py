@@ -12,12 +12,14 @@ class TestEmbedder(unittest.TestCase):
 
     @classmethod
     def setUpClass(cls) -> None:
-        cls.lp = load_linear_prog_object("lp.pkl")
+        cls.lp = load_linear_prog_object("tests/data/lp_smallest.pkl")
         cls.chimera = dnx.chimera_graph(16, 16)
 
     def test_qubo(self):
         self.lp = add_zero_h_qubo(self.lp)
         s1 = compute_vertices(self.lp.qubo[0])
+        assert self.lp._count_qubits() == 160
+
         self.assertEqual(s1, len(self.lp.bqm.variables))
 
         s2 = compute_edges(self.lp.qubo[0])
