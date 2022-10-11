@@ -79,7 +79,7 @@ else:
 lp = LinearProg(c=obj, bounds=bounds, A_ub=A_ub, b_ub=b_ub, A_eq=A_eq, b_eq=b_eq)
 p = 2.75
 
-with open("../lp_medium.pkl", "wb") as f:
+with open("lp_medium.pkl", "wb") as f:
     pickle.dump(lp, f)
 
 lp._to_bqm_qubo_ising(p)
