@@ -77,7 +77,7 @@ else:
 # QUBO
 
 lp = LinearProg(c=obj, bounds=bounds, A_ub=A_ub, b_ub=b_ub, A_eq=A_eq, b_eq=b_eq)
-p = 2.5
+p = 2.75
 
 with open("../lp_medium.pkl", "wb") as f:
     pickle.dump(lp, f)
@@ -86,26 +86,12 @@ lp._to_bqm_qubo_ising(p)
 lp._to_cqm()
 
 
-opt = linprog(
-        c=obj,
-        bounds=bounds,
-        A_ub=A_ub, 
-        b_ub=b_ub, 
-        A_eq=A_eq, 
-        b_eq=b_eq,
-        integrality=[1] * lp.nvars
-    )
+
 print("-----------------------------------------------------")
 print("Number of q-bits", lp._count_qubits())
 print("Number of couplings Js:", lp._count_quadratic_couplings())
 print("Number of local filds hs:", lp._count_linear_fields())
 print("-----------------------------------------------------")
-print("Linear solver results:")
-print("obj:", opt.fun, "x:", opt.x)
-print("-----------------------------------------------------")
-dict_list = annealing(lp, "cqm", "7_AGV", load=True, store=False)
-print("CQM results:")
-print_results(dict_list)
 
 simulation = False
 
@@ -114,6 +100,12 @@ if simulation:
     dict_list = annealing(lp, "sim", "7_AGV", sim_anneal_var_dict=sdict, load=False, store=False)
     print("Simulated annealing results")
     print_results(dict_list)
+
+
+dict_list = annealing(lp, "cqm", "7_AGV", load=True, store=False)
+print("CQM results:")
+print_results(dict_list)
+
 
 """
 dict_list = annealing(lp, "hyb", "7_AGV", load=False, store=True)

@@ -66,7 +66,6 @@ else:
 
 
 # QUBO
-
 lp = LinearProg(c=obj, bounds=bounds, A_ub=A_ub, b_ub=b_ub, A_eq=A_eq, b_eq=b_eq)
 p = 2.75
 
@@ -74,7 +73,7 @@ with open("../lp_smallest.pkl", "wb") as f:
     pickle.dump(lp, f)
 
 lp._to_bqm_qubo_ising(p)
-#lp._to_cqm()
+lp._to_cqm()
 
 
 # this is QUBO
@@ -82,22 +81,12 @@ with open("qubo.pkl", "wb") as f:
     pickle.dump(lp.qubo, f)
 
 
-opt = linprog(
-        c=obj,
-        bounds=bounds,
-        A_ub=A_ub, 
-        b_ub=b_ub, 
-        A_eq=A_eq, 
-        b_eq=b_eq,
-        integrality=[1] * lp.nvars
-    )
+
 print("-----------------------------------------------------")
 print("Number of q-bits", lp._count_qubits())
 print("Number of couplings Js:", lp._count_quadratic_couplings())
 print("Number of local filds hs:", lp._count_linear_fields())
-print("-----------------------------------------------------")
-print("Linear solver results:")
-print("obj:", opt.fun, "x:", opt.x)
+
 
 sdict={"num_sweeps":1_000, "num_reads":500, "beta_range":(0.01, 20)}
 dict_list = annealing(lp, "sim", "2_AGV", sim_anneal_var_dict=sdict, load=False, store=True)
@@ -106,6 +95,11 @@ print_results(dict_list)
 
 
 """
+dict_list = annealing(lp, "cqm", "2_AGV", load=False, store=False)
+print("CQM results:")
+print_results(dict_list)
+
+
 dict_list = annealing(lp, "hyb", "2_AGV", load=False, store=True)
 print("QPU results")
 print_results(dict_list)
