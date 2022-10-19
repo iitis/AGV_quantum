@@ -3,7 +3,7 @@
 from src import utils
 from src.linear_solver import solve
 from src.linear_solver import make_linear_problem
-from src import train_diagram
+from src.linear_solver import print_ILP_size
 from src.qubo_solver import annealing
 import numpy as np
 import pickle
@@ -65,6 +65,8 @@ obj, A_ub, b_ub, A_eq, b_eq, bounds, iterators = make_linear_problem(M, tracks, 
 
 res, iterators = solve(obj, A_ub, b_ub, A_eq, b_eq, bounds, iterators)
 
+print_ILP_size(A_ub, b_ub, A_eq, b_eq)
+
 # linear solver
 if res.success:
     v_in, v_out = utils.create_v_in_out(tracks_len, agv_routes, tau_operation, iterators, initial_conditions)
@@ -76,6 +78,7 @@ else:
 # QUBO
 
 lp = LinearProg(c=obj, bounds=bounds, A_ub=A_ub, b_ub=b_ub, A_eq=A_eq, b_eq=b_eq)
+
 p =2.75
 
 with open("lp_small.pkl", "wb") as f:
@@ -92,8 +95,7 @@ print("Number of couplings Js:", lp._count_quadratic_couplings())
 print("Number of local filds hs:", lp._count_linear_fields())
 print("-----------------------------------------------------")
 
-
-simulation = True
+simulation = False
 
 if simulation:
     sdict={"num_sweeps":5_000, "num_reads":50_000, "beta_range":(0.001, 100)}

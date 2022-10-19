@@ -3,12 +3,11 @@
 from src import utils
 from src.linear_solver import solve
 from src.linear_solver import make_linear_problem
+from src.linear_solver import print_ILP_size
 from src.qubo_solver import annealing
 import numpy as np
-import dimod
 import pickle
 
-from scipy.optimize import linprog
 from src.LinearProg import LinearProg
 from src.process_results import print_results
 
@@ -56,6 +55,7 @@ obj, A_ub, b_ub, A_eq, b_eq, bounds, iterators = make_linear_problem(M, tracks, 
                                                  tau_pass, tau_headway, tau_operation, weights, initial_conditions)
 
 res, iterators = solve(obj, A_ub, b_ub, A_eq, b_eq, bounds, iterators)
+print_ILP_size(A_ub, b_ub, A_eq, b_eq)
 
 # linear solver
 if res.success:

@@ -1,13 +1,12 @@
 from src import utils
 from src.linear_solver import solve
 from src.linear_solver import make_linear_problem
-from src import train_diagram
+from src.linear_solver import print_ILP_size
 from src.qubo_solver import annealing
 import pickle
 
-from scipy.optimize import linprog
 from src.LinearProg import LinearProg
-from src.process_results import get_results, load_results, print_results, store_result
+from src.process_results import print_results
 
 
 M = 50
@@ -69,9 +68,11 @@ print("prepare ILP")
 obj, A_ub, b_ub, A_eq, b_eq, bounds, iterators = make_linear_problem(M, tracks, tracks_len, agv_routes, d_max,
                                                  tau_pass, tau_headway, tau_operation, weights, initial_conditions)
 
-bench_linear = True
 
-if bench_linear:
+print_ILP_size(A_ub, b_ub, A_eq, b_eq)
+solve_linear = False
+
+if solve_linear:
     print("start solving")
     res, iterators = solve(obj, A_ub, b_ub, A_eq, b_eq, bounds, iterators)
 
@@ -104,7 +105,7 @@ print("-----------------------------------------------------")
 
 
 
-simulation = True
+simulation = False
 
 if simulation:
     sdict={"num_sweeps":5_000, "num_reads":10_000, "beta_range":(0.001, 100)}

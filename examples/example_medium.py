@@ -3,12 +3,12 @@ from src.linear_solver import solve
 from src.linear_solver import make_linear_problem
 from src import train_diagram
 from src.qubo_solver import annealing
+from src.linear_solver import print_ILP_size
 import numpy as np
 import pickle
 
-from scipy.optimize import linprog
 from src.LinearProg import LinearProg
-from src.process_results import get_results, load_results, print_results, store_result
+from src.process_results import print_results
 
 
 M = 50
@@ -73,6 +73,7 @@ if res.success:
 else:
     print(res.message)
 
+print_ILP_size(A_ub, b_ub, A_eq, b_eq)
 
 # QUBO
 

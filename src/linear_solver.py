@@ -280,3 +280,8 @@ def solve(c, A_ub, b_ub, A_eq, b_eq, bounds, iterators):
 
 
 
+def print_ILP_size(A_ub, b_ub, A_eq, b_eq):
+    print("ILP n.o. inequalities", len(b_ub))
+    print("ILP, n.o. equalities", len(b_eq))
+    print("ILP, n.o. vars", np.size(A_ub,1), "=", np.size(A_eq,1))
+
