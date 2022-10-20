@@ -73,7 +73,7 @@ def check_solution(sol: Union[SolveSolution, dict], lp: LinearProg):
         print(get_results(sampleset, prob=lp))
 
 if __name__ == "__main__":
-    for name in ["tiny, smallest, small, medium_small"]:
+    for name in ["tiny", "smallest", "small", "medium_small"]:
         sol, lp = quadratic_solve_qubo(f"../lp_{name}.pkl")
         sol.export(f"../sol_{name}.json")
         check_solution(sol, lp)
