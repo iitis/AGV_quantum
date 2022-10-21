@@ -89,7 +89,7 @@ def count_edges(qubo: dict) -> int:
     return s
 
 
-def quadratic_solve_qubo(lp_location: str):
+def quadratic_solve_qubo(lp_location: str) -> (SolveSolution, LinearProg):
     lp = load_linear_prog_object(lp_location)
     lp = add_zero_h_qubo(lp)
     qubo = lp.qubo[0]
@@ -100,7 +100,7 @@ def quadratic_solve_qubo(lp_location: str):
     variables = m.binary_var_dict(lp.bqm.variables, name="", key_format="%s")
     obj_fnc = sum(variables[k1] * variables[k2] * qubo[(k1, k2)] for k1, k2 in qubo.keys())
     m.set_objective("min", obj_fnc)
-    #.print_information()
+    #m.print_information()
     m.add_progress_listener(TextProgressListener(clock="objective"))
     sol = m.solve()
     #m.print_solution()
@@ -135,9 +135,10 @@ def check_solution(sol: Union[SolveSolution, dict], lp: LinearProg):
         return results["feasible"], results
 
 
-def save_results(results: dict, output_path: str):
+def save_results(results: dict, name:str, output_path: str):
 
     with open(output_path, "a") as f:
+        f.write(f"{name}: ")
         f.write(str(results))
 
 
@@ -146,6 +147,6 @@ if __name__ == "__main__":
         sol, lp = quadratic_solve_qubo(f"lp_{name}.pkl")
         sol.export(f"sol_{name}.json")
         feasible, results = check_solution(sol, lp)
-        save_results(results, "results.txt")
+        save_results(results, f"{name}", "results.txt")
 
 
