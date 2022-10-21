@@ -54,10 +54,10 @@ def quadratic_solve_qubo(lp_location: str):
     variables = m.binary_var_dict(lp.bqm.variables, name="", key_format="%s")
     obj_fnc = sum(variables[k1] * variables[k2] * qubo[(k1, k2)] for k1, k2 in qubo.keys())
     m.set_objective("min", obj_fnc)
-    m.print_information()
-    m.add_progress_listener(prog.TextProgressListener())
+    #m.print_information()
+    #m.add_progress_listener(prog.TextProgressListener())
     sol = m.solve()
-    m.print_solution()
+    #m.print_solution()
     return sol, lp
 
 
