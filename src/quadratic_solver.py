@@ -89,14 +89,14 @@ def count_edges(qubo: dict) -> int:
     return s
 
 
-def quadratic_solve_qubo(lp_location: str) -> (SolveSolution, LinearProg):
+def quadratic_solve_qubo(lp_location: str, num_threads: int = None) -> (SolveSolution, LinearProg):
     lp = load_linear_prog_object(lp_location)
     lp = add_zero_h_qubo(lp)
     qubo = lp.qubo[0]
 
     m = Model(name='qubo')
-    m.context.cplex_parameters.threads = 18
-    print(environment.get_available_core_count())
+    if num_threads:
+        m.context.cplex_parameters.threads = num_threads
     variables = m.binary_var_dict(lp.bqm.variables, name="", key_format="%s")
     obj_fnc = sum(variables[k1] * variables[k2] * qubo[(k1, k2)] for k1, k2 in qubo.keys())
     m.set_objective("min", obj_fnc)
@@ -105,6 +105,23 @@ def quadratic_solve_qubo(lp_location: str) -> (SolveSolution, LinearProg):
     sol = m.solve()
     #m.print_solution()
     return sol, lp
+
+
+def quadratic_model(lp_location: str) -> Model:
+    """
+    :param lp_location: path to lp file
+    :return: docplex model for given qubo
+    """
+    lp = load_linear_prog_object(lp_location)
+    lp = add_zero_h_qubo(lp)
+    qubo = lp.qubo[0]
+
+    model = Model(name='qubo')
+    variables = model.binary_var_dict(lp.bqm.variables, name="", key_format="%s")
+    obj_fnc = sum(variables[k1] * variables[k2] * qubo[(k1, k2)] for k1, k2 in qubo.keys())
+    model.set_objective("min", obj_fnc)
+
+    return model
 
 def process_result(sampleset: list):
     energy = sampleset[0]["energy"]
@@ -144,7 +161,7 @@ def save_results(results: dict, name:str, output_path: str):
 
 if __name__ == "__main__":
     for name in ["tiny", "smallest", "small", "medium_small"]:
-        sol, lp = quadratic_solve_qubo(f"lp_{name}.pkl")
+        sol, lp = quadratic_solve_qubo(f"lp_{name}.pkl", num_threads=18)
         sol.export(f"sol_{name}.json")
         feasible, results = check_solution(sol, lp)
         save_results(results, f"{name}", "results.txt")
