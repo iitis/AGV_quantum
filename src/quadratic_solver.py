@@ -142,7 +142,7 @@ def save_results(results: dict, output_path: str):
 
 
 if __name__ == "__main__":
-    for name in ["smallest", "small", "medium_small"]: # "tiny",
+    for name in ["tiny", "smallest", "small", "medium_small"]:
         sol, lp = quadratic_solve_qubo(f"../lp_{name}.pkl")
         sol.export(f"../sol_{name}.json")
         check_solution(sol, lp)
