@@ -90,11 +90,13 @@ print("Number of q-bits", lp._count_qubits())
 print("Number of couplings Js:", lp._count_quadratic_couplings())
 print("Number of local filds hs:", lp._count_linear_fields())
 
+simulation = False
 
-sdict={"num_sweeps":1_000, "num_reads":500, "beta_range":(0.01, 20)}
-dict_list = annealing(lp, "sim", "2_AGV", sim_anneal_var_dict=sdict, load=False, store=False)
-print("Simulated annealing results")
-print_results(dict_list)
+if simulation:
+    sdict={"num_sweeps":1_000, "num_reads":500, "beta_range":(0.01, 20)}
+    dict_list = annealing(lp, "sim", "2_AGV", sim_anneal_var_dict=sdict, load=False, store=False)
+    print("Simulated annealing results")
+    print_results(dict_list)
 
 
 """
