@@ -99,15 +99,18 @@ if simulation:
     print_results(dict_list)
 
 
+dict_list = annealing(lp, "hyb", "2_AGV", load=False, store=True)
+print("QPU results")
+print_results(dict_list)
+
+
 """
 dict_list = annealing(lp, "cqm", "2_AGV", load=False, store=False)
 print("CQM results:")
 print_results(dict_list)
 
 
-dict_list = annealing(lp, "hyb", "2_AGV", load=False, store=True)
-print("QPU results")
-print_results(dict_list)
+
 
 dict_list = annealing(lp, "real", "2_AGV", load=True, store=False)
 print("QPU results")
