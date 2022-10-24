@@ -12,7 +12,7 @@ from scipy.optimize import linprog
 
 from src.LinearProg import LinearProg
 from src.process_results import get_results, load_results, print_results, store_result
-
+from typing import Optional
 
 def sim_anneal(
     bqm: dimod.BinaryQuadraticModel,
@@ -49,6 +49,7 @@ def real_anneal(
     num_reads: int,
     annealing_time: float,
     chain_strength: float,
+    solver: Optional[str] = 'Advantage_system6.1'
 ) -> dimod.sampleset.SampleSet:
     """Runs quantum annealing experiment on D-Wave
 
@@ -63,7 +64,7 @@ def real_anneal(
     :return: sampleset
     :rtype: dimod.SampleSet
     """
-    sampler = EmbeddingComposite(DWaveSampler())
+    sampler = EmbeddingComposite(DWaveSampler(solver=solver))
     # annealing time in micro second, 20 is default.
     sampleset = sampler.sample(
         bqm,
@@ -130,7 +131,7 @@ def get_file_name(
     return os.path.join(folder, fname)
 
 
-def get_parameters(real_anneal_var_dict: dict[str, float]) -> tuple[int, int, int]:
+def get_parameters(real_anneal_var_dict: dict[str, float]) -> tuple[int, int, int, str]:
     """Extracts/sets parameters for annealing experiment
 
     :param real_anneal_var_dict: Parameters for QA experiment
@@ -142,12 +143,14 @@ def get_parameters(real_anneal_var_dict: dict[str, float]) -> tuple[int, int, in
         num_reads = 1000
         annealing_time = 250
         chain_strength = 4
+        solver = 'Advantage_system6.1'
     else:
         num_reads = real_anneal_var_dict["num_reads"]
         annealing_time = real_anneal_var_dict["annealing_time"]
         chain_strength = real_anneal_var_dict["chain_strength"]
+        solver = real_anneal_var_dict["solver"] if len(real_anneal_var_dict)>3 else None
 
-    return num_reads, annealing_time, chain_strength
+    return num_reads, annealing_time, chain_strength, solver
 
 
 def annealing(
@@ -175,7 +178,7 @@ def annealing(
 
     assert method in ["sim", "real", "hyb", "cqm"]
     if method == "real":
-        num_reads, annealing_time, chain_strength = get_parameters(real_anneal_var_dict)
+        num_reads, annealing_time, chain_strength, solver = get_parameters(real_anneal_var_dict)
         file_name = get_file_name(
             input_name,
             method,
@@ -214,12 +217,21 @@ def annealing(
                     bqm, beta_range=r, num_sweeps=num_sweeps, num_reads=num_reads
                 )
             elif method == "real":
-                sampleset = real_anneal(
-                    bqm,
-                    num_reads=num_reads,
-                    annealing_time=annealing_time,
-                    chain_strength=chain_strength,
-                )
+                if solver:
+                    sampleset = real_anneal(
+                        bqm,
+                        num_reads=num_reads,
+                        annealing_time=annealing_time,
+                        chain_strength=chain_strength,
+                        solver=solver
+                    )
+                else:
+                    sampleset = real_anneal(
+                        bqm,
+                        num_reads=num_reads,
+                        annealing_time=annealing_time,
+                        chain_strength=chain_strength
+                    )
             elif method == "hyb":
                 sampleset = hybrid_anneal(bqm)
     if store:
