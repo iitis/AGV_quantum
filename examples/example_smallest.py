@@ -11,7 +11,7 @@ import csv
 
 from src.LinearProg import LinearProg
 from src.process_results import print_results
-
+from math import sqrt, log10
 
 M = 20
 tracks = [("s0", "s1"), ("s1", "s0"),
@@ -98,10 +98,19 @@ if simulation:
     print("Simulated annealing results")
     print_results(dict_list)
 
+d1 = lp.bqm.quadratic
+d2 = lp.bqm.linear
+max_d1 = abs(d1[max(d1, key=lambda y: abs(d1[y]))])
+max_d2 = abs(d2[max(d2, key=lambda y: abs(d2[y]))])
+max_bqm = max(max_d1, max_d2)
 
-dict_list = annealing(lp, "hyb", "2_AGV", load=False, store=True)
+
+rdict = {"num_reads": 2200, "annealing_time": 250, 'chain_strength': int(max_bqm + sqrt(max_bqm)), 'solver': 'Advantage_system6.1'}
+dict_list = annealing(lp, "real", "2_AGV", load=False, store=True, real_anneal_var_dict=rdict)
 print("QPU results")
 print_results(dict_list)
+
+
 
 
 """
