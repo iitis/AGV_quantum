@@ -3,6 +3,7 @@ import itertools
 import networkx as nx
 import pandas as pd
 import numpy as np
+from dimod import SampleSet
 
 
 def create_stations_list(tracks: list[tuple]) -> list[str]:
@@ -219,6 +220,18 @@ def create_v_in_out(tracks_len: dict, agv_routes: dict, tau_operation: dict, ite
     return v_in, v_out
 
 # def print_equations(A_ub: np.ndarray, b_ub: np.ndarray, A_eq: np.ndarray, b_eq, iterators):
+
+
+def print_time(results: SampleSet):
+
+    print(f"qpu_access_time: {results.info['qpu_access_time'] * 1e-6} seconds, "
+          f"charge_time: {results.info['charge_time'] * 1e-6} seconds,"
+          f" run_time: {results.info['run_time'] * 1e-6} seconds")
+
+
+def print_best_feasible(results: SampleSet):
+    feasible = results.filter(lambda d: d.is_feasible)
+    print(feasible.first)
 
 
 # DEPRECATED
