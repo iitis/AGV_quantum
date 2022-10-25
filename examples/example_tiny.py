@@ -9,8 +9,10 @@ import numpy as np
 import pickle
 import csv
 
+from math import sqrt
 from src.LinearProg import LinearProg
 from src.process_results import print_results
+from src.quadratic_solver import quadratic_solve_qubo, check_solution, save_results
 
 
 M = 10
@@ -78,8 +80,8 @@ lp._to_cqm()
 
 
 # this is QUBO
-with open("qubo_tiny.pkl", "wb") as f:
-    pickle.dump(lp.qubo, f)
+# with open("qubo_tiny.pkl", "wb") as f:
+#     pickle.dump(lp.qubo, f)
 
 
 
@@ -89,10 +91,29 @@ print("Number of couplings Js:", lp._count_quadratic_couplings())
 print("Number of local filds hs:", lp._count_linear_fields())
 
 
-sdict={"num_sweeps":1_000, "num_reads":500, "beta_range":(0.01, 20)}
-dict_list = annealing(lp, "sim", "2_tiny_AGV", sim_anneal_var_dict=sdict, load=False, store=False)
-print("Simulated annealing results")
-print_results(dict_list)
+# sdict={"num_sweeps":1_000, "num_reads":500, "beta_range":(0.01, 20)}
+# dict_list = annealing(lp, "sim", "2_tiny_AGV", sim_anneal_var_dict=sdict, load=False, store=False)
+# print("Simulated annealing results")
+# print_results(dict_list)
+
+# d1 = lp.bqm.quadratic
+# d2 = lp.bqm.linear
+# max_d1 = abs(d1[max(d1, key=lambda y: abs(d1[y]))])
+# max_d2 = abs(d2[max(d2, key=lambda y: abs(d2[y]))])
+# max_bqm = max(max_d1, max_d2)
+#
+# #int(max_bqm + sqrt(max_bqm))
+# rdict = {"num_reads": 2200, "annealing_time": 250, 'chain_strength': 4, 'solver': 'Advantage_system6.1'}
+# dict_list = annealing(lp, "real", "2_tiny_AGV", load=False, store=True)
+# print("QPU results")
+# print_results(dict_list)
+
+name = "tiny"
+sol, lp = quadratic_solve_qubo(f"lp_{name}.pkl")
+sol.export(f"sol_{name}.json")
+feasible, results = check_solution(sol, lp)
+save_results(results, f"{name}", "results.txt")
+
 
 
 """
