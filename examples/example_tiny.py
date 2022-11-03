@@ -17,19 +17,13 @@ from src.quadratic_solver import quadratic_solve_qubo, check_solution, save_resu
 
 M = 10
 tracks = [("s0", "s1"), ("s1", "s0"),
-          ("s1", "s2"), ("s2", "s1"),
-          ("s2", "s3"), ("s3", "s2"),
-          ("s3", "s4"), ("s4", "s3"),
-          ("s4", "s5"), ("s5", "s4"),
-          ("s5", "s6")]
+          ("s1", "s2"), ("s2", "s1")
+          ]
 
 # to include track_len into track would require some refactoring
 tracks_len = {("s0", "s1"): 6, ("s1", "s0"): 6,
               ("s1", "s2"): 6, ("s2", "s1"): 6,
-              ("s2", "s3"): 0, ("s3", "s2"): 0,
-              ("s3", "s4"): 5, ("s4", "s3"): 5,
-              ("s4", "s5"): 4, ("s5", "s4"): 4,
-              ("s5", "s6"): 4, ("s6", "s5"): 4}
+              }
 
 agv_routes = {0: ("s0", "s1"),
               1: ("s1", "s2")
@@ -44,12 +38,12 @@ graph = utils.create_graph(tracks, agv_routes)
 
 d_max = {i: 7 for i in J}
 tau_pass = {(j, s, sp): tracks_len[(s, sp)] for j in J for s, sp in agv_routes_as_edges[j]}
-tau_headway = {(j, jp, s, sp): 2 if (s, sp) != ("s2", "s3") and (s, sp) != ("s3", "s2") else 0
-               for (j, jp) in all_same_way.keys() for (s, sp) in all_same_way[(j, jp)]}
+print(tau_pass)
+tau_headway = {(j, jp, s, sp): 2 for (j, jp) in all_same_way.keys() for (s, sp) in all_same_way[(j, jp)]}
 
 tau_operation = {(agv, station): 2 for agv in J for station in stations}
 
-initial_conditions = {("in", 0, "s0"): 0, ("in", 1, "s1"): 8
+initial_conditions = {("in", 0, "s0"): 0, ("in", 1, "s1"): 7
                      }
 
 weights = {j: 1 for j in J}
