@@ -30,7 +30,7 @@ tracks_len = {("s0", "s1"): 6, ("s1", "s0"): 6,
               ("s5", "s6"): 4, ("s6", "s5"): 4}
 
 agv_routes = {0: ("s0", "s1", "s2"),
-              1: ("s0", "s1", "s2"),
+              1: ("s1", "s2"),
               2: ("s4", "s3", "s2"),
               #3: ("s4", "s3", "s2", "s1", "s0"),
               4: ("s2", "s3"),
@@ -52,7 +52,7 @@ tau_headway = {(j, jp, s, sp): 2 if (s, sp) != ("s2", "s3") and (s, sp) != ("s3"
 
 tau_operation = {(agv, station): 2 for agv in J for station in stations}
 
-initial_conditions = {("in", 0, "s0"): 0, ("in", 1, "s0"): 0, ("in", 2, "s4"): 8, 
+initial_conditions = {("in", 0, "s0"): 0, ("in", 1, "s1"): 8, ("in", 2, "s4"): 8, 
                       #("in", 3, "s4"): 9,
                       ("in", 4, "s2"): 15, 
                       # ("in", 5, "s6"): 0, ("in", 6, "s5"): 0

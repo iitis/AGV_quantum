@@ -32,7 +32,7 @@ tracks_len = {("s0", "s1"): 6, ("s1", "s0"): 6,
               ("s5", "s6"): 4, ("s6", "s5"): 4}
 
 agv_routes = {0: ("s0", "s1"),
-              1: ("s0", "s1", "s2")
+              1: ("s1", "s2")
             }
 
 stations = utils.create_stations_list(tracks)
@@ -42,14 +42,14 @@ all_same_way = utils.create_same_way_dict(agv_routes)
 
 graph = utils.create_graph(tracks, agv_routes)
 
-d_max = {i: 5 for i in J}
+d_max = {i: 7 for i in J}
 tau_pass = {(j, s, sp): tracks_len[(s, sp)] for j in J for s, sp in agv_routes_as_edges[j]}
 tau_headway = {(j, jp, s, sp): 2 if (s, sp) != ("s2", "s3") and (s, sp) != ("s3", "s2") else 0
                for (j, jp) in all_same_way.keys() for (s, sp) in all_same_way[(j, jp)]}
 
 tau_operation = {(agv, station): 2 for agv in J for station in stations}
 
-initial_conditions = {("in", 0, "s0"): 0, ("in", 1, "s0"): 0
+initial_conditions = {("in", 0, "s0"): 0, ("in", 1, "s1"): 8
                      }
 
 weights = {j: 1 for j in J}
@@ -108,12 +108,13 @@ print("Number of local filds hs:", lp._count_linear_fields())
 # print("QPU results")
 # print_results(dict_list)
 
+"""
 name = "tiny"
 sol, lp = quadratic_solve_qubo(f"lp_{name}.pkl")
 sol.export(f"sol_{name}.json")
 feasible, results = check_solution(sol, lp)
 save_results(results, f"{name}", "results.txt")
-
+"""
 
 
 """
