@@ -248,6 +248,13 @@ def make_linear_problem(M: int, tracks: list, tracks_len: dict, agv_routes: dict
         else:
             A_ub = np.concatenate((MPT, MH, JC))
             b_ub = np.concatenate((MPT_b, MH_b, JC_b))
+    elif MPT.size >= 2:
+        if SL.size > 0:
+            A_ub = np.concatenate((MPT, JC, SL))
+            b_ub = np.concatenate((MPT_b, JC_b, SL_b))
+        else:
+            A_ub = np.concatenate((MPT, JC))
+            b_ub = np.concatenate((MPT_b, JC_b))
     else:
         A_ub = JC
         b_ub = JC_b
