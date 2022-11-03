@@ -5,6 +5,7 @@ import numpy as np
 from src import utils
 from typing import Optional
 import time
+from docplex.mp.model import Model
 
 def create_precedence_matrix_y(iterators: dict):
     y_iter = iterators["y"]
@@ -276,6 +277,31 @@ def make_linear_problem(M: int, tracks: list, tracks_len: dict, agv_routes: dict
     return c, A_ub, b_ub, A_eq, b_eq, bounds, iterators
 
 
+def create_linear_model(c: list, A_ub: np.ndarray, b_ub: np.ndarray, A_eq: np. ndarray, b_eq: np.ndarray,
+                        bounds: list, iterators: dict, num_threads: int = None) -> Model:
+    model = Model(name='linear_programing_AGV')
+    lower_bounds = [bound[0] for bound in bounds]
+    upper_bounds = [bound[1] for bound in bounds]
+
+    if num_threads:
+        model.context.cplex_parameters.threads = num_threads
+    variables = model.integer_var_dict(iterators['x'], lb=lower_bounds, ub=upper_bounds, name="", key_format="%s")
+
+    for index, row in enumerate(A_ub):
+        non_zero = utils.see_non_zero_variables(row, iterators['x'])
+        # print(f"{sum([variables[var_name] * sign for var_name, sign in non_zero.items()])} <= {b_ub[index]}")
+        model.add_constraint(sum([variables[var_name] * sign for var_name, sign in non_zero.items()]) <= b_ub[index])
+
+    for index, row in enumerate(A_eq):
+        non_zero = utils.see_non_zero_variables(row, iterators['x'])
+        # print(f"{sum([variables[var_name] * sign for var_name, sign in non_zero.items()])} == {b_eq[index]}")
+        model.add_constraint(sum([variables[var_name] * sign for var_name, sign in non_zero.items()]) == b_eq[index])
+
+    obj_dict = {iterators['x'][i]: c[i] for i in range(len(c))}
+    # print(sum([variables[var_name] * sign for var_name, sign in obj_dict.items()]))
+    model.minimize(sum([variables[var_name] * sign for var_name, sign in obj_dict.items()]))
+    return model
+
 
 def solve(c, A_ub, b_ub, A_eq, b_eq, bounds, iterators):
         start = time.time()
@@ -286,9 +312,9 @@ def solve(c, A_ub, b_ub, A_eq, b_eq, bounds, iterators):
         return res, iterators
 
 
-
 def print_ILP_size(A_ub, b_ub, A_eq, b_eq):
     print("ILP n.o. inequalities", len(b_ub))
     print("ILP, n.o. equalities", len(b_eq))
     print("ILP, n.o. vars", np.size(A_ub,1), "=", np.size(A_eq,1))
+
 
