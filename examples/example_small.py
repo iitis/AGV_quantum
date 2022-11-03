@@ -89,7 +89,7 @@ print("-----------------------------------------------------")
 simulation = True
 
 if simulation:
-    sdict={"num_sweeps":5_000, "num_reads":50_000, "beta_range":(0.001, 100)}
+    sdict={"num_sweeps":15_000, "num_reads":50_000, "beta_range":(0.001, 100)}
     dict_list = annealing(lp, "sim", "4_AGV", sim_anneal_var_dict=sdict, load=False, store=True)
     print("Simulated annealing results")
     print_results(dict_list)
