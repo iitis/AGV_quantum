@@ -2,7 +2,7 @@
 
 from src import utils
 from src.linear_solver import solve
-from src.linear_solver import make_linear_problem
+from src.linear_solver import make_linear_problem, create_linear_model
 from src.linear_solver import print_ILP_size
 from src.qubo_solver import annealing
 import numpy as np
@@ -61,29 +61,34 @@ if res.success:
 else:
     print(res.message)
 
-
-# QUBO
-lp = LinearProg(c=obj, bounds=bounds, A_ub=A_ub, b_ub=b_ub, A_eq=A_eq, b_eq=b_eq)
-p = 2.75
-
-with open("lp_tiny.pkl", "wb") as f:
-    pickle.dump(lp, f)
-
-lp._to_bqm_qubo_ising(p)
-lp._to_cqm()
-
-
-# this is QUBO
-# with open("qubo_tiny.pkl", "wb") as f:
-#     pickle.dump(lp.qubo, f)
-
-
-
-print("-----------------------------------------------------")
-print("Number of q-bits", lp._count_qubits())
-print("Number of couplings Js:", lp._count_quadratic_couplings())
-print("Number of local filds hs:", lp._count_linear_fields())
-
+model = create_linear_model(obj, A_ub, b_ub, A_eq, b_eq, bounds, iterators)
+model.print_information()
+s = model.solve()
+model.print_solution(print_zeros=True)
+#
+#
+# # QUBO
+# lp = LinearProg(c=obj, bounds=bounds, A_ub=A_ub, b_ub=b_ub, A_eq=A_eq, b_eq=b_eq)
+# p = 2.75
+#
+# with open("lp_tiny.pkl", "wb") as f:
+#     pickle.dump(lp, f)
+#
+# lp._to_bqm_qubo_ising(p)
+# lp._to_cqm()
+#
+#
+# # this is QUBO
+# # with open("qubo_tiny.pkl", "wb") as f:
+# #     pickle.dump(lp.qubo, f)
+#
+#
+#
+# print("-----------------------------------------------------")
+# print("Number of q-bits", lp._count_qubits())
+# print("Number of couplings Js:", lp._count_quadratic_couplings())
+# print("Number of local filds hs:", lp._count_linear_fields())
+#
 
 # sdict={"num_sweeps":1_000, "num_reads":500, "beta_range":(0.01, 20)}
 # dict_list = annealing(lp, "sim", "2_tiny_AGV", sim_anneal_var_dict=sdict, load=False, store=False)
