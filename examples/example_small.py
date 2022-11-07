@@ -2,16 +2,17 @@
 
 from src import utils
 from src.linear_solver import solve
-from src.linear_solver import make_linear_problem
+from src.linear_solver import make_linear_problem, create_linear_model
 from src.linear_solver import print_ILP_size
 from src.qubo_solver import annealing
 import numpy as np
 import pickle
+import time
 
 from scipy.optimize import linprog
 from src.LinearProg import LinearProg
 from src.process_results import get_results, load_results, print_results, store_result
-
+from math import sqrt
 
 M = 28
 tracks = [("s0", "s1"), ("s1", "s0"),
@@ -65,40 +66,57 @@ if res.success:
 else:
     print(res.message)
 
+model = create_linear_model(obj, A_ub, b_ub, A_eq, b_eq, bounds, iterators)
+model.print_information()
+begin = time.time()
+s = model.solve()
+end = time.time()
+print("time: ", end-begin)
+model.print_solution(print_zeros=True)
+print(model.solve_details)
+
+
 
 # QUBO
-
-lp = LinearProg(c=obj, bounds=bounds, A_ub=A_ub, b_ub=b_ub, A_eq=A_eq, b_eq=b_eq)
-
-p =2.75
-
-with open("lp_small.pkl", "wb") as f:
-    pickle.dump(lp, f)
-
-lp._to_bqm_qubo_ising(p)
-lp._to_cqm()
-
-
-
-print("-----------------------------------------------------")
-print("Number of q-bits", lp._count_qubits())
-print("Number of couplings Js:", lp._count_quadratic_couplings())
-print("Number of local filds hs:", lp._count_linear_fields())
-print("-----------------------------------------------------")
-
-simulation = False
-
-if simulation:
-    sdict={"num_sweeps":25_000, "num_reads":100_000, "beta_range":(0.001, 100)}
-    dict_list = annealing(lp, "sim", "4_AGV", sim_anneal_var_dict=sdict, load=True, store=False)
-    print("Simulated annealing results")
-    print_results(dict_list)
-
-
-if False:
-    dict_list = annealing(lp, "hyb", "4_AGV", load=False, store=True)
-    print("QPU results")
-    print_results(dict_list)
+#
+# lp = LinearProg(c=obj, bounds=bounds, A_ub=A_ub, b_ub=b_ub, A_eq=A_eq, b_eq=b_eq)
+#
+# p =2.75
+#
+# with open("lp_small.pkl", "wb") as f:
+#     pickle.dump(lp, f)
+#
+# lp._to_bqm_qubo_ising(p)
+# lp._to_cqm()
+#
+#
+#
+# print("-----------------------------------------------------")
+# print("Number of q-bits", lp._count_qubits())
+# print("Number of couplings Js:", lp._count_quadratic_couplings())
+# print("Number of local filds hs:", lp._count_linear_fields())
+# print("-----------------------------------------------------")
+#
+# simulation = False
+#
+# if simulation:
+#     sdict={"num_sweeps":25_000, "num_reads":100_000, "beta_range":(0.001, 100)}
+#     dict_list = annealing(lp, "sim", "4_AGV", sim_anneal_var_dict=sdict, load=True, store=False)
+#     print("Simulated annealing results")
+#     print_results(dict_list)
+#
+#
+#
+# d1 = lp.bqm.quadratic
+# d2 = lp.bqm.linear
+# max_d1 = abs(d1[max(d1, key=lambda y: abs(d1[y]))])
+# max_d2 = abs(d2[max(d2, key=lambda y: abs(d2[y]))])
+# max_bqm = max(max_d1, max_d2)
+#
+# rdict = {"num_reads": 2200, "annealing_time": 250, 'chain_strength': int(max_bqm + sqrt(max_bqm)), 'solver': 'Advantage_system6.1'}
+# dict_list = annealing(lp, "real", "4_AGV", load=False, store=True, real_anneal_var_dict=rdict)
+# print("QPU results")
+# print_results(dict_list)
 
 """
 dict_list = annealing(lp, "cqm", "4_AGV", load=False, store=False)

@@ -8,6 +8,7 @@ from src.qubo_solver import annealing
 import numpy as np
 import pickle
 import csv
+import time
 
 from math import sqrt
 from src.LinearProg import LinearProg
@@ -63,8 +64,12 @@ else:
 
 model = create_linear_model(obj, A_ub, b_ub, A_eq, b_eq, bounds, iterators)
 model.print_information()
+begin = time.time()
 s = model.solve()
+end = time.time()
+print("time: ", end-begin)
 model.print_solution(print_zeros=True)
+print(model.solve_details)
 #
 #
 # # QUBO

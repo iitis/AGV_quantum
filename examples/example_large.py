@@ -1,9 +1,10 @@
 from src import utils
 from src.linear_solver import solve
-from src.linear_solver import make_linear_problem
+from src.linear_solver import make_linear_problem, create_linear_model
 from src.linear_solver import print_ILP_size
 from src.qubo_solver import annealing
 import pickle
+import time
 
 from src.LinearProg import LinearProg
 from src.process_results import print_results
@@ -84,40 +85,50 @@ if solve_linear:
         print(res.message)
 
 
+model = create_linear_model(obj, A_ub, b_ub, A_eq, b_eq, bounds, iterators)
+model.print_information()
+begin = time.time()
+s = model.solve()
+end = time.time()
+print("time: ", end-begin)
+model.print_solution(print_zeros=True)
+print(model.solve_details)
 
-# QUBO
-print("make qubo")
-lp = LinearProg(c=obj, bounds=bounds, A_ub=A_ub, b_ub=b_ub, A_eq=A_eq, b_eq=b_eq)
-p =2.75
-
-with open("lp_large.pkl", "wb") as f:
-    pickle.dump(lp, f)
-
-lp._to_bqm_qubo_ising(p)
-lp._to_cqm()
-
-
-print("-----------------------------------------------------")
-print("Number of q-bits", lp._count_qubits())
-print("Number of couplings Js:", lp._count_quadratic_couplings())
-print("Number of local filds hs:", lp._count_linear_fields())
-print("-----------------------------------------------------")
-
-
-
-simulation = False
-
-if simulation:
-    sdict={"num_sweeps":5_000, "num_reads":10_000, "beta_range":(0.001, 100)}
-    dict_list = annealing(lp, "sim", "12_AGV", sim_anneal_var_dict=sdict, load=False, store=False)
-    print("Simulated annealing results")
-    print_results(dict_list)
-
-
-dict_list = annealing(lp, "hyb", "12_AGV", load=False, store=True)
-print("QPU results")
-print_results(dict_list)
-
+#
+#
+# # QUBO
+# print("make qubo")
+# lp = LinearProg(c=obj, bounds=bounds, A_ub=A_ub, b_ub=b_ub, A_eq=A_eq, b_eq=b_eq)
+# p =2.75
+#
+# with open("lp_large.pkl", "wb") as f:
+#     pickle.dump(lp, f)
+#
+# lp._to_bqm_qubo_ising(p)
+# lp._to_cqm()
+#
+#
+# print("-----------------------------------------------------")
+# print("Number of q-bits", lp._count_qubits())
+# print("Number of couplings Js:", lp._count_quadratic_couplings())
+# print("Number of local filds hs:", lp._count_linear_fields())
+# print("-----------------------------------------------------")
+#
+#
+#
+# simulation = False
+#
+# if simulation:
+#     sdict={"num_sweeps":5_000, "num_reads":10_000, "beta_range":(0.001, 100)}
+#     dict_list = annealing(lp, "sim", "12_AGV", sim_anneal_var_dict=sdict, load=False, store=False)
+#     print("Simulated annealing results")
+#     print_results(dict_list)
+#
+#
+# dict_list = annealing(lp, "hyb", "12_AGV", load=False, store=True)
+# print("QPU results")
+# print_results(dict_list)
+#
 
 """
 dict_list = annealing(lp, "cqm", "12_AGV", load=False, store=False)
