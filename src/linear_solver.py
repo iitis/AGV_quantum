@@ -296,6 +296,7 @@ def create_linear_model(c: list, A_ub: np.ndarray, b_ub: np.ndarray, A_eq: np. n
 
     if z_iter:
         z_variables = model.binary_var_dict(z_iter, name="z_", key_format="%s")
+        variables = variables | z_variables
 
     for index, row in enumerate(A_ub):
         non_zero = utils.see_non_zero_variables(row, iterators['x'])
