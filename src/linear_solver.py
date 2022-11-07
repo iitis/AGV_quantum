@@ -280,12 +280,22 @@ def make_linear_problem(M: int, tracks: list, tracks_len: dict, agv_routes: dict
 def create_linear_model(c: list, A_ub: np.ndarray, b_ub: np.ndarray, A_eq: np. ndarray, b_eq: np.ndarray,
                         bounds: list, iterators: dict, num_threads: int = None) -> Model:
     model = Model(name='linear_programing_AGV')
+    t_iter = iterators["t"]
+    y_iter = iterators["y"]
+    z_iter = iterators["z"]
     lower_bounds = [bound[0] for bound in bounds]
     upper_bounds = [bound[1] for bound in bounds]
 
     if num_threads:
         model.context.cplex_parameters.threads = num_threads
-    variables = model.integer_var_dict(iterators['x'], lb=lower_bounds, ub=upper_bounds, name="", key_format="%s")
+    variables = model.integer_var_dict(t_iter, lb=lower_bounds[0:len(t_iter)], ub=upper_bounds[0:len(t_iter)],
+                                       name="t_", key_format="%s")
+    if y_iter:
+        y_variables = model.binary_var_dict(y_iter, name="y_", key_format="%s")
+        variables = variables | y_variables
+
+    if z_iter:
+        z_variables = model.binary_var_dict(z_iter, name="z_", key_format="%s")
 
     for index, row in enumerate(A_ub):
         non_zero = utils.see_non_zero_variables(row, iterators['x'])
