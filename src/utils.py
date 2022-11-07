@@ -4,6 +4,8 @@ import networkx as nx
 import pandas as pd
 import numpy as np
 from dimod import SampleSet
+from docplex.mp.model import Model
+from docplex.mp.model_reader import ModelReader
 
 
 def create_stations_list(tracks: list[tuple]) -> list[str]:
@@ -232,6 +234,16 @@ def print_time(results: SampleSet):
 def print_best_feasible(results: SampleSet):
     feasible = results.filter(lambda d: d.is_feasible)
     print(feasible.first)
+
+
+def print_equations(array: np.ndarray, vect: np.ndarray, x_iter: list):
+    for row in array:
+        print(see_non_zero_variables(row, x_iter))
+
+
+def load_docpex_model(path: str) -> Model:
+    m = ModelReader.read(path)
+    return m
 
 
 # DEPRECATED
