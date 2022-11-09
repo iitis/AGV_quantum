@@ -16,7 +16,7 @@ from src.process_results import print_results
 from src.quadratic_solver import quadratic_solve_qubo, check_solution, save_results
 
 
-M = 10
+M = 5
 tracks = [("s0", "s1"), ("s1", "s0"),
           ("s1", "s2"), ("s2", "s1")
           ]
@@ -37,7 +37,7 @@ all_same_way = utils.create_same_way_dict(agv_routes)
 
 graph = utils.create_graph(tracks, agv_routes)
 
-d_max = {i: 3 for i in J}
+d_max = {i: 1 for i in J}
 tau_pass = {(j, s, sp): tracks_len[(s, sp)] for j in J for s, sp in agv_routes_as_edges[j]}
 print(tau_pass)
 tau_headway = {(j, jp, s, sp): 2 for (j, jp) in all_same_way.keys() for (s, sp) in all_same_way[(j, jp)]}
@@ -64,36 +64,34 @@ else:
 
 model = create_linear_model(obj, A_ub, b_ub, A_eq, b_eq, bounds, iterators)
 model.print_information()
-begin = time.time()
-s = model.solve()
-end = time.time()
-print("time: ", end-begin)
-model.print_solution(print_zeros=True)
-print(model.solve_details)
+if False:
+    begin = time.time()
+    s = model.solve()
+    end = time.time()
+    print("time: ", end-begin)
+    model.print_solution(print_zeros=True)
+    print(model.solve_details)
 #
 #
 # # QUBO
-# lp = LinearProg(c=obj, bounds=bounds, A_ub=A_ub, b_ub=b_ub, A_eq=A_eq, b_eq=b_eq)
-# p = 2.75
+lp = LinearProg(c=obj, bounds=bounds, A_ub=A_ub, b_ub=b_ub, A_eq=A_eq, b_eq=b_eq)
+p = 2.75
 #
-# with open("lp_tiny.pkl", "wb") as f:
-#     pickle.dump(lp, f)
+with open("lp_tiny.pkl", "wb") as f:
+     pickle.dump(lp, f)
 #
-# lp._to_bqm_qubo_ising(p)
-# lp._to_cqm()
-#
-#
+lp._to_bqm_qubo_ising(p)
+lp._to_cqm()
+
 # # this is QUBO
-# # with open("qubo_tiny.pkl", "wb") as f:
-# #     pickle.dump(lp.qubo, f)
-#
-#
-#
-# print("-----------------------------------------------------")
-# print("Number of q-bits", lp._count_qubits())
-# print("Number of couplings Js:", lp._count_quadratic_couplings())
-# print("Number of local filds hs:", lp._count_linear_fields())
-#
+with open("qubo_tiny.pkl", "wb") as f:
+     pickle.dump(lp.qubo, f)
+
+print("-----------------------------------------------------")
+print("Number of q-bits", lp._count_qubits())
+print("Number of couplings Js:", lp._count_quadratic_couplings())
+print("Number of local filds hs:", lp._count_linear_fields())
+
 
 # sdict={"num_sweeps":1_000, "num_reads":500, "beta_range":(0.01, 20)}
 # dict_list = annealing(lp, "sim", "2_tiny_AGV", sim_anneal_var_dict=sdict, load=False, store=False)
