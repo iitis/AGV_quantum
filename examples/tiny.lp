@@ -3,12 +3,12 @@
 \Problem name: linear_programing_AGV
 
 Minimize
- obj: 0.333333333333 t_out_0_s1 + 0.333333333333 t_out_1_s2
+ obj: t_out_0_s1 + t_out_1_s2
 Subject To
  c1: - t_in_0_s1 + t_out_0_s0 <= -6
  c2: - t_in_1_s2 + t_out_1_s1 <= -6
- c3: - t_in_1_s1 + t_out_0_s1 - 10 y_1_0_s1 <= 0
- c4: - t_in_0_s1 + t_out_1_s1 - 10 y_0_1_s1 <= 0
+ c3: - t_in_1_s1 + t_out_0_s1 - 5 y_1_0_s1 <= 0
+ c4: - t_in_0_s1 + t_out_1_s1 - 5 y_0_1_s1 <= 0
  c5: t_in_0_s0 - t_out_0_s0 <= -2
  c6: t_in_0_s1 - t_out_0_s1 <= -2
  c7: t_in_1_s1 - t_out_1_s1 <= -2
@@ -16,14 +16,14 @@ Subject To
  c9: y_0_1_s1 + y_1_0_s1 = 1
 
 Bounds
-       t_in_0_s0 <= 3
- 8 <= t_in_0_s1 <= 11
- 7 <= t_in_1_s1 <= 10
- 15 <= t_in_1_s2 <= 18
- 2 <= t_out_0_s0 <= 5
- 10 <= t_out_0_s1 <= 13
- 9 <= t_out_1_s1 <= 12
- 17 <= t_out_1_s2 <= 20
+       t_in_0_s0 <= 1
+ 8 <= t_in_0_s1 <= 9
+ 7 <= t_in_1_s1 <= 8
+ 15 <= t_in_1_s2 <= 16
+ 2 <= t_out_0_s0 <= 3
+ 10 <= t_out_0_s1 <= 11
+ 9 <= t_out_1_s1 <= 10
+ 17 <= t_out_1_s2 <= 18
  0 <= y_0_1_s1 <= 1
  0 <= y_1_0_s1 <= 1
 
