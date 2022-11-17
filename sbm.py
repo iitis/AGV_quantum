@@ -18,7 +18,7 @@ def load_from_npz_coo(fname: str) -> bytes:
     return buffer.getvalue()
 
 
-def send_request(addr: str, port: str, payload: bytes, params: dict) -> Union[dict, None]:
+def send_request(addr: str, port: str | None, payload: bytes, params: dict) -> dict:
     if port:
         addr += f":{port}"
     url = f"http://{addr}/solver/ising"
