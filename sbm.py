@@ -1,6 +1,5 @@
 import io
 import json
-from typing import Union
 
 import click
 import numpy as np
