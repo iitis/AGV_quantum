@@ -93,10 +93,10 @@ print("Number of couplings Js:", lp._count_quadratic_couplings())
 print("Number of local filds hs:", lp._count_linear_fields())
 
 
-# sdict={"num_sweeps":1_000, "num_reads":500, "beta_range":(0.01, 20)}
-# dict_list = annealing(lp, "sim", "2_tiny_AGV", sim_anneal_var_dict=sdict, load=False, store=False)
-# print("Simulated annealing results")
-# print_results(dict_list)
+sdict={"num_sweeps":1_000, "num_reads":500, "beta_range":(0.01, 20)}
+dict_list = annealing(lp, "sim", "2_tiny_AGV", sim_anneal_var_dict=sdict, load=False, store=False)
+print("Simulated annealing results")
+print_results(dict_list)
 
 # d1 = lp.bqm.quadratic
 # d2 = lp.bqm.linear
