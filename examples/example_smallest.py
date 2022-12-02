@@ -9,6 +9,7 @@ import numpy as np
 import pickle
 import csv
 import time
+import os
 
 from src.LinearProg import LinearProg
 from src.process_results import print_results
@@ -64,13 +65,14 @@ else:
 
 
 model = create_linear_model(obj, A_ub, b_ub, A_eq, b_eq, bounds, iterators)
-model.print_information()
-begin = time.time()
-s = model.solve()
-end = time.time()
-print("time: ", end-begin)
-model.print_solution(print_zeros=True)
-print(model.solve_details)
+# model.print_information()
+model.export_as_lp(basename="smallest", path=os.getcwd())
+# begin = time.time()
+# s = model.solve()
+# end = time.time()
+# print("time: ", end-begin)
+# model.print_solution(print_zeros=True)
+# print(model.solve_details)
 
 
 #

@@ -9,6 +9,8 @@ import numpy as np
 import pickle
 import csv
 import time
+import os
+import json
 
 from math import sqrt
 from src.LinearProg import LinearProg
@@ -39,7 +41,6 @@ graph = utils.create_graph(tracks, agv_routes)
 
 d_max = {i: 1 for i in J}
 tau_pass = {(j, s, sp): tracks_len[(s, sp)] for j in J for s, sp in agv_routes_as_edges[j]}
-print(tau_pass)
 tau_headway = {(j, jp, s, sp): 2 for (j, jp) in all_same_way.keys() for (s, sp) in all_same_way[(j, jp)]}
 
 tau_operation = {(agv, station): 2 for agv in J for station in stations}
@@ -63,35 +64,68 @@ else:
     print(res.message)
 
 model = create_linear_model(obj, A_ub, b_ub, A_eq, b_eq, bounds, iterators)
-model.print_information()
-if False:
-    begin = time.time()
-    s = model.solve()
-    end = time.time()
-    print("time: ", end-begin)
-    model.print_solution(print_zeros=True)
-    print(model.solve_details)
+# model.export_as_lp(basename="tiny",  path=os.getcwd())
+# model.print_information()
+
+# begin = time.time()
+s = model.solve()
+# end = time.time()
+# print("time: ", end-begin)
+model.print_solution(print_zeros=True)
+
+# print(model.solve_details)
 #
+
+# model = utils.load_docpex_model("tiny.lp")
+# model.print_information()
+# begin = time.time()
+# s = model.solve()
+# end = time.time()
+# print("time: ", end-begin)
+# model.print_solution(print_zeros=True)
+# print(model.solve_details)
+# #
 #
-# # QUBO
+# QUBO
 lp = LinearProg(c=obj, bounds=bounds, A_ub=A_ub, b_ub=b_ub, A_eq=A_eq, b_eq=b_eq)
 p = 2.75
-#
+
+with open("../lp_tiny.pkl", "wb") as f:
+    pickle.dump(lp, f)
 with open("lp_tiny.pkl", "wb") as f:
-     pickle.dump(lp, f)
-#
+    pickle.dump(lp, f)
 lp._to_bqm_qubo_ising(p)
-lp._to_cqm()
 
+qubo = lp.qubo[0]
+qubo = dict(sorted(qubo.items()))
+print(qubo)
+
+with open("tiny_qubo.txt", "w") as f:
+    f.write(str(qubo))
+sol, lp = quadratic_solve_qubo(f"lp_tiny.pkl")
+s_l = [int(sol.get_value(var)) for var in lp.bqm.variables]
+print(s_l)
+print(sol.objective_value)
+print(check_solution(sol, lp))
+# lp._to_cqm()
+#
+#
 # # this is QUBO
-with open("qubo_tiny.pkl", "wb") as f:
-     pickle.dump(lp.qubo, f)
-
+# # with open("qubo_tiny.pkl", "wb") as f:
+# #     pickle.dump(lp.qubo, f)
+#
+#
+#
 print("-----------------------------------------------------")
 print("Number of q-bits", lp._count_qubits())
 print("Number of couplings Js:", lp._count_quadratic_couplings())
 print("Number of local filds hs:", lp._count_linear_fields())
+#
 
+# sdict={"num_sweeps":1_000, "num_reads":500, "beta_range":(0.01, 20)}
+# dict_list = annealing(lp, "sim", "2_tiny_AGV", sim_anneal_var_dict=sdict, load=False, store=False)
+# print("Simulated annealing results")
+# print_results(dict_list)
 
 sdict={"num_sweeps":1_000, "num_reads":500, "beta_range":(0.01, 20)}
 dict_list = annealing(lp, "sim", "2_tiny_AGV", sim_anneal_var_dict=sdict, load=False, store=False)

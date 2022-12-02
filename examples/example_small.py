@@ -8,6 +8,7 @@ from src.qubo_solver import annealing
 import numpy as np
 import pickle
 import time
+import os
 
 from scipy.optimize import linprog
 from src.LinearProg import LinearProg
@@ -67,13 +68,15 @@ else:
     print(res.message)
 
 model = create_linear_model(obj, A_ub, b_ub, A_eq, b_eq, bounds, iterators)
-model.print_information()
-begin = time.time()
-s = model.solve()
-end = time.time()
-print("time: ", end-begin)
-model.print_solution(print_zeros=True)
-print(model.solve_details)
+#model = utils.load_docpex_model("small.lp")
+model.export_as_lp(basename="small", path=os.getcwd())
+# model.print_information()
+# # begin = time.time()
+# s = model.solve()
+# # end = time.time()
+# # print("time: ", end-begin)
+# model.print_solution(print_zeros=True)
+# print(model.solve_details)
 
 
 

@@ -154,6 +154,8 @@ def count_edges(qubo: dict) -> int:
 
 def quadratic_solve_qubo(lp_location: str, num_threads: int = None) -> (SolveSolution, LinearProg):
     lp = load_linear_prog_object(lp_location)
+    p = 2.75
+    lp._to_bqm_qubo_ising(p)
     lp = add_zero_h_qubo(lp)
     qubo = lp.qubo[0]
 
@@ -166,7 +168,7 @@ def quadratic_solve_qubo(lp_location: str, num_threads: int = None) -> (SolveSol
     #m.print_information()
     m.add_progress_listener(TextProgressListener(clock='Objective'))
     sol = m.solve()
-    #m.print_solution()
+    m.print_solution()
     return sol, lp
 
 

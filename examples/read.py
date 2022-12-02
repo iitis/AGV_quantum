@@ -17,11 +17,11 @@ def load_linear_prog_object(lp_location: str) -> LinearProg:
 
 
 sampler = LeapHybridSampler()
-lp = load_linear_prog_object("lp_smallest.pkl")
-re = load_results("annealing_results/2_AGV/real_2200_250_1765")
-print(re.first)
-print(re.info['timing'])
-#print_time(re)
-#re_dict = get_results(re, lp)
-#print_best_feasible(re)
+lp = load_linear_prog_object("lp_small.pkl")
+re = load_results("annealing_results/12_AGV/cqm")
+# print(re)
+# print(re.info)
+print_time(re)
+# #re_dict = get_results(re, lp)
+print_best_feasible(re)
 

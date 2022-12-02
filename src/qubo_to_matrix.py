@@ -8,12 +8,18 @@ def qubo_to_matrix(qubo: dict) -> np.ndarray:
     qubo = dict(sorted(qubo.items()))
 
     data = sorted(list(lp.bqm.variables))
+    print(data)
+    print(qubo)
     df = pd.DataFrame(columns=data, index=data)
 
     for item, value in qubo.items():
         df.at[item[0], item[1]] = value
+        df.at[item[1], item[0]] = value
     df.fillna(0, inplace=True)
+    print(df)
     array = df.to_numpy()
+
+    array = np.triu(array)
     return array
 
 
