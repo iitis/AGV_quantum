@@ -21,10 +21,18 @@ class NpEncoder(json.JSONEncoder):
             return obj.tolist()
         return json.JSONEncoder.default(self, obj)
 
+def load_from_npz_coo(fname: str):
+    J = load_npz(fname).todense()
+    J = J + J.T - np.diag(np.diagonal(J))
+    J = csc_matrix(J)
+    # for (k, l) in zip(*J.nonzero()):
+    #     if k != l:
+    #         J[k, l] *= 2
+    return J
 
-def load_from_npz_coo(fname: str) -> bytes:
+def get_mm_buffer(fname: str) -> bytes:
     buffer = io.BytesIO()
-    J = load_npz(fname)
+    J = load_from_npz_coo(fname)
     mmwrite(
         buffer, J, field="real", symmetry="symmetric", precision=4
     )  # as per docs, precision can be changed
@@ -36,10 +44,7 @@ def send_request(addr: str, port: str | None, payload: bytes, params: dict) -> d
         addr += f":{port}"
     url = f"http://{addr}/solver/ising"
     headers = {"Content-Type": "application/octet-stream"}
-    # try:
     resp = requests.post(url, params=params, data=payload, headers=headers)
-    # except:
-        # return {}
     if resp.status_code == 200:
         return resp.json()
     else:
@@ -65,8 +70,8 @@ def _brute_force(i, J):
     return energy
 
 
-def brute_focrce(fname: str) -> dict:
-    J = csc_matrix(load_npz(fname))
+def brute_force(fname: str) -> dict:
+    J = load_from_npz_coo(fname)
     L = J.shape[0]
     N = 2**L
     with Pool() as p:
@@ -77,11 +82,15 @@ def brute_focrce(fname: str) -> dict:
 @click.command()
 @click.option("--fname", help="file to load from (coo saved as npz)", required=True)
 @click.option("--port", "-p", help="Port of the AWS VM")
-@click.option("--addr", help="IP addr of the AWS VM", required=True)
+@click.option("--addr", help="IP addr of the AWS VM")
 @click.option("--loops", help="Loops setting for SBM")
 @click.option("--steps", help="Steps setting for SBM")
 @click.option(
-    "--bf", is_flag=True, show_default=True, default=False, help="Simulate using bruteforce"
+    "--bf",
+    is_flag=True,
+    show_default=True,
+    default=False,
+    help="Simulate using bruteforce",
 )
 @click.option("--dt", help="dt setting for SBM (must be positive)", callback=_validate_positive)
 @click.option("--xi", help="C setting for SBM (must be positive)", callback=_validate_positive)
@@ -89,29 +98,33 @@ def brute_focrce(fname: str) -> dict:
 def main(fname, port, addr, loops, steps, bf, dt, xi, output):
     params = {"loops": loops, "steps": steps, "dt": dt, "C": xi}
     params = {k: v for k, v in params.items() if v}
-    payload = load_from_npz_coo(fname)
-    ret = send_request(addr, port, payload, params)
+    ret = {}
+    if addr:
+        payload = get_mm_buffer(fname)
+        ret = send_request(addr, port, payload, params)
     with open(output, "w") as fd:
         fd.write("# First line: sbm, if available, second line: brute-force\n")
         fd.write(json.dumps(ret, ensure_ascii=False))
         fd.write("\n")
     if bf:
-        energies = brute_focrce(fname)
+        energies = brute_force(fname)
         sort_idx = np.argsort(energies)
         best_idx, worst_idx = sort_idx[0], sort_idx[-1]
         best_energy, worst_energy = energies[best_idx], energies[worst_idx]
 
         best_dict = {
             "best_energy": best_energy,
-            "best_state": best_idx,
+            "best_idx": best_idx,
+            "best_state": [int(x) for x in bin(best_idx)[2:].zfill(21)],
             "worst_energy": worst_energy,
-            "worst_state": worst_idx,
+            "worst_idx": worst_idx,
+            "worst_state": [int(x) for x in bin(worst_idx)[2:].zfill(21)]
         }
         with open(output, "a") as fd:
             fd.write(json.dumps(best_dict, ensure_ascii=False, cls=NpEncoder))
             fd.write("\n")
 
-
+        return energies
 if __name__ == "__main__":
     main()
 
