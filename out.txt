@@ -1,2 +1,3 @@
 # First line: sbm, if available, second line: brute-force
 {"id": "r4559172467", "time": 14.82, "wait": 0, "runs": 320000, "steps": 10000, "C": 0.058813, "dt": 1, "message": "finished", "value": -27.5, "result": [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 1]}
+{"best_energy": -27.5, "best_state": 129, "worst_energy": 227.5, "worst_state": 2097022}
