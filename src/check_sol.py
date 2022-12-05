@@ -1,10 +1,14 @@
 from dimod.sampleset import SampleSet
-from src.process_results import get_results, print_results, analyze_constraints, get_objective
-from src.quadratic_solver import load_linear_prog_object
+from src.process_results import get_results
+from src.quadratic_solver import load_linear_prog_object, process_result
+import  json
+from src.utils import check_solution_list
+
+with open("results/out_largest.json", "r") as f:
+    res = json.load(f)
+
+lp = load_linear_prog_object("lp_files/lp_largest.pkl")
 
 
-lp = load_linear_prog_object("../lp_tiny.pkl")
-sol = [0, 0, 1, 0, 0, 0, 0, 1, 1, 1, 0, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0]
-sample = SampleSet.from_samples(sol, "BINARY", 0)
-
-print(lp.interpreter(sample))
+res = res["result"]
+print(check_solution_list(res, lp))
