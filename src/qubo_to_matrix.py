@@ -1,31 +1,12 @@
-from quadratic_solver import load_linear_prog_object, count_vertices
+from src.quadratic_solver import load_linear_prog_object
+from src.utils import qubo_to_matrix
 import scipy.sparse as sparse
-import pandas as pd
-import numpy as np
-
-
-def qubo_to_matrix(qubo: dict) -> np.ndarray:
-    qubo = dict(sorted(qubo.items()))
-
-    data = sorted(list(lp.bqm.variables))
-    print(data)
-    print(qubo)
-    df = pd.DataFrame(columns=data, index=data)
-
-    for item, value in qubo.items():
-        df.at[item[0], item[1]] = value
-        df.at[item[1], item[0]] = value
-    df.fillna(0, inplace=True)
-    print(df)
-    array = df.to_numpy()
-
-    array = np.triu(array)
-    return array
-
 
 if __name__ == "__main__":
-    lp = load_linear_prog_object("../lp_tiny.pkl")
+    p = 2.75
+    lp = load_linear_prog_object("lp_files/lp_largest.pkl")
+    lp._to_bqm_qubo_ising(p)
     qubo = lp.qubo[0]
-    matrix = qubo_to_matrix(qubo)
+    matrix = qubo_to_matrix(qubo, lp)
     matrix = sparse.coo_matrix(matrix)
-    sparse.save_npz("tiny_qubo_coo.npz", matrix)
+    sparse.save_npz("largest_qubo_coo.npz", matrix)
