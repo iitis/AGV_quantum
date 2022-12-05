@@ -10,7 +10,7 @@ from src.LinearProg import LinearProg
 import dimod
 from src.process_results import get_results
 from src.quadratic_solver import process_result
-from src.qubo_to_matrix import qubo_to_matrix
+
 
 
 def create_stations_list(tracks: list[tuple]) -> list[str]:
@@ -249,6 +249,22 @@ def print_equations(array: np.ndarray, vect: np.ndarray, x_iter: list):
 def load_docpex_model(path: str) -> Model:
     m = ModelReader.read(path)
     return m
+
+
+def qubo_to_matrix(qubo: dict, lp: LinearProg) -> np.ndarray:
+    qubo = dict(sorted(qubo.items()))
+    data = sorted(list(lp.bqm.variables))
+
+    df = pd.DataFrame(columns=data, index=data)
+    for item, value in qubo.items():
+        df.at[item[0], item[1]] = value
+        df.at[item[1], item[0]] = value
+    df.fillna(0, inplace=True)
+    array = df.to_numpy()
+
+    array = np.triu(array)
+    return array
+
 
 
 def check_solution_list(sol: list, lp: LinearProg):
