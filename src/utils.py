@@ -6,6 +6,11 @@ import numpy as np
 from dimod import SampleSet
 from docplex.mp.model import Model
 from docplex.mp.model_reader import ModelReader
+from src.LinearProg import LinearProg
+import dimod
+from src.process_results import get_results
+from src.quadratic_solver import process_result
+from src.qubo_to_matrix import qubo_to_matrix
 
 
 def create_stations_list(tracks: list[tuple]) -> list[str]:
@@ -244,6 +249,26 @@ def print_equations(array: np.ndarray, vect: np.ndarray, x_iter: list):
 def load_docpex_model(path: str) -> Model:
     m = ModelReader.read(path)
     return m
+
+
+def check_solution_list(sol: list, lp: LinearProg):
+    data = sorted(list(lp.bqm.variables))
+    sol_dict = {data[i]: sol[i] for i in range(len(sol))}
+    qubo = lp.qubo[0]
+    matrix = qubo_to_matrix(qubo, lp)
+    energy = compute_energy(sol, matrix)
+    sampleset = dimod.SampleSet.from_samples(dimod.as_samples(sol_dict), 'BINARY', energy)
+    sampleset = lp.interpreter(sampleset)
+    print(sampleset)
+    results = get_results(sampleset, prob=lp)
+    results = process_result(results)
+
+    return results["feasible"], results
+
+
+def compute_energy(sol: list, matrix: np.ndarray):
+    sol = np.array(sol)
+    return np.matmul(np.matmul(sol, matrix), sol.transpose())
 
 
 # DEPRECATED
