@@ -102,24 +102,24 @@ print(model.solve_details)
 # if simulation:
 #     sdict={"num_sweeps":10_000, "num_reads":1_000, "beta_range":(0.0001, 100)}
 #     dict_list = annealing(lp, "sim", "6_AGV", sim_anneal_var_dict=sdict, load=False, store=False)
-#     print("Simulated annealing results")
+#     print("Simulated annealing lp_files")
 #     print_results(dict_list)
 #
 # dict_list = annealing(lp, "hyb", "6_AGV", load=False, store=True)
-# print("QPU results")
+# print("QPU lp_files")
 # print_results(dict_list)
 
 
 """
 
 dict_list = annealing(lp, "cqm", "6_AGV", load=True, store=False)
-print("CQM results:")
+print("CQM lp_files:")
 print_results(dict_list)
 
 
 
 
 dict_list = annealing(lp, "real", "6_AGV", load=True, store=False)
-print("QPU results")
+print("QPU lp_files")
 print_results(dict_list)
 """

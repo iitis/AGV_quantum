@@ -1,5 +1,8 @@
 # 2 AGV example
-
+from dimod.sampleset import SampleSet
+import dimod
+import minorminer
+from dwave.system import DWaveSampler
 from src import utils
 from src.linear_solver import solve
 from src.linear_solver import make_linear_problem, create_linear_model
@@ -16,7 +19,9 @@ from math import sqrt
 from src.LinearProg import LinearProg
 from src.process_results import print_results
 from src.quadratic_solver import quadratic_solve_qubo, check_solution, save_results
+from src.utils import check_solution_list
 
+cwd = os.getcwd()
 
 M = 5
 tracks = [("s0", "s1"), ("s1", "s0"),
@@ -29,8 +34,7 @@ tracks_len = {("s0", "s1"): 6, ("s1", "s0"): 6,
               }
 
 agv_routes = {0: ("s0", "s1"),
-              1: ("s1", "s2")
-            }
+              1: ("s1", "s2")}
 
 stations = utils.create_stations_list(tracks)
 J = utils.create_agv_list(agv_routes)
@@ -45,8 +49,7 @@ tau_headway = {(j, jp, s, sp): 2 for (j, jp) in all_same_way.keys() for (s, sp) 
 
 tau_operation = {(agv, station): 2 for agv in J for station in stations}
 
-initial_conditions = {("in", 0, "s0"): 0, ("in", 1, "s1"): 7
-                     }
+initial_conditions = {("in", 0, "s0"): 0, ("in", 1, "s1"): 7}
 
 weights = {j: 1 for j in J}
 
@@ -62,52 +65,94 @@ if res.success:
     utils.nice_print(res, agv_routes, weights, d_max,  v_in, v_out, iterators)  
 else:
     print(res.message)
-
-model = create_linear_model(obj, A_ub, b_ub, A_eq, b_eq, bounds, iterators)
-# model.export_as_lp(basename="tiny",  path=os.getcwd())
-# model.print_information()
-
-# begin = time.time()
-s = model.solve()
-# end = time.time()
-# print("time: ", end-begin)
-model.print_solution(print_zeros=True)
-
-# print(model.solve_details)
 #
-
-# model = utils.load_docpex_model("tiny.lp")
-# model.print_information()
-# begin = time.time()
+#
+# model = create_linear_model(obj, A_ub, b_ub, A_eq, b_eq, bounds, iterators)
+# # model.export_as_lp(basename="tiny",  path=os.getcwd())
+# # model.print_information()
+#
+# # begin = time.time()
 # s = model.solve()
-# end = time.time()
-# print("time: ", end-begin)
+# # end = time.time()
+# # print("time: ", end-begin)
 # model.print_solution(print_zeros=True)
-# print(model.solve_details)
+#
+# # print(model.solve_details)
 # #
 #
-# QUBO
+# # model = utils.load_docpex_model("tiny.lp")
+# # model.print_information()
+# # begin = time.time()
+# # s = model.solve()
+# # end = time.time()
+# # print("time: ", end-begin)
+# # model.print_solution(print_zeros=True)
+# # print(model.solve_details)
+# # #
+# #
+# # QUBO
 lp = LinearProg(c=obj, bounds=bounds, A_ub=A_ub, b_ub=b_ub, A_eq=A_eq, b_eq=b_eq)
-p = 2.75
-
-with open("../lp_tiny.pkl", "wb") as f:
-    pickle.dump(lp, f)
-with open("lp_tiny.pkl", "wb") as f:
-    pickle.dump(lp, f)
+p = 5
+#
+# with open("lp_files/lp_tiny.pkl", "wb") as f:
+#     pickle.dump(lp, f)
+# with open("lp_tiny.pkl", "wb") as f:
+#     pickle.dump(lp, f)
 lp._to_bqm_qubo_ising(p)
 
+#
 qubo = lp.qubo[0]
 qubo = dict(sorted(qubo.items()))
 print(qubo)
+linear = lp.ising[0]
 
-with open("tiny_qubo.txt", "w") as f:
-    f.write(str(qubo))
-sol, lp = quadratic_solve_qubo(f"lp_tiny.pkl")
-s_l = [int(sol.get_value(var)) for var in lp.bqm.variables]
-print(s_l)
-print(sol.objective_value)
-print(check_solution(sol, lp))
-# lp._to_cqm()
+
+def number():
+    i = 1
+    while True:
+        yield i
+        i += 1
+
+
+number = number()
+
+linear_qubo = []
+for key1, key2 in qubo.keys():
+    if key1 == key2:
+        linear_qubo.append(key1)
+
+key_numbers = {key: next(number) for key in linear_qubo}
+spinglass_qubo = {}
+for (key1, key2), value in qubo.items():
+    spinglass_qubo[(key_numbers[key1], key_numbers[key2])] = value
+
+print(spinglass_qubo)
+
+with open(os.path.join(cwd, "..", "qubo", "tiny_qubo_spinglass.txt"), "w") as f:
+    f.write(f"# offset: {lp.qubo[1]} \n")
+    for (i, j), v in spinglass_qubo.items():
+        if i == j:
+            f.write(f"{i} {j} {v} \n")
+    for (i, j), v in spinglass_qubo.items():
+        if i != j:
+            f.write(f"{i} {j} {v} \n")
+
+#
+# pegasus = DWaveSampler(solver="Advantage_system6.1").to_networkx_graph()
+#
+# qubo2 = minorminer.find_embedding(qubo, pegasus)
+# print(qubo2)
+# #
+# # with open("tiny_qubo.txt", "w") as f:
+# #     f.write(str(qubo))
+#sol, lp = quadratic_solve_qubo(f"lp_tiny.pkl")
+# # s_l = [int(sol.get_value(var)) for var in lp.bqm.variables]
+# # print(s_l)
+# # print(sol.objective_value)
+# # print(check_solution(sol, lp))
+#var = [0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 0, 0, 1, 1, 0, 0, 0, 1]
+#print(check_solution_list(var, lp))
+
 #
 #
 # # this is QUBO
@@ -116,21 +161,21 @@ print(check_solution(sol, lp))
 #
 #
 #
-print("-----------------------------------------------------")
-print("Number of q-bits", lp._count_qubits())
-print("Number of couplings Js:", lp._count_quadratic_couplings())
-print("Number of local filds hs:", lp._count_linear_fields())
+# print("-----------------------------------------------------")
+# print("Number of q-bits", lp._count_qubits())
+# print("Number of couplings Js:", lp._count_quadratic_couplings())
+# print("Number of local filds hs:", lp._count_linear_fields())
 #
 
 # sdict={"num_sweeps":1_000, "num_reads":500, "beta_range":(0.01, 20)}
 # dict_list = annealing(lp, "sim", "2_tiny_AGV", sim_anneal_var_dict=sdict, load=False, store=False)
-# print("Simulated annealing results")
+# print("Simulated annealing lp_files")
 # print_results(dict_list)
 
-sdict={"num_sweeps":1_000, "num_reads":500, "beta_range":(0.01, 20)}
-dict_list = annealing(lp, "sim", "2_tiny_AGV", sim_anneal_var_dict=sdict, load=False, store=False)
-print("Simulated annealing results")
-print_results(dict_list)
+# sdict={"num_sweeps":1_000, "num_reads":500, "beta_range":(0.01, 20)}
+# dict_list = annealing(lp, "sim", "2_tiny_AGV", sim_anneal_var_dict=sdict, load=False, store=False)
+# print("Simulated annealing lp_files")
+# print_results(dict_list)
 
 # d1 = lp.bqm.quadratic
 # d2 = lp.bqm.linear
@@ -141,29 +186,29 @@ print_results(dict_list)
 # #int(max_bqm + sqrt(max_bqm))
 # rdict = {"num_reads": 2200, "annealing_time": 250, 'chain_strength': 4, 'solver': 'Advantage_system6.1'}
 # dict_list = annealing(lp, "real", "2_tiny_AGV", load=False, store=True)
-# print("QPU results")
+# print("QPU lp_files")
 # print_results(dict_list)
 
 """
 name = "tiny"
 sol, lp = quadratic_solve_qubo(f"lp_{name}.pkl")
 sol.export(f"sol_{name}.json")
-feasible, results = check_solution(sol, lp)
-save_results(results, f"{name}", "results.txt")
+feasible, lp_files = check_solution(sol, lp)
+save_results(lp_files, f"{name}", "lp_files.txt")
 """
 
 
 """
 dict_list = annealing(lp, "cqm", "2_tiny_AGV", load=False, store=False)
-print("CQM results:")
+print("CQM lp_files:")
 print_results(dict_list)
 
 
 dict_list = annealing(lp, "hyb", "2_tiny_AGV", load=False, store=True)
-print("QPU results")
+print("QPU lp_files")
 print_results(dict_list)
 
 dict_list = annealing(lp, "real", "2_tiny_AGV", load=True, store=False)
-print("QPU results")
+print("QPU lp_files")
 print_results(dict_list)
 """

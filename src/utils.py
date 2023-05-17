@@ -265,14 +265,15 @@ def qubo_to_matrix(qubo: dict, lp: LinearProg) -> np.ndarray:
     array = np.triu(array)
     return array
 
-
-
+#-212459.75   -112,475
 def check_solution_list(sol: list, lp: LinearProg):
     data = sorted(list(lp.bqm.variables))
     sol_dict = {data[i]: sol[i] for i in range(len(sol))}
     qubo = lp.qubo[0]
-    matrix = qubo_to_matrix(qubo, lp)
-    energy = compute_energy(sol, matrix)
+    offset = lp.qubo[1]
+    print(offset)
+    #matrix = qubo_to_matrix(qubo, lp)
+    energy = compute_energy(sol, lp)
     sampleset = dimod.SampleSet.from_samples(dimod.as_samples(sol_dict), 'BINARY', energy)
     sampleset = lp.interpreter(sampleset)
     print(sampleset)
@@ -282,9 +283,16 @@ def check_solution_list(sol: list, lp: LinearProg):
     return results["feasible"], results
 
 
-def compute_energy(sol: list, matrix: np.ndarray):
-    sol = np.array(sol)
-    return np.matmul(np.matmul(sol, matrix), sol.transpose())
+def compute_energy(sol: list, lp: LinearProg):
+    data = sorted(list(lp.bqm.variables))
+    sol_dict = {data[i]: sol[i] for i in range(len(sol))}
+    s = 0
+    for edge, value in lp.qubo[0].items():
+        s += sol_dict[edge[0]] * sol_dict[edge[1]] * value
+    return s
+
+    # sol = np.array(sol)
+    # return np.matmul(np.matmul(sol, matrix), sol.transpose())
 
 
 # DEPRECATED

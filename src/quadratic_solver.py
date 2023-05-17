@@ -199,8 +199,7 @@ def process_result(sampleset: list):
                 broken_constrains.append(eq)
     num_broken = len(broken_constrains)
 
-    return {"energy": energy, "objective": objective, "feasible": feasible, "broken_constrains": broken_constrains,
-            "num_broken": num_broken}
+    return {"energy": energy, "objective": objective, "feasible": feasible, "num_broken": num_broken}
 
 
 def check_solution(sol: Union[SolveSolution, dict], lp: LinearProg):

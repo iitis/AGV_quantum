@@ -4,15 +4,18 @@ from dwave.embedding import embed_qubo, diagnose_embedding
 import dwave_networkx as dnx
 import minorminer
 import networkx as nx
+import os
 from src.embed_to_SpinGlassEngine import add_zero_h_qubo, add_zero_h_ising, load_linear_prog_object, compute_edges, \
     compute_vertices, create_qubo_graph, create_ising_graph
 
+
+cwd = os.getcwd()
 
 class TestEmbedder(unittest.TestCase):
 
     @classmethod
     def setUpClass(cls) -> None:
-        cls.lp = load_linear_prog_object("tests/data/lp_smallest.pkl")
+        cls.lp = load_linear_prog_object(os.path.join(cwd, "data", "lp_smallest.pkl"))
         cls.chimera = dnx.chimera_graph(16, 16)
 
     def test_qubo(self):

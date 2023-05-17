@@ -92,8 +92,8 @@ if __name__ == "__main__":
     for problem in diagnosis:
         print(problem)
 
-    """results = pd.read_csv("../agv_results.csv", delimiter=";", header=None)
-    result_data = results.iat[0, 2]
+    """lp_files = pd.read_csv("../agv_results.csv", delimiter=";", header=None)
+    result_data = lp_files.iat[0, 2]
     result_data = result_data.replace("(", "{")
     result_data = result_data.replace(")", "}")
     result_data = result_data.replace("=>", ":")

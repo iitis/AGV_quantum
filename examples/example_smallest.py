@@ -64,9 +64,9 @@ else:
     print(res.message)
 
 
-model = create_linear_model(obj, A_ub, b_ub, A_eq, b_eq, bounds, iterators)
-# model.print_information()
-model.export_as_lp(basename="smallest", path=os.getcwd())
+# model = create_linear_model(obj, A_ub, b_ub, A_eq, b_eq, bounds, iterators)
+# # model.print_information()
+# model.export_as_lp(basename="smallest", path=os.getcwd())
 # begin = time.time()
 # s = model.solve()
 # end = time.time()
@@ -77,11 +77,11 @@ model.export_as_lp(basename="smallest", path=os.getcwd())
 
 #
 # # QUBO
-# lp = LinearProg(c=obj, bounds=bounds, A_ub=A_ub, b_ub=b_ub, A_eq=A_eq, b_eq=b_eq)
-# p = 1.5
+lp = LinearProg(c=obj, bounds=bounds, A_ub=A_ub, b_ub=b_ub, A_eq=A_eq, b_eq=b_eq)
+p = 2.75
 #
-# with open("lp_smallest.pkl", "wb") as f:
-#     pickle.dump(lp, f)
+with open("../lp_files/lp_smallest.pkl", "wb") as f:
+    pickle.dump(lp, f)
 #
 # lp._to_bqm_qubo_ising(p)
 # lp._to_cqm()
@@ -105,7 +105,7 @@ model.export_as_lp(basename="smallest", path=os.getcwd())
 # if simulation:
 #     sdict={"num_sweeps":1_000, "num_reads":500, "beta_range":(0.01, 20)}
 #     dict_list = annealing(lp, "sim", "2_AGV", sim_anneal_var_dict=sdict, load=False, store=False)
-#     print("Simulated annealing results")
+#     print("Simulated annealing lp_files")
 #     print_results(dict_list)
 #
 # d1 = lp.bqm.quadratic
@@ -117,7 +117,7 @@ model.export_as_lp(basename="smallest", path=os.getcwd())
 #
 # rdict = {"num_reads": 2200, "annealing_time": 250, 'chain_strength': int(max_bqm + sqrt(max_bqm)), 'solver': 'Advantage2_prototype1.1'}
 # dict_list = annealing(lp, "hyb", "2_AGV", load=False, store=True, real_anneal_var_dict=rdict)
-# print("QPU results")
+# print("QPU lp_files")
 # print_results(dict_list)
 #
 
@@ -125,13 +125,13 @@ model.export_as_lp(basename="smallest", path=os.getcwd())
 
 """
 dict_list = annealing(lp, "cqm", "2_AGV", load=False, store=False)
-print("CQM results:")
+print("CQM lp_files:")
 print_results(dict_list)
 
 
 
 
 dict_list = annealing(lp, "real", "2_AGV", load=True, store=False)
-print("QPU results")
+print("QPU lp_files")
 print_results(dict_list)
 """

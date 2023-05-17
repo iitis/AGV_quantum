@@ -111,11 +111,14 @@ class LinearProg:
                 decoded = pyqubo_model.decode_sample(
                     dict(sample), vartype="BINARY", feed_dict=pdict
                 )
+
                 decoded_dict = {**decoded.subh, **decoded.sample}
-                result.append({v: decoded_dict[v] for v in map(str, self.var_names)})
+
+                result.append({v: int(decoded_dict[v]) for v in map(str, self.var_names)})
+
             return dimod.SampleSet.from_samples(
-                dimod.as_samples(result), "BINARY", energies
-            )
+                dimod.as_samples(result), "INTEGER", energy=energies)
+
 
         self.interpreter = lambda ss: interpreter(ss)
 

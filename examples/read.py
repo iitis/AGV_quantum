@@ -6,6 +6,7 @@ from dwave.cloud.client import Client
 from src.LinearProg import LinearProg
 import pickle
 
+
 def load_linear_prog_object(lp_location: str) -> LinearProg:
     with open(lp_location, "rb") as f:
         lp = pickle.load(f)
@@ -17,11 +18,11 @@ def load_linear_prog_object(lp_location: str) -> LinearProg:
 
 
 sampler = LeapHybridSampler()
-lp = load_linear_prog_object("lp_small.pkl")
-re = load_results("annealing_results/12_AGV/cqm")
-# print(re)
-# print(re.info)
-print_time(re)
+lp = load_linear_prog_object("../lp_files/lp_smallest.pkl")
+re = load_results("annealing_results/2_AGV/hyb")
+print(re)
+print(re.info)
+
 # #re_dict = get_results(re, lp)
-print_best_feasible(re)
+
 

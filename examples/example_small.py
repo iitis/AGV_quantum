@@ -67,9 +67,9 @@ if res.success:
 else:
     print(res.message)
 
-model = create_linear_model(obj, A_ub, b_ub, A_eq, b_eq, bounds, iterators)
-#model = utils.load_docpex_model("small.lp")
-model.export_as_lp(basename="small", path=os.getcwd())
+# model = create_linear_model(obj, A_ub, b_ub, A_eq, b_eq, bounds, iterators)
+# #model = utils.load_docpex_model("small.lp")
+# model.export_as_lp(basename="small", path=os.getcwd())
 # model.print_information()
 # # begin = time.time()
 # s = model.solve()
@@ -82,15 +82,18 @@ model.export_as_lp(basename="small", path=os.getcwd())
 
 # QUBO
 #
-# lp = LinearProg(c=obj, bounds=bounds, A_ub=A_ub, b_ub=b_ub, A_eq=A_eq, b_eq=b_eq)
-#
-# p =2.75
-#
-# with open("lp_small.pkl", "wb") as f:
+lp = LinearProg(c=obj, bounds=bounds, A_ub=A_ub, b_ub=b_ub, A_eq=A_eq, b_eq=b_eq)
+
+p = 2.75
+
+# with open("../lp_files/lp_small.pkl", "wb") as f:
 #     pickle.dump(lp, f)
-#
-# lp._to_bqm_qubo_ising(p)
-# lp._to_cqm()
+
+lp._to_bqm_qubo_ising(p)
+
+ising = lp.ising
+with open("ising_example.pkl", "wb") as f:
+    pickle.dump(ising, f)
 #
 #
 #
@@ -105,7 +108,7 @@ model.export_as_lp(basename="small", path=os.getcwd())
 # if simulation:
 #     sdict={"num_sweeps":25_000, "num_reads":100_000, "beta_range":(0.001, 100)}
 #     dict_list = annealing(lp, "sim", "4_AGV", sim_anneal_var_dict=sdict, load=True, store=False)
-#     print("Simulated annealing results")
+#     print("Simulated annealing lp_files")
 #     print_results(dict_list)
 #
 #
@@ -118,18 +121,18 @@ model.export_as_lp(basename="small", path=os.getcwd())
 #
 # rdict = {"num_reads": 2200, "annealing_time": 250, 'chain_strength': int(max_bqm + sqrt(max_bqm)), 'solver': 'Advantage_system6.1'}
 # dict_list = annealing(lp, "real", "4_AGV", load=False, store=True, real_anneal_var_dict=rdict)
-# print("QPU results")
+# print("QPU lp_files")
 # print_results(dict_list)
 
 """
 dict_list = annealing(lp, "cqm", "4_AGV", load=False, store=False)
-print("CQM results:")
+print("CQM lp_files:")
 print_results(dict_list)
 
 
 
 
 dict_list = annealing(lp, "real", "4_AGV", load=True, store=False)
-print("QPU results")
+print("QPU lp_files")
 print_results(dict_list)
 """

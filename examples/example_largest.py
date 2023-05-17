@@ -102,7 +102,7 @@ print("make qubo")
 lp = LinearProg(c=obj, bounds=bounds, A_ub=A_ub, b_ub=b_ub, A_eq=A_eq, b_eq=b_eq)
 p =2.75
 #
-# with open("lp_large.pkl", "wb") as f:
+# with open("lp_files/lp_largest.pkl", "wb") as f:
 #     pickle.dump(lp, f)
 #
 lp._to_bqm_qubo_ising(p)
@@ -122,27 +122,12 @@ print("-----------------------------------------------------")
 # if simulation:
 #     sdict={"num_sweeps":5_000, "num_reads":10_000, "beta_range":(0.001, 100)}
 #     dict_list = annealing(lp, "sim", "12_AGV", sim_anneal_var_dict=sdict, load=False, store=False)
-#     print("Simulated annealing results")
+#     print("Simulated annealing lp_files")
 #     print_results(dict_list)
 #
 #
-# dict_list = annealing(lp, "hyb", "12_AGV", load=False, store=True)
-# print("QPU results")
-# print_results(dict_list)
-#
 
-dict_list = annealing(lp, "cqm", "15_AGV", load=False, store=True)
-print("CQM results:")
+dict_list = annealing(lp, "hyb", "15_AGV", load=False, store=True)
+print("CQM lp_files:")
 print_results(dict_list)
 
-"""
-dict_list = annealing(lp, "cqm", "12_AGV", load=False, store=False)
-print("CQM results:")
-print_results(dict_list)
-
-
-
-dict_list = annealing(lp, "real", "12_AGV", load=True, store=False)
-print("QPU results")
-print_results(dict_list)
-"""
