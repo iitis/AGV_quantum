@@ -53,162 +53,186 @@ initial_conditions = {("in", 0, "s0"): 0, ("in", 1, "s1"): 7}
 
 weights = {j: 1 for j in J}
 
-obj, A_ub, b_ub, A_eq, b_eq, bounds, iterators = make_linear_problem(M, tracks, tracks_len, agv_routes, d_max,
-                                                 tau_pass, tau_headway, tau_operation, weights, initial_conditions)
 
-res, iterators = solve(obj, A_ub, b_ub, A_eq, b_eq, bounds, iterators)
-print_ILP_size(A_ub, b_ub, A_eq, b_eq)
+if __name__ == "__main__":
 
-# linear solver
-if res.success:
-    v_in, v_out = utils.create_v_in_out(tracks_len, agv_routes, tau_operation, iterators, initial_conditions)
-    utils.nice_print(res, agv_routes, weights, d_max,  v_in, v_out, iterators)  
-else:
-    print(res.message)
-#
-#
-# model = create_linear_model(obj, A_ub, b_ub, A_eq, b_eq, bounds, iterators)
-# # model.export_as_lp(basename="tiny",  path=os.getcwd())
-# # model.print_information()
-#
-# # begin = time.time()
-# s = model.solve()
-# # end = time.time()
-# # print("time: ", end-begin)
-# model.print_solution(print_zeros=True)
-#
-# # print(model.solve_details)
-# #
-#
-# # model = utils.load_docpex_model("tiny.lp")
-# # model.print_information()
-# # begin = time.time()
-# # s = model.solve()
-# # end = time.time()
-# # print("time: ", end-begin)
-# # model.print_solution(print_zeros=True)
-# # print(model.solve_details)
-# # #
-# #
-# # QUBO
-lp = LinearProg(c=obj, bounds=bounds, A_ub=A_ub, b_ub=b_ub, A_eq=A_eq, b_eq=b_eq)
-p = 5
-#
-# with open("lp_files/lp_tiny.pkl", "wb") as f:
-#     pickle.dump(lp, f)
-# with open("lp_tiny.pkl", "wb") as f:
-#     pickle.dump(lp, f)
-lp._to_bqm_qubo_ising(p)
+    obj, A_ub, b_ub, A_eq, b_eq, bounds, iterators = make_linear_problem(M, tracks, tracks_len, agv_routes, d_max,
+                                                     tau_pass, tau_headway, tau_operation, weights, initial_conditions)
 
-#
-qubo = lp.qubo[0]
-qubo = dict(sorted(qubo.items()))
-print(qubo)
-linear = lp.ising[0]
+    res, iterators = solve(obj, A_ub, b_ub, A_eq, b_eq, bounds, iterators)
+    print_ILP_size(A_ub, b_ub, A_eq, b_eq)
 
+    # linear solver
+    if res.success:
+        v_in, v_out = utils.create_v_in_out(tracks_len, agv_routes, tau_operation, iterators, initial_conditions)
+        utils.nice_print(res, agv_routes, weights, d_max,  v_in, v_out, iterators)
+    else:
+        print(res.message)
+    #
+    #
+    # model = create_linear_model(obj, A_ub, b_ub, A_eq, b_eq, bounds, iterators)
+    # # model.export_as_lp(basename="tiny",  path=os.getcwd())
+    # # model.print_information()
+    #
+    # # begin = time.time()
+    # s = model.solve()
+    # # end = time.time()
+    # # print("time: ", end-begin)
+    # model.print_solution(print_zeros=True)
+    #
+    # # print(model.solve_details)
+    # #
+    #
+    # # model = utils.load_docpex_model("tiny.lp")
+    # # model.print_information()
+    # # begin = time.time()
+    # # s = model.solve()
+    # # end = time.time()
+    # # print("time: ", end-begin)
+    # # model.print_solution(print_zeros=True)
+    # # print(model.solve_details)
+    # # #
+    # #
+    # # QUBO
+    lp = LinearProg(c=obj, bounds=bounds, A_ub=A_ub, b_ub=b_ub, A_eq=A_eq, b_eq=b_eq)
+    p = 5
+    #
+    # with open("lp_files/lp_tiny.pkl", "wb") as f:
+    #     pickle.dump(lp, f)
+    # with open("lp_tiny.pkl", "wb") as f:
+    #     pickle.dump(lp, f)
+    lp._to_bqm_qubo_ising(p)
 
-def number():
-    i = 1
-    while True:
-        yield i
-        i += 1
+    #
+    qubo = lp.qubo[0]
+    qubo = dict(sorted(qubo.items()))
+    lin = lp.ising[0]
+    quad = lp.ising[1]
+    quad = dict(sorted(quad.items()))
+    ising_offset = lp.ising[2]
 
 
-number = number()
 
-linear_qubo = []
-for key1, key2 in qubo.keys():
-    if key1 == key2:
-        linear_qubo.append(key1)
-
-key_numbers = {key: next(number) for key in linear_qubo}
-spinglass_qubo = {}
-for (key1, key2), value in qubo.items():
-    spinglass_qubo[(key_numbers[key1], key_numbers[key2])] = value
-
-print(spinglass_qubo)
-
-with open(os.path.join(cwd, "..", "qubo", "tiny_qubo_spinglass.txt"), "w") as f:
-    f.write(f"# offset: {lp.qubo[1]} \n")
-    for (i, j), v in spinglass_qubo.items():
-        if i == j:
-            f.write(f"{i} {j} {v} \n")
-    for (i, j), v in spinglass_qubo.items():
-        if i != j:
-            f.write(f"{i} {j} {v} \n")
-
-#
-# pegasus = DWaveSampler(solver="Advantage_system6.1").to_networkx_graph()
-#
-# qubo2 = minorminer.find_embedding(qubo, pegasus)
-# print(qubo2)
-# #
-# # with open("tiny_qubo.txt", "w") as f:
-# #     f.write(str(qubo))
-#sol, lp = quadratic_solve_qubo(f"lp_tiny.pkl")
-# # s_l = [int(sol.get_value(var)) for var in lp.bqm.variables]
-# # print(s_l)
-# # print(sol.objective_value)
-# # print(check_solution(sol, lp))
-#var = [0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 0, 0, 1, 1, 0, 0, 0, 1]
-#print(check_solution_list(var, lp))
-
-#
-#
-# # this is QUBO
-# # with open("qubo_tiny.pkl", "wb") as f:
-# #     pickle.dump(lp.qubo, f)
-#
-#
-#
-# print("-----------------------------------------------------")
-# print("Number of q-bits", lp._count_qubits())
-# print("Number of couplings Js:", lp._count_quadratic_couplings())
-# print("Number of local filds hs:", lp._count_linear_fields())
-#
-
-# sdict={"num_sweeps":1_000, "num_reads":500, "beta_range":(0.01, 20)}
-# dict_list = annealing(lp, "sim", "2_tiny_AGV", sim_anneal_var_dict=sdict, load=False, store=False)
-# print("Simulated annealing lp_files")
-# print_results(dict_list)
-
-# sdict={"num_sweeps":1_000, "num_reads":500, "beta_range":(0.01, 20)}
-# dict_list = annealing(lp, "sim", "2_tiny_AGV", sim_anneal_var_dict=sdict, load=False, store=False)
-# print("Simulated annealing lp_files")
-# print_results(dict_list)
-
-# d1 = lp.bqm.quadratic
-# d2 = lp.bqm.linear
-# max_d1 = abs(d1[max(d1, key=lambda y: abs(d1[y]))])
-# max_d2 = abs(d2[max(d2, key=lambda y: abs(d2[y]))])
-# max_bqm = max(max_d1, max_d2)
-#
-# #int(max_bqm + sqrt(max_bqm))
-# rdict = {"num_reads": 2200, "annealing_time": 250, 'chain_strength': 4, 'solver': 'Advantage_system6.1'}
-# dict_list = annealing(lp, "real", "2_tiny_AGV", load=False, store=True)
-# print("QPU lp_files")
-# print_results(dict_list)
-
-"""
-name = "tiny"
-sol, lp = quadratic_solve_qubo(f"lp_{name}.pkl")
-sol.export(f"sol_{name}.json")
-feasible, lp_files = check_solution(sol, lp)
-save_results(lp_files, f"{name}", "lp_files.txt")
-"""
+    def make_spin_glass_qubo():
 
 
-"""
-dict_list = annealing(lp, "cqm", "2_tiny_AGV", load=False, store=False)
-print("CQM lp_files:")
-print_results(dict_list)
+        number = utils.number()
+
+        linear_qubo = []
+        for key1, key2 in qubo.keys():
+            if key1 == key2:
+                linear_qubo.append(key1)
+
+        key_numbers = {key: next(number) for key in linear_qubo}
+        spinglass_qubo = {}
+        for (key1, key2), value in qubo.items():
+            spinglass_qubo[(key_numbers[key1], key_numbers[key2])] = value
+
+        print(spinglass_qubo)
+
+        with open(os.path.join(cwd, "..", "qubo", "tiny_qubo_spinglass.txt"), "w") as f:
+            f.write(f"# offset: {lp.qubo[1]} \n")
+            for (i, j), v in spinglass_qubo.items():
+                if i == j:
+                    f.write(f"{i} {j} {v} \n")
+            for (i, j), v in spinglass_qubo.items():
+                if i != j:
+                    f.write(f"{i} {j} {v} \n")
 
 
-dict_list = annealing(lp, "hyb", "2_tiny_AGV", load=False, store=True)
-print("QPU lp_files")
-print_results(dict_list)
+    def make_ising_spinglass():
+        number = utils.number()
+        set_of_keys = set()
+        for i, j in quad.keys():
+            set_of_keys.add(i)
+            set_of_keys.add(j)
+        keys_number = {key: next(number) for key in set_of_keys}
 
-dict_list = annealing(lp, "real", "2_tiny_AGV", load=True, store=False)
-print("QPU lp_files")
-print_results(dict_list)
-"""
+        with open(os.path.join(cwd, "..", "qubo", "tiny_ising_spinglass.txt"), "w") as f:
+            f.write(f"# offset: {ising_offset} \n")
+            for key in set_of_keys:
+                num = keys_number[key]
+                v = lin[key] if key in lin.keys() else 0
+                f.write(f"{num} {num} {v} \n")
+            for (i, j), v in quad.items():
+                ni = keys_number[i]
+                nj = keys_number[j]
+                f.write(f"{ni} {nj} {v} \n")
+
+    make_ising_spinglass()
+
+    #
+    # pegasus = DWaveSampler(solver="Advantage_system6.1").to_networkx_graph()
+    #
+    # qubo2 = minorminer.find_embedding(qubo, pegasus)
+    # print(qubo2)
+    # #
+    # # with open("tiny_qubo.txt", "w") as f:
+    # #     f.write(str(qubo))
+    #sol, lp = quadratic_solve_qubo(f"lp_tiny.pkl")
+    # # s_l = [int(sol.get_value(var)) for var in lp.bqm.variables]
+    # # print(s_l)
+    # # print(sol.objective_value)
+    # # print(check_solution(sol, lp))
+    #var = [0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 0, 0, 1, 1, 0, 0, 0, 1]
+    #print(check_solution_list(var, lp))
+
+    #
+    #
+    # # this is QUBO
+    # # with open("qubo_tiny.pkl", "wb") as f:
+    # #     pickle.dump(lp.qubo, f)
+    #
+    #
+    #
+    # print("-----------------------------------------------------")
+    # print("Number of q-bits", lp._count_qubits())
+    # print("Number of couplings Js:", lp._count_quadratic_couplings())
+    # print("Number of local filds hs:", lp._count_linear_fields())
+    #
+
+    # sdict={"num_sweeps":1_000, "num_reads":500, "beta_range":(0.01, 20)}
+    # dict_list = annealing(lp, "sim", "2_tiny_AGV", sim_anneal_var_dict=sdict, load=False, store=False)
+    # print("Simulated annealing lp_files")
+    # print_results(dict_list)
+
+    # sdict={"num_sweeps":1_000, "num_reads":500, "beta_range":(0.01, 20)}
+    # dict_list = annealing(lp, "sim", "2_tiny_AGV", sim_anneal_var_dict=sdict, load=False, store=False)
+    # print("Simulated annealing lp_files")
+    # print_results(dict_list)
+
+    # d1 = lp.bqm.quadratic
+    # d2 = lp.bqm.linear
+    # max_d1 = abs(d1[max(d1, key=lambda y: abs(d1[y]))])
+    # max_d2 = abs(d2[max(d2, key=lambda y: abs(d2[y]))])
+    # max_bqm = max(max_d1, max_d2)
+    #
+    # #int(max_bqm + sqrt(max_bqm))
+    # rdict = {"num_reads": 2200, "annealing_time": 250, 'chain_strength': 4, 'solver': 'Advantage_system6.1'}
+    # dict_list = annealing(lp, "real", "2_tiny_AGV", load=False, store=True)
+    # print("QPU lp_files")
+    # print_results(dict_list)
+
+    """
+    name = "tiny"
+    sol, lp = quadratic_solve_qubo(f"lp_{name}.pkl")
+    sol.export(f"sol_{name}.json")
+    feasible, lp_files = check_solution(sol, lp)
+    save_results(lp_files, f"{name}", "lp_files.txt")
+    """
+
+
+    """
+    dict_list = annealing(lp, "cqm", "2_tiny_AGV", load=False, store=False)
+    print("CQM lp_files:")
+    print_results(dict_list)
+    
+    
+    dict_list = annealing(lp, "hyb", "2_tiny_AGV", load=False, store=True)
+    print("QPU lp_files")
+    print_results(dict_list)
+    
+    dict_list = annealing(lp, "real", "2_tiny_AGV", load=True, store=False)
+    print("QPU lp_files")
+    print_results(dict_list)
+    """

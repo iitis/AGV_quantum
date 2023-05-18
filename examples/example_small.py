@@ -15,6 +15,8 @@ from src.LinearProg import LinearProg
 from src.process_results import get_results, load_results, print_results, store_result
 from math import sqrt
 
+cwd = os.getcwd()
+
 M = 28
 tracks = [("s0", "s1"), ("s1", "s0"),
           ("s1", "s2"), ("s2", "s1"),
@@ -91,9 +93,70 @@ p = 2.75
 
 lp._to_bqm_qubo_ising(p)
 
-ising = lp.ising
-with open("ising_example.pkl", "wb") as f:
-    pickle.dump(ising, f)
+# ising = lp.ising
+# with open("ising_example.pkl", "wb") as f:
+#     pickle.dump(ising, f)
+
+qubo = lp.qubo[0]
+qubo = dict(sorted(qubo.items()))
+lin = lp.ising[0]
+quad = lp.ising[1]
+quad = dict(sorted(quad.items()))
+ising_offset = lp.ising[2]
+
+def make_spin_glass_qubo():
+    def number():
+        i = 1
+        while True:
+            yield i
+            i += 1
+
+    number = number()
+
+    linear_qubo = []
+    for key1, key2 in qubo.keys():
+        if key1 == key2:
+            linear_qubo.append(key1)
+
+    key_numbers = {key: next(number) for key in linear_qubo}
+    spinglass_qubo = {}
+    for (key1, key2), value in qubo.items():
+        spinglass_qubo[(key_numbers[key1], key_numbers[key2])] = value
+
+    print(spinglass_qubo)
+
+    with open(os.path.join(cwd, "..", "qubo", "tiny_qubo_spinglass.txt"), "w") as f:
+        f.write(f"# offset: {lp.qubo[1]} \n")
+        for (i, j), v in spinglass_qubo.items():
+            if i == j:
+                f.write(f"{i} {j} {v} \n")
+        for (i, j), v in spinglass_qubo.items():
+            if i != j:
+                f.write(f"{i} {j} {v} \n")
+
+
+def make_ising_spinglass():
+    number = utils.number()
+    set_of_keys = set()
+    for i, j in quad.keys():
+        set_of_keys.add(i)
+        set_of_keys.add(j)
+    keys_number = {key: next(number) for key in set_of_keys}
+
+    with open(os.path.join(cwd, "..", "qubo", "small_ising_spinglass.txt"), "w") as f:
+        f.write(f"# offset: {ising_offset} \n")
+        for key in set_of_keys:
+            num = keys_number[key]
+            v = lin[key] if key in lin.keys() else 0
+            f.write(f"{num} {num} {v} \n")
+        for (i, j), v in quad.items():
+            ni = keys_number[i]
+            nj = keys_number[j]
+            f.write(f"{ni} {nj} {v} \n")
+
+make_ising_spinglass()
+
+
 #
 #
 #

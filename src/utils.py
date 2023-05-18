@@ -12,6 +12,12 @@ from src.process_results import get_results
 from src.quadratic_solver import process_result
 
 
+def number():
+    i = 1
+    while True:
+        yield i
+        i += 1
+
 
 def create_stations_list(tracks: list[tuple]) -> list[str]:
     stations = []
