@@ -276,6 +276,7 @@ def qubo_to_matrix(qubo: dict, lp: LinearProg) -> np.ndarray:
     return array
 
 #-212459.75   -112,475
+
 def check_solution_list(sol: list, lp: LinearProg):
     data = sorted(list(lp.bqm.variables))
     sol_dict = {data[i]: sol[i] for i in range(len(sol))}
