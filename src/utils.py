@@ -1,18 +1,22 @@
 from collections import OrderedDict
 import itertools
+import os
 import networkx as nx
 import pandas as pd
 import numpy as np
 from dimod import SampleSet
 from docplex.mp.model import Model
 from docplex.mp.model_reader import ModelReader
+from typing import Optional
 from src.LinearProg import LinearProg
 import dimod
 from src.process_results import get_results
 from src.quadratic_solver import process_result
 
+cwd = os.getcwd()
 
-def number():
+
+def number_gen():
     i = 1
     while True:
         yield i
@@ -272,6 +276,7 @@ def qubo_to_matrix(qubo: dict, lp: LinearProg) -> np.ndarray:
     return array
 
 #-212459.75   -112,475
+
 def check_solution_list(sol: list, lp: LinearProg):
     data = sorted(list(lp.bqm.variables))
     sol_dict = {data[i]: sol[i] for i in range(len(sol))}
@@ -299,6 +304,65 @@ def compute_energy(sol: list, lp: LinearProg):
 
     # sol = np.array(sol)
     # return np.matmul(np.matmul(sol, matrix), sol.transpose())
+
+
+def make_spinglass_qubo(lp, nane, p: Optional[int] = None):
+    p = 5 if p is None else p
+    lp._to_bqm_qubo_ising(p)
+
+    qubo = lp.qubo[0]
+    qubo = dict(sorted(qubo.items()))
+
+    number = number_gen()
+
+    linear_qubo = []
+    for key1, key2 in qubo.keys():
+        if key1 == key2:
+            linear_qubo.append(key1)
+
+    key_numbers = {key: next(number) for key in linear_qubo}
+    spinglass_qubo = {}
+    for (key1, key2), value in qubo.items():
+        spinglass_qubo[(key_numbers[key1], key_numbers[key2])] = value
+
+    print(spinglass_qubo)
+
+    with open(os.path.join(cwd, "..", "qubo", "tiny_qubo_spinglass.txt"), "w") as f:
+        f.write(f"# offset: {lp.qubo[1]} \n")
+        for (i, j), v in spinglass_qubo.items():
+            if i == j:
+                f.write(f"{i} {j} {v} \n")
+        for (i, j), v in spinglass_qubo.items():
+            if i != j:
+                f.write(f"{i} {j} {v} \n")
+
+
+def make_spinglass_ising(lp, name, p: Optional[float] = None):
+    p = 5 if p is None else p
+
+    lp._to_bqm_qubo_ising(p)
+    lin = lp.ising[0]
+    quad = lp.ising[1]
+    quad = dict(sorted(quad.items()))
+    ising_offset = lp.ising[2]
+
+    number = number_gen()
+    set_of_keys = set()
+    for i, j in quad.keys():
+        set_of_keys.add(i)
+        set_of_keys.add(j)
+    keys_number = {key: next(number) for key in set_of_keys}
+
+    with open(os.path.join(cwd, "..", "qubo", f"{name}_ising_spinglass.txt"), "w") as f:
+        f.write(f"# offset: {ising_offset} \n")
+        for key in set_of_keys:
+            num = keys_number[key]
+            v = lin[key] if key in lin.keys() else 0
+            f.write(str(num) + " " + str(num) + " " + str(v) + "\n")
+        for (i, j), v in quad.items():
+            ni = keys_number[i]
+            nj = keys_number[j]
+            f.write(str(ni) + " " + str(nj) + " " + str(v) + "\n")
 
 
 # DEPRECATED
