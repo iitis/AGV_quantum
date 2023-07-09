@@ -1,8 +1,7 @@
 from src import utils
-from src.linear_solver import solve
-from src.linear_solver import make_linear_problem, create_linear_model
 from src.qubo_solver import annealing
-from src.linear_solver import print_ILP_size
+from src.linear_solver import print_ILP_size, LinearAGV
+from src.quadratic_solver import QuadraticAGV
 import pickle
 import time
 
@@ -52,74 +51,27 @@ initial_conditions = {("in", 0, "s0"): 0, ("in", 1, "s0"): 0, ("in", 2, "s4"): 8
 
 weights = {j: 1 for j in J}
 
-obj, A_ub, b_ub, A_eq, b_eq, bounds, iterators = make_linear_problem(M, tracks, tracks_len, agv_routes, d_max,
-                                                 tau_pass, tau_headway, tau_operation, weights, initial_conditions)
+solve_linear = False
+solve_quadratic = True
 
+if __name__ == "__main__":
 
+    AGV = LinearAGV(M, tracks, tracks_len, agv_routes, d_max, tau_pass, tau_headway, tau_operation, weights,
+                    initial_conditions)
+    print_ILP_size(AGV.A_ub, AGV.b_ub, AGV.A_eq, AGV.b_eq)
 
-res, iterators = solve(obj, A_ub, b_ub, A_eq, b_eq, bounds, iterators)
+    if solve_linear:
+        model = AGV.create_linear_model()
+        model.print_information()
+        begin = time.time()
+        sol = model.solve()
+        end = time.time()
+        print("time: ", end-begin)
+        model.print_solution(print_zeros=True)
+        # AGV.nice_print(model, sol) <- WIP
 
-# linear solver
-if res.success:
-    v_in, v_out = utils.create_v_in_out(tracks_len, agv_routes, tau_operation, iterators, initial_conditions)
-    utils.nice_print(res, agv_routes, weights, d_max,  v_in, v_out, iterators)   
-else:
-    print(res.message)
+    if solve_quadratic:
+        model = QuadraticAGV(AGV)
+        p = 5
+        model.to_bqm_qubo_ising(p)
 
-print_ILP_size(A_ub, b_ub, A_eq, b_eq)
-
-model = create_linear_model(obj, A_ub, b_ub, A_eq, b_eq, bounds, iterators)
-model.print_information()
-begin = time.time()
-s = model.solve()
-end = time.time()
-print("time: ", end-begin)
-model.print_solution(print_zeros=True)
-print(model.solve_details)
-
-
-# QUBO
-#
-# lp = LinearProg(c=obj, bounds=bounds, A_ub=A_ub, b_ub=b_ub, A_eq=A_eq, b_eq=b_eq)
-# p = 2.75
-#
-# with open("lp_medium_small.pkl", "wb") as f:
-#     pickle.dump(lp, f)
-#
-# lp._to_bqm_qubo_ising(p)
-# lp._to_cqm()
-#
-#
-#
-# print("-----------------------------------------------------")
-# print("Number of q-bits", lp._count_qubits())
-# print("Number of couplings Js:", lp._count_quadratic_couplings())
-# print("Number of local filds hs:", lp._count_linear_fields())
-# print("-----------------------------------------------------")
-#
-# simulation = False
-#
-# if simulation:
-#     sdict={"num_sweeps":10_000, "num_reads":1_000, "beta_range":(0.0001, 100)}
-#     dict_list = annealing(lp, "sim", "6_AGV", sim_anneal_var_dict=sdict, load=False, store=False)
-#     print("Simulated annealing results")
-#     print_results(dict_list)
-#
-# dict_list = annealing(lp, "hyb", "6_AGV", load=False, store=True)
-# print("QPU results")
-# print_results(dict_list)
-
-
-"""
-
-dict_list = annealing(lp, "cqm", "6_AGV", load=True, store=False)
-print("CQM results:")
-print_results(dict_list)
-
-
-
-
-dict_list = annealing(lp, "real", "6_AGV", load=True, store=False)
-print("QPU results")
-print_results(dict_list)
-"""

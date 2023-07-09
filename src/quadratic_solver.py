@@ -1,232 +1,200 @@
-from src.LinearProg import LinearProg
-import pickle
-import json
-from docplex.mp.model import Model
-from docplex.mp.solution import SolveSolution
-from src.process_results import analyze_constraints, get_results
+from src.linear_solver import LinearAGV
 import dimod
-from docplex.mp.progress import ProgressListener, ProgressClock, TextProgressListener, SolutionRecorder
-import docplex.util.environment as environment
-from typing import Union
-from math import inf
+from cpp_pyqubo import Binary, Constraint, Placeholder
+from pyqubo import LogEncInteger
+from pyqubo import Binary
 
 
-class AutomaticAborter(ProgressListener):
-    """ a simple implementation of an automatic search stopper.
-        WIP
-    """
+class QuadraticAGV:
 
-    def __init__(self, lp_instance: LinearProg, out_path:str, name:str, given_time:float = 3600., gap_fmt=None, obj_fmt=None):
-        super(AutomaticAborter, self).__init__(ProgressClock.All)
-        self.last_obj = None
-        self.given_time = given_time
-        self.lp = lp_instance
-        self.path = out_path
-        self.name = name
-        self.sol_found = False
-        self._gap_fmt = gap_fmt or "{:.2%}"
-        self._obj_fmt = obj_fmt or "{:.4f}"
-        self._count = 0
+    def __init__(self, lin_agv: LinearAGV):
+        self.lin_agv = lin_agv
 
-    def notify_start(self):
-        super(AutomaticAborter, self).notify_start()
-        self.last_obj = inf
+    def set_vars(self):
+        """Sets the number of variables and variable names"""
+        self.nvars = len(self.lin_agv.bounds)
+        self.var_names = [f"x_{i}" for i in range(self.nvars)]
 
-    def process_result(self, sampleset: list):
-        energy = sampleset[0]["energy"]
-        objective = sampleset[0]["objective"]
-        feasible = sampleset[0]["feasible"]
-        broken_constrains = []
-        if not feasible:
-            for eq, feas in sampleset[0]["feas_constraints"][0].items():
-                if not feas:
-                    broken_constrains.append(eq)
-        num_broken = len(broken_constrains)
+    def to_bqm_qubo_ising(self, pdict=None):
+        """Converts linear program into binary quadratic model
 
-        return {"energy": energy, "objective": objective, "feasible": feasible, "broken_constrains": broken_constrains,
-                "num_broken": num_broken}
-
-    def check_solution(self, sol: SolveSolution):
-
-        solved_list = [v.name for v in sol.iter_variables()]
-        sample = {v: 1 if v in solved_list else 0 for v in self.lp.bqm.variables}
-        sampleset = dimod.SampleSet.from_samples(dimod.as_samples(sample), 'BINARY', sol.objective_value)
-        sampleset = self.lp.interpreter(sampleset)
-        results = get_results(sampleset, prob=self.lp)
-        results = process_result(results)
-
-        return results["feasible"], results
-
-    def save_results(self, results: dict):
-
-        with open(self.path, "a") as f:
-            f.write(f"{self.name}: ")
-            f.write(str(results))
-
-    def is_improving(self, new_obj, eps=1e-2):
-        last_obj = self.last_obj
-        return abs(new_obj - last_obj) >= eps
-
-    def notify_solution(self, sol):
-        feasible, results = self.check_solution(sol)
-        print("test")
-        if feasible:
-            self.sol_found = True
-            self.save_results(results)
-            print("found feasible solution!")
-
-    def notify_progress(self, pdata):
-        super(AutomaticAborter, self).notify_progress(pdata)
-
-        if pdata.has_incumbent and self.is_improving(pdata.current_objective):
-
-            self.last_obj = pdata.current_objective
-
-            self._count += 1
-            pdata_has_incumbent = pdata.has_incumbent
-            incumbent_symbol = '+' if pdata_has_incumbent else ' '
-            # if pdata_has_incumbent:
-            #     self._incumbent_count += 1
-            current_obj = pdata.current_objective
-            if pdata_has_incumbent:
-                objs = self._obj_fmt.format(current_obj)
+        :param pdict: Dictionary of penalties
+        :type pdict: dict
+        """
+        c, A_ub, b_ub, A_eq, b_eq, bounds = (
+            self.lin_agv.c,
+            self.lin_agv.A_ub,
+            self.lin_agv.b_ub,
+            self.lin_agv.A_eq,
+            self.lin_agv.b_eq,
+            self.lin_agv.bounds,
+        )
+        H = 0
+        ind = 0
+        vars = []
+        for (lb, ub) in bounds:
+            if lb == 0 and ub == 1:
+                vars.append(Binary(f"x_{ind}"))
             else:
-                objs = "N/A"  # pragma: no cover
-            best_bound = pdata.best_bound
-            nb_nodes = pdata.current_nb_nodes
-            remaining_nodes = pdata.remaining_nb_nodes
-            if pdata_has_incumbent:
-                gap = self._gap_fmt.format(pdata.mip_gap)
+                vars.append(LogEncInteger(f"x_{ind}", (lb, ub)))
+            ind += 1
+
+        pyqubo_obj = sum(var * coef for var, coef in zip(vars, c) if coef != 0)
+        H += Placeholder("obj") * pyqubo_obj
+
+        num_eq = 0
+        if A_eq is not None:
+            for i in range(len(A_eq)):
+                expr = sum(
+                    A_eq[i][j] * vars[j] for j in range(self.nvars) if A_eq[i][j] != 0
+                )
+                expr -= b_eq[i]
+                H += Constraint(Placeholder(f"eq_{num_eq}") * expr ** 2, f"eq_{num_eq}")
+                num_eq += 1
+        if A_ub is not None:
+            for i in range(len(A_ub)):
+                expr = sum(
+                    A_ub[i][j] * vars[j] for j in range(self.nvars) if A_ub[i][j] != 0
+                )
+                expr -= b_ub[i]
+                slack = LogEncInteger(
+                    f"eq_{num_eq}_slack",
+                    (0, self._get_slack_ub(vars, A_ub[i], b_ub[i])),
+                )
+
+                H += Constraint(
+                    Placeholder(f"eq_{num_eq}") * (expr + slack) ** 2,
+                    f"eq_{num_eq}",
+                )
+
+                num_eq += 1
+
+        self.num_eq = num_eq
+        pyqubo_model = H.compile()
+        if pdict == None:
+            pdict = {f"eq_{i}": 2 for i in range(self.num_eq)}
+        elif type(pdict) == int or type(pdict) == float:
+            pdict = {f"eq_{i}": pdict for i in range(self.num_eq)}
+        pdict["obj"] = 1
+        self.qubo = pyqubo_model.to_qubo(feed_dict=pdict)
+        self.ising = pyqubo_model.to_ising(feed_dict=pdict)
+        self.bqm = pyqubo_model.to_bqm(feed_dict=pdict)
+
+        def interpreter(sampleset: dimod.SampleSet):
+            """This is an interpreter function for binary quadratic model. It decodes the binary variables in the sample back to integer variables using pyqubo
+
+            :param sampleset: Sampleset to analyze
+            :type sampleset: dimod.SampleSet
+            :return: New sampleset with integer variables
+            :rtype: dimod.SampleSet
+            """
+            result = []
+            energies = [d.energy for d in sampleset.data()]
+            for sample in sampleset.samples():
+                decoded = pyqubo_model.decode_sample(
+                    dict(sample), vartype="BINARY", feed_dict=pdict
+                )
+
+                decoded_dict = {**decoded.subh, **decoded.sample}
+
+                result.append({v: int(decoded_dict[v]) for v in map(str, self.var_names)})
+
+            return dimod.SampleSet.from_samples(
+                dimod.as_samples(result), "INTEGER", energy=energies)
+
+
+        self.interpreter = lambda ss: interpreter(ss)
+
+    @staticmethod
+    def _get_slack_ub(vars: list, coefs: list, offset: int) -> int:
+        """Returns upper bound for slack variables
+
+        :param vars: List of variables (can be integer or binary)
+        :type vars: list
+        :param coefs: List of coefficients for the inequality
+        :type coefs: list
+        :param offset: RHS of the inequality
+        :type offset: int
+        :return: Upper bound for the slack variable
+        :rtype: int
+        """
+        ub = 0
+        for var, coef in zip(vars, coefs):
+            if type(var) == LogEncInteger:
+                ub += coef * (var.value_range[1] if coef < 0 else var.value_range[0])
             else:
-                gap = "N/A"  # pragma: no cover
-            raw_time = pdata.time
-            rounded_time = round(raw_time, 1)
+                ub += coef * (1 if coef < 0 else 0)
 
-            print("{0:>3}{7}: Node={4} Left={5} Best Integer={1}, Best Bound={2:.4f}, gap={3}, ItCnt={8} [{6}s]"
-                  .format(self._count, objs, best_bound, gap, nb_nodes, remaining_nodes, rounded_time,
-                          incumbent_symbol, pdata.current_nb_iterations))
+        result = -ub + offset
+        assert int(result) == result
+        return int(result)
 
-        if pdata.time > self.given_time:
-            if self.sol_found:
-                self.abort()
-                print("Feasible solution found, aborting search")
+    def _to_cqm(self):
+        """Converts linear program into constrained quadratic model"""
+        c, A_ub, b_ub, A_eq, b_eq, bounds = (
+            self.c,
+            self.A_ub,
+            self.b_ub,
+            self.A_eq,
+            self.b_eq,
+            self.bounds,
+        )
 
+        ind = 0
+        vars = []
+        for (lb, ub) in self.bounds:
+            if lb == 0 and ub == 1:
+                vars.append(dimod.Binary(f"x_{ind}"))
+            else:
+                vars.append(dimod.Integer(f"x_{ind}", lower_bound=lb, upper_bound=ub))
+            ind += 1
 
+        cqm = dimod.ConstrainedQuadraticModel()
+        dimod_obj = sum(var * coef for var, coef in zip(vars, c) if coef != 0)
+        cqm.set_objective(dimod_obj)
 
+        num_eq = 0
+        if A_eq is not None:
+            for i in range(len(A_eq)):
+                expr = sum(
+                    A_eq[i][j] * vars[j] for j in range(self.nvars) if A_eq[i][j] != 0
+                )
+                new_c = expr == b_eq[i]
+                cqm.add_constraint(new_c, label=f"eq_{num_eq}")
+                num_eq += 1
+        if A_ub is not None:
+            for i in range(len(A_ub)):
+                expr = sum(
+                    A_ub[i][j] * vars[j] for j in range(self.nvars) if A_ub[i][j] != 0
+                )
+                new_c = expr <= b_ub[i]
+                cqm.add_constraint(new_c, label=f"eq_{num_eq}")
+                num_eq += 1
+        self.num_eq = num_eq
+        self.cqm = cqm
 
-def add_zero_h_qubo(lp: LinearProg) -> LinearProg:
-    for var in lp.bqm.variables:
-        if (var, var) not in lp.qubo[0]:
-            lp.qubo[0][(var, var)] = 0
-    return lp
-
-
-def add_zero_h_ising(lp: LinearProg) -> LinearProg:
-    for var in lp.bqm.variables:
-        if var not in lp.ising[0]:
-            lp.ising[0][var] = 0
-    return lp
-
-
-def load_linear_prog_object(lp_location: str) -> LinearProg:
-    with open(lp_location, "rb") as f:
-        lp = pickle.load(f)
-    p = 2.75
-    lp._to_bqm_qubo_ising(p)
-    return lp
-
-
-def count_vertices(qubo: dict) -> int:
-    s = 0
-    for key in qubo.keys():
-        if key[0] == key[1]:
-            s += 1
-    return s
-
-
-def count_edges(qubo: dict) -> int:
-    s = 0
-    for key in qubo.keys():
-        if key[0] != key[1]:
-            s += 1
-    return s
-
-
-def quadratic_solve_qubo(lp_location: str, num_threads: int = None) -> (SolveSolution, LinearProg):
-    lp = load_linear_prog_object(lp_location)
-    lp = add_zero_h_qubo(lp)
-    qubo = lp.qubo[0]
-
-    m = Model(name='qubo')
-    if num_threads:
-        m.context.cplex_parameters.threads = num_threads
-    variables = m.binary_var_dict(lp.bqm.variables, name="", key_format="%s")
-    obj_fnc = sum(variables[k1] * variables[k2] * qubo[(k1, k2)] for k1, k2 in qubo.keys())
-    m.set_objective("min", obj_fnc)
-    #m.print_information()
-    m.add_progress_listener(TextProgressListener(clock='Objective'))
-    sol = m.solve()
-    #m.print_solution()
-    return sol, lp
+    def _count_qubits(self):
+        vars = self.bqm.variables
+        return len(vars)
 
 
-def quadratic_model(lp_location: str) -> Model:
-    """
-    :param lp_location: path to lp file
-    :return: docplex model for given qubo
-    """
-    lp = load_linear_prog_object(lp_location)
-    lp = add_zero_h_qubo(lp)
-    qubo = lp.qubo[0]
-
-    model = Model(name='qubo')
-    variables = model.binary_var_dict(lp.bqm.variables, name="", key_format="%s")
-    obj_fnc = sum(variables[k1] * variables[k2] * qubo[(k1, k2)] for k1, k2 in qubo.keys())
-    model.set_objective("min", obj_fnc)
-
-    return model
-
-def process_result(sampleset: list):
-    energy = sampleset[0]["energy"]
-    objective = sampleset[0]["objective"]
-    feasible = sampleset[0]["feasible"]
-    broken_constrains = []
-    if not feasible:
-        for eq, feas in sampleset[0]["feas_constraints"][0].items():
-            if not feas:
-                broken_constrains.append(eq)
-    num_broken = len(broken_constrains)
-
-    return {"energy": energy, "objective": objective, "feasible": feasible, "broken_constrains": broken_constrains,
-            "num_broken": num_broken}
+    def _count_quadratic_couplings(self):
+        """
+        returns number of copulings - Js
+        """
+        count = 0
+        for J in self.bqm.quadratic.values():
+            if J != 0:
+                count = count + 1
+        return count
 
 
-def check_solution(sol: Union[SolveSolution, dict], lp: LinearProg):
-    if isinstance(sol, dict):
-        raise NotImplementedError
-    else:
-        solved_list = [v.name for v in sol.iter_variables()]
-        sample = {v: 1 if v in solved_list else 0 for v in lp.bqm.variables}
-        sampleset = dimod.SampleSet.from_samples(dimod.as_samples(sample), 'BINARY', sol.objective_value)
-        sampleset = lp.interpreter(sampleset)
-        results = get_results(sampleset, prob=lp)
-        results = process_result(results)
-
-        return results["feasible"], results
-
-
-def save_results(results: dict, name:str, output_path: str):
-
-    with open(output_path, "a") as f:
-        f.write(f"{name}: ")
-        f.write(str(results))
-
-
-if __name__ == "__main__":
-    for name in ["tiny", "smallest", "small", "medium_small"]:
-        sol, lp = quadratic_solve_qubo(f"lp_{name}.pkl")
-        sol.export(f"sol_{name}.json")
-        feasible, results = check_solution(sol, lp)
-        save_results(results, f"{name}", "results.txt")
-
-
+    def _count_linear_fields(self):
+        """
+        return number of local fields hs
+        """
+        count = 0
+        for h in self.bqm.linear.values():
+            if h != 0:
+                count = count + 1
+        return count

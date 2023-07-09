@@ -1,16 +1,17 @@
 from src import utils
-from src.linear_solver import solve
-from src.linear_solver import make_linear_problem, create_linear_model
 from src import train_diagram
 from src.qubo_solver import annealing
-from src.linear_solver import print_ILP_size
+from src.linear_solver import print_ILP_size, LinearAGV
+from src.quadratic_solver import QuadraticAGV
 import numpy as np
 import pickle
 import time
+import os
 
 from src.LinearProg import LinearProg
 from src.process_results import print_results
 
+cwd = os.getcwd()
 
 M = 50
 tracks = [("s0", "s1"), ("s1", "s0"),
@@ -55,81 +56,32 @@ initial_conditions = {("in", 0, "s0"): 0, ("in", 1, "s0"): 0, ("in", 2, "s4"): 8
 
 weights = {j: 1 for j in J}
 
-obj, A_ub, b_ub, A_eq, b_eq, bounds, iterators = make_linear_problem(M, tracks, tracks_len, agv_routes, d_max,
-                                                 tau_pass, tau_headway, tau_operation, weights, initial_conditions)
-
-res, iterators = solve(obj, A_ub, b_ub, A_eq, b_eq, bounds, iterators)
 #these are paths to train diagram plot
 complete_path = {"s0_in":0,"s0_out":2,"s1_in":8,"s1_out":10,"s2_in":16, "s2_out":18,"s3_in":18,"s3_out":20,"s4_in":25, "s4_out":27, "s5_in":31, "s5_out":33, "s6_in":37, "s6_out":39}
 complete_path_rev = {"s0_out":0,"s0_in":2,"s1_out":8,"s1_in":10,"s2_out":16, "s2_in":18,"s3_out":18,"s3_in":20,"s4_out":25, "s4_in":27, "s5_out":31, "s5_in":33, "s6_out":37, "s6_in":39}
 path_locs = [0,2,8,10,16, 18,18,20,25, 27, 31, 33, 37, 39]
 
-# linear solver
-if res.success:
-    v_in, v_out = utils.create_v_in_out(tracks_len, agv_routes, tau_operation, iterators, initial_conditions)
-    utils.nice_print(res, agv_routes, weights, d_max,  v_in, v_out, iterators)
-    times, paths = utils.get_data4plot(res, agv_routes, iterators, complete_path, complete_path_rev, rev = [2,3,5])
-    train_diagram.plot_train_diagram(times, paths, path_locs)
-    
-else:
-    print(res.message)
+solve_linear = False
+solve_quadratic = True
 
-print_ILP_size(A_ub, b_ub, A_eq, b_eq)
+if __name__ == "__main__":
 
-model = create_linear_model(obj, A_ub, b_ub, A_eq, b_eq, bounds, iterators)
-model.print_information()
-begin = time.time()
-s = model.solve()
-end = time.time()
-print("time: ", end-begin)
-model.print_solution(print_zeros=True)
-print(model.solve_details)
+    AGV = LinearAGV(M, tracks, tracks_len, agv_routes, d_max, tau_pass, tau_headway, tau_operation, weights,
+                    initial_conditions)
+    print_ILP_size(AGV.A_ub, AGV.b_ub, AGV.A_eq, AGV.b_eq)
 
+    if solve_linear:
+        model = AGV.create_linear_model()
+        model.print_information()
+        begin = time.time()
+        sol = model.solve()
+        end = time.time()
+        print("time: ", end-begin)
+        model.print_solution(print_zeros=True)
+        # AGV.nice_print(model, sol) <- WIP
 
+    if solve_quadratic:
+        model = QuadraticAGV(AGV)
+        p = 5
+        model.to_bqm_qubo_ising(p)
 
-# QUBO
-#
-# lp = LinearProg(c=obj, bounds=bounds, A_ub=A_ub, b_ub=b_ub, A_eq=A_eq, b_eq=b_eq)
-# p = 2.75
-#
-# with open("lp_medium.pkl", "wb") as f:
-#     pickle.dump(lp, f)
-#
-# lp._to_bqm_qubo_ising(p)
-# lp._to_cqm()
-#
-#
-#
-# print("-----------------------------------------------------")
-# print("Number of q-bits", lp._count_qubits())
-# print("Number of couplings Js:", lp._count_quadratic_couplings())
-# print("Number of local filds hs:", lp._count_linear_fields())
-# print("-----------------------------------------------------")
-#
-# simulation = False
-#
-# if simulation:
-#     sdict={"num_sweeps":10_000, "num_reads":1_000, "beta_range":(0.0001, 100)}
-#     dict_list = annealing(lp, "sim", "7_AGV", sim_anneal_var_dict=sdict, load=False, store=False)
-#     print("Simulated annealing results")
-#     print_results(dict_list)
-#
-# dict_list = annealing(lp, "hyb", "7_AGV", load=False, store=True)
-# print("QPU results")
-# print_results(dict_list)
-#
-#
-
-"""
-
-
-
-
-dict_list = annealing(lp, "cqm", "7_AGV", load=True, store=False)
-print("CQM results:")
-print_results(dict_list)
-
-dict_list = annealing(lp, "real", "7_AGV", load=True, store=False)
-print("QPU results")
-print_results(dict_list)
-"""

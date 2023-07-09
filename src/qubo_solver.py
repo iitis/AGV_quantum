@@ -86,7 +86,7 @@ def constrained_solver(
     :return: sampleset
     :rtype: dimod.SampleSet
     """
-    sampler = LeapHybridCQMSampler()
+    sampler = LeapHybridCQMSampler(token="DEV-4d60dac84f735c7621b1ff681aa32a2c59077636")
     return sampler.sample_cqm(cqm)
 
 
@@ -98,7 +98,7 @@ def hybrid_anneal(bqm: dimod.BinaryQuadraticModel) -> dimod.sampleset.SampleSet:
     :return: sampleset
     :rtype: dimod.SampleSet
     """
-    sampler = LeapHybridSampler()
+    sampler = LeapHybridSampler(token="DEV-4d60dac84f735c7621b1ff681aa32a2c59077636")
     return sampler.sample(bqm)
 
 
@@ -236,7 +236,7 @@ def annealing(
                 sampleset = hybrid_anneal(bqm)
     if store:
         if os.path.exists(file_name):
-            print("Overwriting results")
+            print("Overwriting lp_files")
         store_result(input_name, file_name, sampleset)
     if method != "cqm":
         sampleset = lp.interpreter(sampleset)
