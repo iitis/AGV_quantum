@@ -2,7 +2,7 @@ import pickle
 
 from dimod.sampleset import SampleSet
 from src.process_results import get_results
-from src.quadratic_solver import load_linear_prog_object, process_result
+from src.quadratic_solver_CPLEX import load_linear_prog_object, process_result
 import json
 from src.utils import check_solution_list
 import pandas as pd

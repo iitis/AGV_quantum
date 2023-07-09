@@ -9,10 +9,17 @@
           </mappings>
         </serverdata>
       </paths>
-      <paths name="tsmierzchalski@192.168.100.38:22">
+      <paths name="tsmierzchalski@192.168.100.221:22 password (1)">
         <serverdata>
           <mappings>
             <mapping local="$PROJECT_DIR$" web="/" />
+          </mappings>
+        </serverdata>
+      </paths>
+      <paths name="tsmierzchalski@192.168.100.38:22">
+        <serverdata>
+          <mappings>
+            <mapping deploy="/home/tsmierzchalski/projecs/AGV_quantum" local="$PROJECT_DIR$" web="/" />
           </mappings>
         </serverdata>
       </paths>

@@ -4,6 +4,8 @@ import numpy as np
 from src import utils
 from typing import Optional
 from docplex.mp.model import Model
+from docplex.mp.solution import SolveSolution
+
 
 class LinearAGV:
     """
@@ -73,6 +75,49 @@ class LinearAGV:
         s_final = {j: agv_routes[j][-1] for j in self.J}
         obj = {("out", j, s_final[j]): weights[j] / d_max[j] for j in self.J}
         self.c = [obj[v] if v in obj.keys() else 0 for v in self.x_iter]
+
+    def create_linear_model(self, num_threads: int = None) -> Model:
+
+        model = Model(name='linear_programing_AGV')
+
+        lower_bounds = [bound[0] for bound in self.bounds]
+        upper_bounds = [bound[1] for bound in self.bounds]
+
+        if num_threads:
+            model.context.cplex_parameters.threads = num_threads
+
+        variables = model.integer_var_dict(self.t_iter, lb=lower_bounds[0:len(self.t_iter)],
+                                           ub=upper_bounds[0:len(self.t_iter)], name="t_", key_format="%s")
+        if self.y_iter:
+            y_variables = model.binary_var_dict(self.y_iter, name="y_", key_format="%s")
+            variables = variables | y_variables
+
+        if self.z_iter:
+            z_variables = model.binary_var_dict(self.z_iter, name="z_", key_format="%s")
+            variables = variables | z_variables
+
+        for index, row in enumerate(self.A_ub):
+            non_zero = utils.see_non_zero_variables(row, self.x_iter)
+            # print(f"{sum([variables[var_name] * sign for var_name, sign in non_zero.items()])} <= {b_ub[index]}")
+            model.add_constraint(
+                sum([variables[var_name] * sign for var_name, sign in non_zero.items()]) <= self.b_ub[index])
+
+        for index, row in enumerate(self.A_eq):
+            non_zero = utils.see_non_zero_variables(row, self.x_iter)
+            # print(f"{sum([variables[var_name] * sign for var_name, sign in non_zero.items()])} == {b_eq[index]}")
+            model.add_constraint(
+                sum([variables[var_name] * sign for var_name, sign in non_zero.items()]) == self.b_eq[index])
+
+        obj_dict = {self.x_iter[i]: self.c[i] for i in range(len(self.c))}
+        # print(sum([variables[var_name] * sign for var_name, sign in obj_dict.items()]))
+        model.minimize(sum([variables[var_name] * sign for var_name, sign in obj_dict.items()]))
+        return model
+
+    def nice_print(self, model: Model, sol: SolveSolution):
+        # WIP
+        for var in model.iter_variables():
+            print(var, sol.get_var_value(var))
+
 
     def _create_v_in_out(self, tracks_len: dict, agv_routes: dict, tau_operation: dict,
                         initial_conditions: dict):
@@ -266,42 +311,6 @@ class LinearAGV:
         bounds = [(x_min[i], x_max[i]) for i in range(len(self.x_iter))]
         return bounds
 
-    def create_linear_model(self, num_threads: int = None) -> Model:
-
-        model = Model(name='linear_programing_AGV')
-
-        lower_bounds = [bound[0] for bound in self.bounds]
-        upper_bounds = [bound[1] for bound in self.bounds]
-
-        if num_threads:
-            model.context.cplex_parameters.threads = num_threads
-
-        variables = model.integer_var_dict(self.t_iter, lb=lower_bounds[0:len(self.t_iter)],
-                                           ub=upper_bounds[0:len(self.t_iter)], name="t_", key_format="%s")
-        if self.y_iter:
-            y_variables = model.binary_var_dict(self.y_iter, name="y_", key_format="%s")
-            variables = variables | y_variables
-
-        if self.z_iter:
-            z_variables = model.binary_var_dict(self.z_iter, name="z_", key_format="%s")
-            variables = variables | z_variables
-
-        for index, row in enumerate(self.A_ub):
-            non_zero = utils.see_non_zero_variables(row, self.x_iter)
-            # print(f"{sum([variables[var_name] * sign for var_name, sign in non_zero.items()])} <= {b_ub[index]}")
-            model.add_constraint(
-                sum([variables[var_name] * sign for var_name, sign in non_zero.items()]) <= self.b_ub[index])
-
-        for index, row in enumerate(self.A_eq):
-            non_zero = utils.see_non_zero_variables(row, self.x_iter)
-            # print(f"{sum([variables[var_name] * sign for var_name, sign in non_zero.items()])} == {b_eq[index]}")
-            model.add_constraint(
-                sum([variables[var_name] * sign for var_name, sign in non_zero.items()]) == self.b_eq[index])
-
-        obj_dict = {self.x_iter[i]: self.c[i] for i in range(len(self.c))}
-        # print(sum([variables[var_name] * sign for var_name, sign in obj_dict.items()]))
-        model.minimize(sum([variables[var_name] * sign for var_name, sign in obj_dict.items()]))
-        return model
 
 
 def print_ILP_size(A_ub, b_ub, A_eq, b_eq):
