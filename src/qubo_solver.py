@@ -86,7 +86,7 @@ def constrained_solver(
     :return: sampleset
     :rtype: dimod.SampleSet
     """
-    sampler = LeapHybridCQMSampler(token="DEV-4d60dac84f735c7621b1ff681aa32a2c59077636")
+    sampler = LeapHybridCQMSampler()
     return sampler.sample_cqm(cqm)
 
 
@@ -98,7 +98,7 @@ def hybrid_anneal(bqm: dimod.BinaryQuadraticModel) -> dimod.sampleset.SampleSet:
     :return: sampleset
     :rtype: dimod.SampleSet
     """
-    sampler = LeapHybridSampler(token="DEV-4d60dac84f735c7621b1ff681aa32a2c59077636")
+    sampler = LeapHybridSampler()
     return sampler.sample(bqm)
 
 
