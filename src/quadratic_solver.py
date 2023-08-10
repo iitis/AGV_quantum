@@ -9,6 +9,15 @@ class QuadraticAGV:
 
     def __init__(self, lin_agv: LinearAGV):
         self.lin_agv = lin_agv
+        self.c = lin_agv.c
+        self.A_ub = lin_agv.A_ub
+        self.A_eq = lin_agv.A_eq
+        self.b_ub = lin_agv.b_ub
+        self.b_eq = lin_agv.b_eq
+        self.bounds = lin_agv.bounds
+        self.nvars = len(self.lin_agv.bounds)
+        self.var_names = [f"x_{i}" for i in range(self.nvars)]
+
 
     def set_vars(self):
         """Sets the number of variables and variable names"""
@@ -129,7 +138,7 @@ class QuadraticAGV:
         assert int(result) == result
         return int(result)
 
-    def _to_cqm(self):
+    def to_cqm(self):
         """Converts linear program into constrained quadratic model"""
         c, A_ub, b_ub, A_eq, b_eq, bounds = (
             self.c,
