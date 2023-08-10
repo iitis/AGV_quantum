@@ -49,7 +49,7 @@ def real_anneal(
     num_reads: int,
     annealing_time: float,
     chain_strength: float,
-    solver: Optional[str] = 'Advantage_system6.1'
+    solver: Optional[str] = 'Advantage_system6.2'
 ) -> dimod.sampleset.SampleSet:
     """Runs quantum annealing experiment on D-Wave
 
