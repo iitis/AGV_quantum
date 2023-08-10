@@ -1,9 +1,11 @@
 # 2 AGV example
+import dimod
 
 from src import utils
 from src.linear_solver import print_ILP_size, LinearAGV
 from src.quadratic_solver import QuadraticAGV
-from src.qubo_solver import annealing
+from src.qubo_solver import annealing, constrained_solver, hybrid_anneal
+from pathlib import Path
 import numpy as np
 import pickle
 import csv
@@ -72,5 +74,24 @@ if __name__ == "__main__":
         model = QuadraticAGV(AGV)
         p = 5
         model.to_bqm_qubo_ising(p)
+        model.to_cqm()
+        cwd = os.getcwd()
+        save_path = os.path.join(cwd, "..", "annealing_results", "2_AGV")
+        cqm = model.cqm
+        bqm = model.bqm
+        hybrid = "bqm"
+        if hybrid == "cqm":
+            sampleset = constrained_solver(cqm)
+        elif hybrid == "bqm":
+            sampleset = hybrid_anneal(bqm)
+        else:
+            sampleset = 0  # To implement
+        info = sampleset.info
+        print(sampleset)
+        print(info)
 
-""
+        with open(os.path.join(save_path, f"new_{hybrid}_info.pkl"), "wb") as f:
+            pickle.dump(info, f)
+
+        with open(os.path.join(save_path, f"new_{hybrid}.pkl"), "wb") as f:
+            pickle.dump(sampleset.to_serializable(), f)

@@ -1,12 +1,13 @@
 from src import utils
 from src import train_diagram
-from src.qubo_solver import annealing
+from src.qubo_solver import annealing, constrained_solver, hybrid_anneal
 from src.linear_solver import print_ILP_size, LinearAGV
 from src.quadratic_solver import QuadraticAGV
 import numpy as np
 import pickle
 import time
 import os
+from pathlib import Path
 
 from src.LinearProg import LinearProg
 from src.process_results import print_results
@@ -84,4 +85,25 @@ if __name__ == "__main__":
         model = QuadraticAGV(AGV)
         p = 5
         model.to_bqm_qubo_ising(p)
+        model.to_cqm()
+        cwd = os.getcwd()
+        save_path = os.path.join(cwd, "..", "annealing_results", "7_AGV")
+        print(save_path)
+        cqm = model.cqm
+        bqm = model.bqm
+        hybrid = "cqm"
+        if hybrid == "cqm":
+            sampleset = constrained_solver(cqm)
+        elif hybrid == "bqm":
+            sampleset = hybrid_anneal(bqm)
+        else:
+            sampleset = 0  # To implement
+        info = sampleset.info
+        print(sampleset)
+        print(info)
 
+        with open(os.path.join(save_path, f"new_{hybrid}_info.pkl"), "wb") as f:
+            pickle.dump(info, f)
+
+        with open(os.path.join(save_path, f"new_{hybrid}.pkl"), "wb") as f:
+            pickle.dump(sampleset.to_serializable(), f)
