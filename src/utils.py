@@ -363,21 +363,3 @@ def make_spinglass_ising(lp, name, p: Optional[float] = None):
             ni = keys_number[i]
             nj = keys_number[j]
             f.write(str(ni) + " " + str(nj) + " " + str(v) + "\n")
-
-
-# DEPRECATED
-def create_connectivity(agv: list, agv_dict: dict, s_sp: list) -> pd.DataFrame:
-    connections_data = []
-    for j in agv:
-        temp = [1 if way_exist(agv_dict, j, way) else 0 for way in s_sp]
-        connections_data.append(temp)
-    connections = pd.DataFrame(connections_data, index=agv, columns=s_sp)
-    return connections
-
-
-def way_exist(agv_data: dict, agv: int, way: tuple) -> bool:
-    track = agv_data[agv]
-    for i in range(len(track)-1):
-        if (track[i], track[i+1]) == way:
-            return True
-    return False
