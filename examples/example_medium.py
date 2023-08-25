@@ -91,7 +91,7 @@ if __name__ == "__main__":
         print(save_path)
         cqm = model.cqm
         bqm = model.bqm
-        hybrid = "cqm"
+        hybrid = "bqm"
         if hybrid == "cqm":
             sampleset = constrained_solver(cqm)
         elif hybrid == "bqm":
