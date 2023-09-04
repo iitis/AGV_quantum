@@ -12,5 +12,7 @@ In directory ```examples``` there are AGVs scheduling problems. In order of incr
 
 To run this project in terminal use path/to/project> python -m examples.file 
 
-
 In folder ```annealing_results``` there are results of annealing for various examples.
+
+In folder ```lp_files``` there are results of classical solver on the ILP.
+
