@@ -41,21 +41,19 @@ class TestExample(unittest.TestCase):
         model.print_information()
        
 
-        if True:
-            begin = time.time()
-            sol = model.solve()
-            end = time.time()
-            print("time: ", end-begin)
-            model.print_solution(print_zeros=True)
+        begin = time.time()
+        sol = model.solve()
+        end = time.time()
+        print("time: ", end-begin)
+        model.print_solution(print_zeros=True)
 
+        assert sol["y_0_1_s0"] == 1. 
+        assert sol["y_0_1_s1"] == 1. 
 
-            assert sol["y_0_1_s0"] == 1. 
-            assert sol["y_0_1_s1"] == 1. 
-
-            assert sol["t_in_0_s0"] == 0.
-            assert sol["t_out_0_s0"] == 1.
-            assert sol["t_in_0_s1"] == 6.
-            assert sol["t_out_0_s1"] == 7.
+        assert sol["t_in_0_s0"] == 0.
+        assert sol["t_out_0_s0"] == 1.
+        assert sol["t_in_0_s1"] == 6.
+        assert sol["t_out_0_s1"] == 7.
 
 
 
