@@ -32,7 +32,7 @@ def create_stations_list(tracks):
     return list(set(stations))
 
 
-def agv_routes_as_edges(agv_routes: dict[int, tuple]) -> dict[int, list]:  # TODO write test
+def agv_routes_as_edges(agv_routes):  # TODO write test
     return_dict = {}
     for j in agv_routes.keys():
         if len(agv_routes[j]) > 1:
@@ -41,11 +41,11 @@ def agv_routes_as_edges(agv_routes: dict[int, tuple]) -> dict[int, list]:  # TOD
     return return_dict
 
 
-def create_agv_list(agv_routes: dict[int, tuple]) -> list[int]:
+def create_agv_list(agv_routes):
     return list(agv_routes.keys())
 
 
-def create_same_way_dict(agv_routes: dict[int, tuple]) -> dict[tuple, list]:
+def create_same_way_dict(agv_routes):
     return_dict = {}
 
     J = agv_routes.keys()
@@ -63,7 +63,7 @@ def create_same_way_dict(agv_routes: dict[int, tuple]) -> dict[tuple, list]:
     return return_dict
 
 
-def create_graph(tracks: list[tuple], agv_routes: dict[int, tuple]) -> nx.Graph:
+def create_graph(tracks: list[tuple], agv_routes):
     stations = create_stations_list(tracks)
 
     graph = nx.MultiGraph()
@@ -85,7 +85,7 @@ def create_graph(tracks: list[tuple], agv_routes: dict[int, tuple]) -> nx.Graph:
     return graph
 
 
-def create_t_iterator(agv_routes: dict[int, tuple], in_out: str) -> list:
+def create_t_iterator(agv_routes, in_out: str) -> list:
     t_iter = []  # list(itertools.product(J, stations))
 
     for j, route in agv_routes.items():
@@ -94,7 +94,7 @@ def create_t_iterator(agv_routes: dict[int, tuple], in_out: str) -> list:
     return t_iter
 
 
-def create_y_iterator(graph: nx.Graph) -> list[tuple]:
+def create_y_iterator(graph: nx.Graph):
     y_iter = []
     agv_pass_through = nx.get_node_attributes(graph, "pass_through")
     for station in sorted(graph.nodes):
@@ -104,7 +104,7 @@ def create_y_iterator(graph: nx.Graph) -> list[tuple]:
     return y_iter
 
 
-def create_z_iterator(graph: nx.Graph, agv_routes: dict[int, tuple]) -> list[tuple]:
+def create_z_iterator(graph: nx.Graph, agv_routes):
     z_iter = []
     J = create_agv_list(agv_routes)
     agv_routes_as_edges_dict = agv_routes_as_edges(agv_routes)
@@ -118,7 +118,7 @@ def create_z_iterator(graph: nx.Graph, agv_routes: dict[int, tuple]) -> list[tup
     return z_iter
 
 
-def create_iterators(graph: nx.Graph, agv_routes: dict[int, tuple]) -> dict[str, list]:
+def create_iterators(graph: nx.Graph, agv_routes):
 
     t_in_iter = create_t_iterator(agv_routes,  "in")
     t_out_iter = create_t_iterator(agv_routes, "out")
