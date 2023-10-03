@@ -1,4 +1,7 @@
 
+from src.LinearProg import LinearProg
+
+
 from src.process_results import (
     get_results, load_results, store_result, print_results
 )

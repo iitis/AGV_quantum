@@ -4,7 +4,7 @@ from typing import Any
 
 import dimod
 
-from src.LinearProg import LinearProg
+from src import LinearProg
 
 
 def get_objective(lp: LinearProg, sample: dict) -> float:
