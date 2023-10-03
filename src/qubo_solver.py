@@ -130,7 +130,7 @@ def get_file_name(
     return os.path.join(folder, fname)
 
 
-def get_parameters(real_anneal_var_dict: dict[str, float]) -> tuple[int, int, int, str]:
+def get_parameters(real_anneal_var_dict: dict[str, float]):
     """Extracts/sets parameters for annealing experiment
 
     :param real_anneal_var_dict: Parameters for QA experiment

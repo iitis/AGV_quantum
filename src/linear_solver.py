@@ -225,7 +225,7 @@ class LinearAGV:
 
         return MPT, MPT_b
 
-    def _create_minimal_headway_matrix(self, M: int, tracks: list[tuple], tau_headway: dict):
+    def _create_minimal_headway_matrix(self, M: int, tracks, tau_headway: dict):
 
         if not all([len(track) > 1 for track in tracks]):
             return np.empty((0, 0)), np.empty((0, 0))
