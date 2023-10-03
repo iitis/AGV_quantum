@@ -1,13 +1,12 @@
 import os
 import pickle
 from typing import Any
-
 import dimod
 
 from src import LinearProg
 
 
-def get_objective(lp: LinearProg, sample: dict) -> float:
+def get_objective(lp , sample: dict) -> float:
     """computes objective value for sample
 
     :param lp: the integer program with the relevant objective function
@@ -22,7 +21,7 @@ def get_objective(lp: LinearProg, sample: dict) -> float:
     )
 
 
-def get_results(sampleset: dimod.SampleSet, prob: LinearProg) -> list[dict[str, Any]]:
+def get_results(sampleset: dimod.SampleSet, prob) -> list[dict[str, Any]]:
     """Check samples one by one, and computes it statistics.
 
     Statistics includes energy (as provided by D'Wave), objective function
@@ -82,7 +81,7 @@ def load_results(file_name: str) -> dimod.SampleSet:
 
 
 def analyze_constraints(
-    lp: LinearProg, sample: dict[str, int]
+    lp , sample: dict[str, int]
 ) -> tuple[dict[str, bool], int]:
     """check which constraints were satisfied
 
