@@ -1,3 +1,5 @@
+# 7 AGVs 7 zones d_max = 40
+
 from src import utils
 from src import train_diagram
 from src.qubo_solver import annealing, constrained_solver, hybrid_anneal
@@ -62,8 +64,31 @@ complete_path = {"s0_in":0,"s0_out":2,"s1_in":8,"s1_out":10,"s2_in":16, "s2_out"
 complete_path_rev = {"s0_out":0,"s0_in":2,"s1_out":8,"s1_in":10,"s2_out":16, "s2_in":18,"s3_out":18,"s3_in":20,"s4_out":25, "s4_in":27, "s5_out":31, "s5_in":33, "s6_out":37, "s6_in":39}
 path_locs = [0,2,8,10,16, 18,18,20,25, 27, 31, 33, 37, 39]
 
-solve_linear = False
-solve_quadratic = True
+import argparse
+parser = argparse.ArgumentParser("Solve linear or quadratic") 
+parser.add_argument(
+    "--solve_linear",
+    type=int,
+    help="Solve the problem on CPLEX",
+    default=1,
+)
+parser.add_argument(
+    "--train_diagram",
+    type=int,
+    help="Make train diagram for CPLEX solution",
+    default=1,
+)
+parser.add_argument(
+    "--solve_quadratic",
+    type=int,
+    help="Solve via QUBO approach",
+    default=0,
+)
+
+args = parser.parse_args()
+
+solve_linear = args.solve_linear
+solve_quadratic = args.solve_quadratic
 
 if __name__ == "__main__":
 
@@ -80,6 +105,8 @@ if __name__ == "__main__":
         print("time: ", end-begin)
         model.print_solution(print_zeros=True)
         # AGV.nice_print(model, sol) <- WIP
+        if args.train_diagram:
+            train_diagram.plot_train_diagram(sol, agv_routes, tracks_len, 7)
 
     if solve_quadratic:
         model = QuadraticAGV(AGV)

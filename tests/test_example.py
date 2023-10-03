@@ -1,6 +1,5 @@
 from src import utils
 from src.linear_solver import print_ILP_size, LinearAGV
-#from src.linear_solver import solve
 import time
 import unittest
 
@@ -42,28 +41,19 @@ class TestExample(unittest.TestCase):
         model.print_information()
        
 
-        if False:
-            begin = time.time()
-            sol = model.solve()
-            end = time.time()
-            print("time: ", end-begin)
-            model.print_solution(print_zeros=True)
+        begin = time.time()
+        sol = model.solve()
+        end = time.time()
+        print("time: ", end-begin)
+        model.print_solution(print_zeros=True)
 
-            sol = utils.see_variables(res.x, iterators["x"])
-            assert sol[('in', 0, 's0')] == 0.
-            assert sol[('out', 0, 's0')] == 1.
-            assert sol[('in', 0, 's1')] == 6.
-            assert sol[('out', 0, 's1')] == 7.
+        assert sol["y_0_1_s0"] == 1. 
+        assert sol["y_0_1_s1"] == 1. 
 
-            assert sol[('out', 1, 's0')] == 3.
-            assert sol[('in', 1, 's1')] == 8.
-            assert sol[('out', 1, 's1')] == 9.
-
-            assert sol[(0, 1, 's1')] == 1. 
-            assert sol[(1, 0, 's1')] == 0. 
-
-            assert sol[(0, 1, 's0')] == 1. 
-            assert sol[(1, 0, 's0')] == 0. 
+        assert sol["t_in_0_s0"] == 0.
+        assert sol["t_out_0_s0"] == 1.
+        assert sol["t_in_0_s1"] == 6.
+        assert sol["t_out_0_s1"] == 7.
 
 
 
