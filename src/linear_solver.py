@@ -1,7 +1,7 @@
 from curses import A_LEFT
 import itertools
 import numpy as np
-from src import utils
+from utils import *
 from typing import Optional
 from docplex.mp.model import Model
 from docplex.mp.solution import SolveSolution
@@ -15,10 +15,10 @@ class LinearAGV:
                  tau_pass: dict, tau_headway: dict, tau_operation: dict, weights: dict,
                  initial_conditions: Optional[dict] = None):
 
-        _graph = utils.create_graph(tracks, agv_routes)
-        _iterators = utils.create_iterators(_graph, agv_routes)
+        _graph = create_graph(tracks, agv_routes)
+        _iterators = create_iterators(_graph, agv_routes)
 
-        self.J = utils.create_agv_list(agv_routes)
+        self.J = create_agv_list(agv_routes)
 
         self.t_in_iter = _iterators["t_in"]
         self.t_out_iter = _iterators["t_out"]
@@ -97,13 +97,13 @@ class LinearAGV:
             variables = variables | z_variables
 
         for index, row in enumerate(self.A_ub):
-            non_zero = utils.see_non_zero_variables(row, self.x_iter)
+            non_zero = see_non_zero_variables(row, self.x_iter)
             # print(f"{sum([variables[var_name] * sign for var_name, sign in non_zero.items()])} <= {b_ub[index]}")
             model.add_constraint(
                 sum([variables[var_name] * sign for var_name, sign in non_zero.items()]) <= self.b_ub[index])
 
         for index, row in enumerate(self.A_eq):
-            non_zero = utils.see_non_zero_variables(row, self.x_iter)
+            non_zero = see_non_zero_variables(row, self.x_iter)
             # print(f"{sum([variables[var_name] * sign for var_name, sign in non_zero.items()])} == {b_eq[index]}")
             model.add_constraint(
                 sum([variables[var_name] * sign for var_name, sign in non_zero.items()]) == self.b_eq[index])
