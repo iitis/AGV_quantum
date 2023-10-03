@@ -23,7 +23,7 @@ def number_gen():
         i += 1
 
 
-def create_stations_list(tracks: list[tuple]) -> list[str]:
+def create_stations_list(tracks):
     stations = []
     for track in tracks:
         for station in track:
