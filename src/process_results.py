@@ -21,7 +21,7 @@ def get_objective(lp: LinearProg, sample: dict) -> float:
     )
 
 
-def get_results(sampleset, prob):
+def get_results(sampleset: SampleSet, prob):
     """Check samples one by one, and computes it statistics.
 
     Statistics includes energy (as provided by D'Wave), objective function
@@ -48,7 +48,7 @@ def get_results(sampleset, prob):
     return sorted(dict_list, key=lambda d: d["energy"])
 
 
-def store_result(input_name: str, file_name: str, sampleset):
+def store_result(input_name: str, file_name: str, sampleset: SampleSet):
     """Save samples to the file
 
     :param input_name: name of the input
@@ -81,7 +81,7 @@ def load_results(file_name: str):
 
 
 def analyze_constraints(
-    lp: LinearProg, sample: dict[str, int]
+    lp, sample: dict[str, int]
 ):
     """check which constraints were satisfied
 
