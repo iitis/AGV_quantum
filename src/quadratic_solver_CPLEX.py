@@ -1,12 +1,12 @@
 from src.LinearProg import LinearProg
 import pickle
-import json
+#import json
 from docplex.mp.model import Model
 from docplex.mp.solution import SolveSolution
-from src.process_results import analyze_constraints, get_results
+from src.process_results import get_results
 import dimod
-from docplex.mp.progress import ProgressListener, ProgressClock, TextProgressListener, SolutionRecorder
-import docplex.util.environment as environment
+from docplex.mp.progress import ProgressListener, ProgressClock, TextProgressListener
+#import docplex.util.environment as environment
 from typing import Union
 from math import inf
 

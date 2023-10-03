@@ -2,7 +2,7 @@ import dimod
 from cpp_pyqubo import Binary, Constraint, Placeholder
 from pyqubo import LogEncInteger
 from pyqubo import Binary
-import numpy as np
+#import numpy as np
 
 
 class LinearProg:
