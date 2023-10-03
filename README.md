@@ -12,6 +12,8 @@ In directory ```examples``` there are AGVs scheduling problems. In order of incr
 - example_large.py
 - example_largest.py
 
+There are optional boolean parameters (```1``` yes, ```0``` no): ```--solve_linear``` - solve on CPLEX , ```--train_diagram``` - plot "train diagram" for given problem ```--solve_quadratic``` - solve on QUBO / quantum
+
 In folder ```annealing_results``` there are results of annealing for various examples.
 
 In folder ```lp_files``` there are results of classical solver on the ILP.
@@ -20,4 +22,4 @@ In folder ```lp_files``` there are results of classical solver on the ILP.
 
 To run this project in terminal use path/to/project> python -m examples.file 
 
-To run tests use path/to/project> python python3 -m unittest
+To run tests use path/to/project> python3 -m unittest

@@ -1,12 +1,14 @@
 # 6 AGVs 7 zones d_max = 40
 
 from src import utils
+from src import train_diagram
 from src.qubo_solver import annealing, constrained_solver, hybrid_anneal
 from src.linear_solver import print_ILP_size, LinearAGV
 from src.quadratic_solver import QuadraticAGV
 import pickle
 import time
 import os
+
 
 from src.LinearProg import LinearProg
 from src.process_results import print_results
@@ -63,6 +65,12 @@ parser.add_argument(
     default=1,
 )
 parser.add_argument(
+    "--train_diagram",
+    type=int,
+    help="Make train diagram for CPLEX solution",
+    default=0,
+)
+parser.add_argument(
     "--solve_quadratic",
     type=int,
     help="Solve via QUBO approach",
@@ -89,6 +97,8 @@ if __name__ == "__main__":
         print("time: ", end-begin)
         model.print_solution(print_zeros=True)
         # AGV.nice_print(model, sol) <- WIP
+        if args.train_diagram:
+            train_diagram.plot_train_diagram(sol, agv_routes, tracks_len, 7)
 
     if solve_quadratic:
         model = QuadraticAGV(AGV)

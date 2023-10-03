@@ -76,7 +76,7 @@ parser.add_argument(
     "--train_diagram",
     type=int,
     help="Make train diagram for CPLEX solution",
-    default=1,
+    default=0,
 )
 parser.add_argument(
     "--solve_quadratic",

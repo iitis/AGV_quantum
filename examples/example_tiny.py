@@ -13,13 +13,14 @@ import csv
 import time
 import os
 import json
-from src import train_diagram
+
 
 from math import sqrt
 from src.LinearProg import LinearProg
 from src.process_results import print_results
 from src.quadratic_solver_CPLEX import quadratic_solve_qubo, check_solution, save_results
 from src.utils import check_solution_list
+from src import train_diagram
 
 cwd = os.getcwd()
 
@@ -66,7 +67,7 @@ parser.add_argument(
     "--train_diagram",
     type=int,
     help="Make train diagram for CPLEX solution",
-    default=1,
+    default=0,
 )
 parser.add_argument(
     "--solve_quadratic",

@@ -46,8 +46,6 @@ def plot_train_diagram(sol, agv_routes, track_len, n_zones):
     s_ofset = 1
     marks, zone_borders = zones_location(track_len, n_zones, s_ofset)
 
-    print(marks.keys())
-
     times, spaces = AGVS_coordinates(sol, agv_routes, marks, s_ofset)
 
 

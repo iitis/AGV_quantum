@@ -1,6 +1,7 @@
 # 4 AGV 5 zoneas d_max = 10 example
 
 from src import utils
+from src import train_diagram
 from src.linear_solver import print_ILP_size, LinearAGV
 from src.quadratic_solver import QuadraticAGV
 from src.qubo_solver import annealing, constrained_solver, hybrid_anneal
@@ -8,6 +9,7 @@ import numpy as np
 import pickle
 import time
 import os
+
 
 from scipy.optimize import linprog
 from src.LinearProg import LinearProg
@@ -62,6 +64,12 @@ parser.add_argument(
     default=1,
 )
 parser.add_argument(
+    "--train_diagram",
+    type=int,
+    help="Make train diagram for CPLEX solution",
+    default=0,
+)
+parser.add_argument(
     "--solve_quadratic",
     type=int,
     help="Solve via QUBO approach",
@@ -88,6 +96,8 @@ if __name__ == "__main__":
         print("time: ", end-begin)
         model.print_solution(print_zeros=True)
         # AGV.nice_print(model, sol) <- WIP
+        if args.train_diagram:
+            train_diagram.plot_train_diagram(sol, agv_routes, tracks_len, 5)
 
     if solve_quadratic:
         model = QuadraticAGV(AGV)
