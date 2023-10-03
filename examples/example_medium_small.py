@@ -1,3 +1,5 @@
+# 6 AGVs 7 zones d_max = 40
+
 from src import utils
 from src.qubo_solver import annealing, constrained_solver, hybrid_anneal
 from src.linear_solver import print_ILP_size, LinearAGV
@@ -52,8 +54,25 @@ initial_conditions = {("in", 0, "s0"): 0, ("in", 1, "s0"): 0, ("in", 2, "s4"): 8
 
 weights = {j: 1 for j in J}
 
-solve_linear = False
-solve_quadratic = True
+import argparse
+parser = argparse.ArgumentParser("Solve linear or quadratic") 
+parser.add_argument(
+    "--solve_linear",
+    type=int,
+    help="Solve the problem on CPLEX",
+    default=1,
+)
+parser.add_argument(
+    "--solve_quadratic",
+    type=int,
+    help="Solve via QUBO approach",
+    default=0,
+)
+
+args = parser.parse_args()
+
+solve_linear = args.solve_linear
+solve_quadratic = args.solve_quadratic
 
 if __name__ == "__main__":
 

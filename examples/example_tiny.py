@@ -13,6 +13,7 @@ import csv
 import time
 import os
 import json
+from src import train_diagram
 
 from math import sqrt
 from src.LinearProg import LinearProg
@@ -52,8 +53,32 @@ initial_conditions = {("in", 0, "s0"): 0, ("in", 1, "s1"): 7}
 
 weights = {j: 1 for j in J}
 
-solve_linear = False
-solve_quadratic = True
+
+import argparse
+parser = argparse.ArgumentParser("Solve linear or quadratic") 
+parser.add_argument(
+    "--solve_linear",
+    type=int,
+    help="Solve the problem on CPLEX",
+    default=1,
+)
+parser.add_argument(
+    "--train_diagram",
+    type=int,
+    help="Make train diagram for CPLEX solution",
+    default=1,
+)
+parser.add_argument(
+    "--solve_quadratic",
+    type=int,
+    help="Solve via QUBO approach",
+    default=0,
+)
+
+args = parser.parse_args()
+
+solve_linear = args.solve_linear
+solve_quadratic = args.solve_quadratic
 
 if __name__ == "__main__":
 
@@ -70,6 +95,9 @@ if __name__ == "__main__":
         print("time: ", end-begin)
         model.print_solution(print_zeros=True)
         # AGV.nice_print(model, sol) <- WIP
+        if args.train_diagram:
+            train_diagram.plot_train_diagram(sol, agv_routes, tracks_len, 3)
+
 
     if solve_quadratic:
         model = QuadraticAGV(AGV)

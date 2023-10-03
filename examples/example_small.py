@@ -1,4 +1,4 @@
-# 4 AGV example
+# 4 AGV 5 zoneas d_max = 10 example
 
 from src import utils
 from src.linear_solver import print_ILP_size, LinearAGV
@@ -53,8 +53,25 @@ initial_conditions = {("in", 0, "s0"): 0, ("in", 1, "s1"): 8, ("in", 2, "s4"): 8
 
 weights = {j: 1 for j in J}
 
-solve_linear = False
-solve_quadratic = True
+import argparse
+parser = argparse.ArgumentParser("Solve linear or quadratic") 
+parser.add_argument(
+    "--solve_linear",
+    type=int,
+    help="Solve the problem on CPLEX",
+    default=1,
+)
+parser.add_argument(
+    "--solve_quadratic",
+    type=int,
+    help="Solve via QUBO approach",
+    default=0,
+)
+
+args = parser.parse_args()
+
+solve_linear = args.solve_linear
+solve_quadratic = args.solve_quadratic
 
 if __name__ == "__main__":
 
