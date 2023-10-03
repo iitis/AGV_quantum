@@ -63,7 +63,7 @@ def create_same_way_dict(agv_routes):
     return return_dict
 
 
-def create_graph(tracks: list[tuple], agv_routes):
+def create_graph(tracks, agv_routes):
     stations = create_stations_list(tracks)
 
     graph = nx.MultiGraph()
