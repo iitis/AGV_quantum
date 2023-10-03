@@ -3,24 +3,14 @@ from dimod.sampleset import SampleSet
 import dimod
 import minorminer
 from dwave.system import DWaveSampler
-from src import utils
-from src.linear_solver import print_ILP_size, LinearAGV
-from src.quadratic_solver import QuadraticAGV
-from src.qubo_solver import annealing
-import numpy as np
-import pickle
-import csv
 import time
 import os
-import json
 
-
-from math import sqrt
-from src.LinearProg import LinearProg
-from src.process_results import print_results
-from src.quadratic_solver_CPLEX import quadratic_solve_qubo, check_solution, save_results
-from src.utils import check_solution_list
-from src import train_diagram
+from src import create_stations_list, create_agv_list, create_graph, create_same_way_dict
+from src import print_ILP_size, LinearAGV
+from src import QuadraticAGV
+from src import agv_routes_as_edges
+from src import plot_train_diagram
 
 cwd = os.getcwd()
 
@@ -37,15 +27,14 @@ tracks_len = {("s0", "s1"): 6, ("s1", "s0"): 6,
 agv_routes = {0: ("s0", "s1"),
               1: ("s1", "s2")}
 
-stations = utils.create_stations_list(tracks)
-J = utils.create_agv_list(agv_routes)
-agv_routes_as_edges = utils.agv_routes_as_edges(agv_routes)
-all_same_way = utils.create_same_way_dict(agv_routes)
-
-graph = utils.create_graph(tracks, agv_routes)
+stations = create_stations_list(tracks)
+J = create_agv_list(agv_routes)
+agv_routes_as_e = agv_routes_as_edges(agv_routes)
+all_same_way = create_same_way_dict(agv_routes)
+graph = create_graph(tracks, agv_routes)
 
 d_max = {i: 1 for i in J}
-tau_pass = {(j, s, sp): tracks_len[(s, sp)] for j in J for s, sp in agv_routes_as_edges[j]}
+tau_pass = {(j, s, sp): tracks_len[(s, sp)] for j in J for s, sp in agv_routes_as_e[j]}
 tau_headway = {(j, jp, s, sp): 2 for (j, jp) in all_same_way.keys() for (s, sp) in all_same_way[(j, jp)]}
 
 tau_operation = {(agv, station): 2 for agv in J for station in stations}
@@ -97,7 +86,7 @@ if __name__ == "__main__":
         model.print_solution(print_zeros=True)
         # AGV.nice_print(model, sol) <- WIP
         if args.train_diagram:
-            train_diagram.plot_train_diagram(sol, agv_routes, tracks_len, 3)
+            plot_train_diagram(sol, agv_routes, tracks_len, 3)
 
 
     if solve_quadratic:

@@ -1,10 +1,10 @@
 
 from src.process_results import (
-    get_results, load_results, store_result
+    get_results, load_results, store_result, print_results
 )
 
 from src.quadratic_solver_CPLEX import (
-    load_linear_prog_object, process_result
+    load_linear_prog_object, process_result, quadratic_solve_qubo
 )
 
 
@@ -19,9 +19,12 @@ from src.linear_solver import (
      LinearAGV, print_ILP_size
 )
 
+from src.quadratic_solver import QuadraticAGV
 
 from src.qubo_solver import (
-    sim_anneal, annealing
+    sim_anneal, annealing, constrained_solver, hybrid_anneal
 )
 
+
+from src.train_diagram import plot_train_diagram
 
