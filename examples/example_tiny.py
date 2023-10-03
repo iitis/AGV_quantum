@@ -72,7 +72,7 @@ parser.add_argument(
 parser.add_argument(
     "--solve_quadratic",
     type=int,
-    help="Solve via QUBO approach",
+    help="Solve using hybrid quantum-classical approach",
     default=0,
 )
 

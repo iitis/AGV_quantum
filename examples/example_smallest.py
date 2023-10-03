@@ -70,7 +70,7 @@ parser.add_argument(
 parser.add_argument(
     "--solve_quadratic",
     type=int,
-    help="Solve via QUBO approach",
+    help="Solve using hybrid quantum-classical approach",
     default=0,
 )
 
@@ -98,15 +98,16 @@ if __name__ == "__main__":
             train_diagram.plot_train_diagram(sol, agv_routes, tracks_len, 4)
 
     if solve_quadratic:
+        hybrid = "bqm" # select hybrid solver bqm or cqm
+        p = 5 # penalty for QUBO creation
+
         model = QuadraticAGV(AGV)
-        p = 5
         model.to_bqm_qubo_ising(p)
         model.to_cqm()
         cwd = os.getcwd()
         save_path = os.path.join(cwd, "..", "annealing_results", "2_AGV")
         cqm = model.cqm
         bqm = model.bqm
-        hybrid = "bqm"
         if hybrid == "cqm":
             sampleset = constrained_solver(cqm)
         elif hybrid == "bqm":
