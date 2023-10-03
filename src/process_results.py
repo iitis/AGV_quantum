@@ -80,9 +80,7 @@ def load_results(file_name: str):
     return SampleSet.from_serializable(file)
 
 
-def analyze_constraints(
-    lp, sample: dict[str, int]
-):
+def analyze_constraints(lp, sample):
     """check which constraints were satisfied
 
     :param lp: analyzed integer model
