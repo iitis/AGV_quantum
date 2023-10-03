@@ -2,11 +2,11 @@ import os
 import pickle
 from typing import Any
 import dimod
-
+from dimod import SampleSet
 from src import LinearProg
 
 
-def get_objective(lp , sample: dict) -> float:
+def get_objective(lp: LinearProg, sample: dict) -> float:
     """computes objective value for sample
 
     :param lp: the integer program with the relevant objective function
@@ -21,7 +21,7 @@ def get_objective(lp , sample: dict) -> float:
     )
 
 
-def get_results(sampleset: dimod.SampleSet, prob) -> list[dict[str, Any]]:
+def get_results(sampleset: SampleSet, prob: LinearProg) -> list[dict[str, Any]]:
     """Check samples one by one, and computes it statistics.
 
     Statistics includes energy (as provided by D'Wave), objective function
@@ -48,7 +48,7 @@ def get_results(sampleset: dimod.SampleSet, prob) -> list[dict[str, Any]]:
     return sorted(dict_list, key=lambda d: d["energy"])
 
 
-def store_result(input_name: str, file_name: str, sampleset: dimod.SampleSet):
+def store_result(input_name: str, file_name: str, sampleset: SampleSet):
     """Save samples to the file
 
     :param input_name: name of the input
@@ -68,7 +68,7 @@ def store_result(input_name: str, file_name: str, sampleset: dimod.SampleSet):
         pickle.dump(sdf, handle)
 
 
-def load_results(file_name: str) -> dimod.SampleSet:
+def load_results(file_name: str) -> SampleSet:
     """Load samples from the file
 
     :param file_name: name of the file
@@ -77,11 +77,11 @@ def load_results(file_name: str) -> dimod.SampleSet:
     :rtype: dimod.SampleSet
     """
     file = pickle.load(open(file_name, "rb"))
-    return dimod.SampleSet.from_serializable(file)
+    return SampleSet.from_serializable(file)
 
 
 def analyze_constraints(
-    lp , sample: dict[str, int]
+    lp: LinearProg, sample: dict[str, int]
 ) -> tuple[dict[str, bool], int]:
     """check which constraints were satisfied
 
