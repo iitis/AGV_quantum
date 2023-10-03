@@ -1,5 +1,6 @@
 import unittest
-from src import LinearProg, qubo_solver, process_results
+from src import LinearProg
+from src import sim_anneal, annealing, process_results
 import dimod
 from scipy.optimize import linprog
 import numpy as np
@@ -35,7 +36,7 @@ class BQMConverter(unittest.TestCase):
         """
         make_probabilistic_test = True
         bqm = self.lp.bqm
-        sampleset = qubo_solver.sim_anneal(bqm, beta_range=(5, 100), num_sweeps=1000, num_reads=1000)
+        sampleset = sim_anneal(bqm, beta_range=(5, 100), num_sweeps=1000, num_reads=1000)
         # this is nost important line, it changes [0,1] encoding to linear
         sampleset = self.lp.interpreter(sampleset)
 
@@ -56,7 +57,7 @@ class BQMConverter(unittest.TestCase):
         assert ret["objective"] < -9.
 
     def test_bqm_soln_sim(self):
-        dict_list = qubo_solver.annealing(self.lp, "sim", "test_1", load=False, store=False)
+        dict_list = annealing(self.lp, "sim", "test_1", load=False, store=False)
         soln = (next((l for l in dict_list if l["feasible"]), None))
         assert soln["objective"] == self.obj
         assert (list(soln["sample"].values()) == self.x).all()

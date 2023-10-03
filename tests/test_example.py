@@ -1,5 +1,5 @@
-from src import utils
-from src.linear_solver import print_ILP_size, LinearAGV
+from src import create_stations_list, create_agv_list
+from src import print_ILP_size, LinearAGV
 import time
 import unittest
 
@@ -24,8 +24,8 @@ class TestExample(unittest.TestCase):
         tracks_len = {("s0", "s1"): 1, ("s1", "s0"): 1}
 
         initial_conditions = {("in", 0, "s0"): 0, ("in", 1, "s0"): 1}
-        stations = utils.create_stations_list(tracks)
-        J = utils.create_agv_list(agv_routes)
+        stations = create_stations_list(tracks)
+        J = create_agv_list(agv_routes)
 
         d_max = {i: 5 for i in J}
         tau_pass = {(agv, way[0], way[1]): 5 for agv, way in agv_routes.items()}

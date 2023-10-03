@@ -10,8 +10,8 @@ from docplex.mp.model_reader import ModelReader
 from typing import Optional
 from src.LinearProg import LinearProg
 import dimod
-from src.process_results import get_results
-from src.quadratic_solver_CPLEX import process_result
+from src import get_results
+from src import process_result
 
 cwd = os.getcwd()
 

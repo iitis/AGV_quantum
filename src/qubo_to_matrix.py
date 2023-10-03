@@ -1,5 +1,5 @@
-from src.quadratic_solver_CPLEX import load_linear_prog_object
-from src.utils import qubo_to_matrix
+from src import load_linear_prog_object
+from src import qubo_to_matrix
 import scipy.sparse as sparse
 
 if __name__ == "__main__":

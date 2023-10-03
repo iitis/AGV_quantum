@@ -1,12 +1,8 @@
 import pickle
 import os
 import dimod
-#import pyqubo
-from src.process_results import get_results
-#from src.quadratic_solver_CPLEX import load_linear_prog_object, process_result
-#import json
-from src.utils import check_solution_list
-#import pandas as pd
+from src import get_results
+
 
 from pathlib import Path
 

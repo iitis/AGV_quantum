@@ -1,7 +1,8 @@
 from curses import A_LEFT
 import itertools
 import numpy as np
-from utils import *
+
+from src import see_non_zero_variables, create_graph, create_iterators, create_agv_list
 from typing import Optional
 from docplex.mp.model import Model
 from docplex.mp.solution import SolveSolution
@@ -208,7 +209,7 @@ class LinearAGV:
         MPT = []
         MPT_b = []
 
-        J = utils.create_agv_list(agv_routes)
+        J = create_agv_list(agv_routes)
         for j in J:
             s_sp = [(agv_routes[j][i], agv_routes[j][i + 1]) for i in range(len(agv_routes[j]) - 1)]
             for s, sp in s_sp:

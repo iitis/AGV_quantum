@@ -1,5 +1,4 @@
 import os
-
 import neal
 import dimod
 from dwave.system import (
@@ -11,7 +10,7 @@ from dwave.system import (
 #from scipy.optimize import linprog
 
 from src.LinearProg import LinearProg
-from src.process_results import get_results, load_results, store_result
+from src import get_results, load_results, store_result
 from typing import Optional
 
 def sim_anneal(
