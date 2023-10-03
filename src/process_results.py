@@ -21,7 +21,7 @@ def get_objective(lp: LinearProg, sample: dict) -> float:
     )
 
 
-def get_results(sampleset, prob) -> list[dict[str, Any]]:
+def get_results(sampleset, prob):
     """Check samples one by one, and computes it statistics.
 
     Statistics includes energy (as provided by D'Wave), objective function
