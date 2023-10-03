@@ -68,7 +68,7 @@ def store_result(input_name: str, file_name: str, sampleset):
         pickle.dump(sdf, handle)
 
 
-def load_results(file_name: str) -> SampleSet:
+def load_results(file_name: str):
     """Load samples from the file
 
     :param file_name: name of the file
@@ -82,7 +82,7 @@ def load_results(file_name: str) -> SampleSet:
 
 def analyze_constraints(
     lp: LinearProg, sample: dict[str, int]
-) -> tuple[dict[str, bool], int]:
+):
     """check which constraints were satisfied
 
     :param lp: analyzed integer model
