@@ -1,5 +1,5 @@
 import dimod
-from cpp_pyqubo import Binary, Constraint, Placeholder
+from cpp_pyqubo import Constraint, Placeholder
 from pyqubo import LogEncInteger
 from pyqubo import Binary
 
@@ -48,35 +48,35 @@ class LinearProg:
         )
         H = 0
         ind = 0
-        vars = []
-        for (lb, ub) in self.bounds:
+        model_vars = []
+        for (lb, ub) in bounds:
             if lb == 0 and ub == 1:
-                vars.append(Binary(f"x_{ind}"))
+                model_vars.append(Binary(f"x_{ind}"))
             else:
-                vars.append(LogEncInteger(f"x_{ind}", (lb, ub)))
+                model_vars.append(LogEncInteger(f"x_{ind}", (lb, ub)))
             ind += 1
 
-        pyqubo_obj = sum(var * coef for var, coef in zip(vars, c) if coef != 0)
+        pyqubo_obj = sum(var * coef for var, coef in zip(model_vars, c) if coef != 0)
         H += Placeholder("obj") * pyqubo_obj
 
         num_eq = 0
         if A_eq is not None:
-            for i in range(len(A_eq)):
+            for i, _ in enumerate(A_eq):
                 expr = sum(
-                    A_eq[i][j] * vars[j] for j in range(self.nvars) if A_eq[i][j] != 0
+                    A_eq[i][j] * model_vars[j] for j in range(self.nvars) if A_eq[i][j] != 0
                 )
                 expr -= b_eq[i]
                 H += Constraint(Placeholder(f"eq_{num_eq}") * expr ** 2, f"eq_{num_eq}")
                 num_eq += 1
         if A_ub is not None:
-            for i in range(len(A_ub)):
+            for i, _ in enumerate(A_ub):
                 expr = sum(
-                    A_ub[i][j] * vars[j] for j in range(self.nvars) if A_ub[i][j] != 0
+                    A_ub[i][j] * model_vars[j] for j in range(self.nvars) if A_ub[i][j] != 0
                 )
                 expr -= b_ub[i]
                 slack = LogEncInteger(
                     f"eq_{num_eq}_slack",
-                    (0, LinearProg._get_slack_ub(vars, A_ub[i], b_ub[i])),
+                    (0, LinearProg._get_slack_ub(model_vars, A_ub[i], b_ub[i])),
                 )
 
                 H += Constraint(
@@ -88,9 +88,9 @@ class LinearProg:
 
         self.num_eq = num_eq
         pyqubo_model = H.compile()
-        if pdict == None:
+        if pdict is None:
             pdict = {f"eq_{i}": 2 for i in range(self.num_eq)}
-        elif type(pdict) == int or type(pdict) == float:
+        elif isinstance(pdict, int) or isinstance(pdict, float):
             pdict = {f"eq_{i}": pdict for i in range(self.num_eq)}
         pdict["obj"] = 1
         self.qubo = pyqubo_model.to_qubo(feed_dict=pdict)
@@ -137,7 +137,7 @@ class LinearProg:
         """
         ub = 0
         for var, coef in zip(vars, coefs):
-            if type(var) == LogEncInteger:
+            if isinstance(var, LogEncInteger):
                 ub += coef * (var.value_range[1] if coef < 0 else var.value_range[0])
             else:
                 ub += coef * (1 if coef < 0 else 0)
@@ -158,23 +158,23 @@ class LinearProg:
         )
 
         ind = 0
-        vars = []
-        for (lb, ub) in self.bounds:
+        model_vars = []
+        for (lb, ub) in bounds:
             if lb == 0 and ub == 1:
-                vars.append(dimod.Binary(f"x_{ind}"))
+                model_vars.append(dimod.Binary(f"x_{ind}"))
             else:
-                vars.append(dimod.Integer(f"x_{ind}", lower_bound=lb, upper_bound=ub))
+                model_vars.append(dimod.Integer(f"x_{ind}", lower_bound=lb, upper_bound=ub))
             ind += 1
 
         cqm = dimod.ConstrainedQuadraticModel()
-        dimod_obj = sum(var * coef for var, coef in zip(vars, c) if coef != 0)
+        dimod_obj = sum(var * coef for var, coef in zip(model_vars, c) if coef != 0)
         cqm.set_objective(dimod_obj)
 
         num_eq = 0
         if A_eq is not None:
             for i in range(len(A_eq)):
                 expr = sum(
-                    A_eq[i][j] * vars[j] for j in range(self.nvars) if A_eq[i][j] != 0
+                    A_eq[i][j] * model_vars[j] for j in range(self.nvars) if A_eq[i][j] != 0
                 )
                 new_c = expr == b_eq[i]
                 cqm.add_constraint(new_c, label=f"eq_{num_eq}")
@@ -182,7 +182,7 @@ class LinearProg:
         if A_ub is not None:
             for i in range(len(A_ub)):
                 expr = sum(
-                    A_ub[i][j] * vars[j] for j in range(self.nvars) if A_ub[i][j] != 0
+                    A_ub[i][j] * model_vars[j] for j in range(self.nvars) if A_ub[i][j] != 0
                 )
                 new_c = expr <= b_ub[i]
                 cqm.add_constraint(new_c, label=f"eq_{num_eq}")
@@ -191,9 +191,8 @@ class LinearProg:
         self.cqm = cqm
 
     def _count_qubits(self):
-        vars = self.bqm.variables
-        return len(vars) 
-
+        model_vars = self.bqm.variables
+        return len(model_vars) 
 
     def _count_quadratic_couplings(self):
         """
@@ -205,7 +204,6 @@ class LinearProg:
                 count = count + 1
         return count
 
-
     def _count_linear_fields(self):
         """
         return number of local fields hs
@@ -215,6 +213,5 @@ class LinearProg:
             if h != 0:
                 count = count + 1
         return count             
-
-    
+ 
 

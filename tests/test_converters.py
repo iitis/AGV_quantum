@@ -1,6 +1,6 @@
 import unittest
 from AGV_quantum import LinearProg
-from AGV_quantum import sim_anneal, annealing, process_results
+from AGV_quantum import sim_anneal, annealing, get_objective, analyze_constraints
 import dimod
 from scipy.optimize import linprog
 import numpy as np
@@ -38,22 +38,27 @@ class BQMConverter(unittest.TestCase):
         bqm = self.lp.bqm
         sampleset = sim_anneal(bqm, beta_range=(0.01, 10), num_sweeps=1000, num_reads=1000)
         sampleset = self.lp.interpreter(sampleset)
-
         prob=self.lp
         dict_list = []
+
+        assert analyze_constraints(prob, {'x_0': 5, 'x_1': 4}) == ({'eq_0': True, 'eq_1': True, 'eq_2': True, 'eq_3': True}, 0)
+        assert get_objective(prob, {'x_0': 5, 'x_1': 4}) == -13
+
+
         for data in sampleset.data():
             rdict = {}
             sample = data.sample
             rdict["energy"] = data.energy
-            rdict["objective"] = round(process_results.get_objective(prob, sample), 2)
-            rdict["feasible"] = all(process_results.analyze_constraints(prob, sample)[0].values())
-            rdict["feas_constraints"] = process_results.analyze_constraints(prob, sample)
+            rdict["objective"] = round(get_objective(prob, sample), 2)
+            rdict["feasible"] = all(analyze_constraints(prob, sample)[0].values())
+            rdict["feas_constraints"] = analyze_constraints(prob, sample)
             dict_list.append(rdict)
         ret = sorted(dict_list, key=lambda d: d["energy"])[0]
         if make_probabilistic_test:
             assert ret["feasible"] == True
             assert ret["feas_constraints"][1] == 0 
         assert ret["objective"] < -9.
+
 
     def test_bqm_soln_sim(self):
         dict_list = annealing(self.lp, "sim", "test_1", load=False, store=False)

@@ -1,7 +1,7 @@
+"""analyse results given quantum/hybrid/simulation approach"""
+
 import os
 import pickle
-from typing import Any
-import dimod
 from dimod import SampleSet
 from AGV_quantum import LinearProg
 
@@ -106,26 +106,18 @@ def analyze_constraints(lp, sample):
             result[f"eq_{num_eq}"] = expr <= lp.b_ub[i]
             num_eq += 1
 
-    return result, sum(x == False for x in result.values())
+    return result, sum(x is False for x in result.values())
 
 
-def print_results(dict_list):
-    soln = next((l for l in dict_list if l["feasible"]), None)
-    if soln is not None:
-        print("obj:", soln["objective"], "x:", list(soln["sample"].values()))
-        print("First 10 solutions")
-        for d in dict_list[:10]:
-            print(d)
-    else:
-        print("No feasible solution")
-        for d in dict_list[:10]:
-            print(
-                "Energy:",
-                d["energy"],
-                "Objective:",
-                d["objective"],
-                "Feasible",
-                d["feasible"],
-                "Broken constraints:",
-                d["feas_constraints"][1],
-            )
+def process_result(sampleset: list):
+    energy = sampleset[0]["energy"]
+    objective = sampleset[0]["objective"]
+    feasible = sampleset[0]["feasible"]
+    broken_constrains = []
+    if not feasible:
+        for eq, feas in sampleset[0]["feas_constraints"][0].items():
+            if not feas:
+                broken_constrains.append(eq)
+    num_broken = len(broken_constrains)
+
+    return {"energy": energy, "objective": objective, "feasible": feasible, "num_broken": num_broken}

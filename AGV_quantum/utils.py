@@ -24,6 +24,7 @@ def number_gen():
 
 
 def create_stations_list(tracks):
+    """return list of zones"""
     stations = []
     for track in tracks:
         for station in track:
@@ -32,7 +33,8 @@ def create_stations_list(tracks):
     return list(set(stations))
 
 
-def agv_routes_as_edges(agv_routes):  # TODO write test
+def agv_routes_as_edges(agv_routes): 
+    """ """
     return_dict = {}
     for j in agv_routes.keys():
         if len(agv_routes[j]) > 1:

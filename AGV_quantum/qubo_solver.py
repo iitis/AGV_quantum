@@ -1,4 +1,5 @@
-from typing import Callable, Dict, List, Tuple
+"""D-Wave implementations"""
+from typing import Optional
 
 import os
 import neal
@@ -9,11 +10,10 @@ from dwave.system import (
     LeapHybridSampler,
     LeapHybridCQMSampler,
 )
-#from scipy.optimize import linprog
 
 from AGV_quantum import LinearProg
 from AGV_quantum import get_results, load_results, store_result
-from typing import Optional
+
 
 def sim_anneal(
     bqm: dimod.BinaryQuadraticModel,
@@ -140,7 +140,7 @@ def get_parameters(real_anneal_var_dict):
     :return: Number of reads, annealing_time and chain strength
     :rtype: Tuple[int, int, int]
     """
-    if real_anneal_var_dict == None:
+    if real_anneal_var_dict is None:
         num_reads = 1000
         annealing_time = 250
         chain_strength = 4
@@ -242,5 +242,4 @@ def annealing(
     if method != "cqm":
         sampleset = lp.interpreter(sampleset)
     return get_results(sampleset, prob=lp)
-
 

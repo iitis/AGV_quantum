@@ -1,7 +1,7 @@
 import unittest
 import networkx as nx
 from AGV_quantum import create_stations_list, create_agv_list, create_graph, create_t_iterator, create_y_iterator, create_z_iterator
-from AGV_quantum import create_iterators, create_v_in_out
+from AGV_quantum import create_iterators, create_v_in_out, agv_routes_as_edges
 
 
 class SingleStation(unittest.TestCase):
@@ -61,6 +61,9 @@ class MultipleStationsNoOpposite(unittest.TestCase):
         cls.J = create_agv_list(cls.agv_routes)
         cls.stations = create_stations_list(cls.tracks)
         cls.tau_operation = {(agv, station): 2 for agv in cls.J for station in cls.stations}
+
+    def test_AGVs_routes(self):
+        assert agv_routes_as_edges(self.agv_routes) == {0: [('s0', 's1')], 1: [('s0', 's2'), ('s2', 's3')]}
 
     def test_create_lists_multi(self):
         stations = create_stations_list(self.tracks)

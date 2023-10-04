@@ -1,12 +1,13 @@
-from curses import A_LEFT
-import itertools
-import numpy as np
-from typing import Callable, Dict, List, Tuple
+"""implementation of linear solver on ILP"""
 
-from AGV_quantum import see_non_zero_variables, create_graph, create_iterators, create_agv_list
+import itertools
 from typing import Optional
+import numpy as np
 from docplex.mp.model import Model
 from docplex.mp.solution import SolveSolution
+
+from AGV_quantum import see_non_zero_variables, create_graph, create_iterators, create_agv_list
+
 
 
 class LinearAGV:
