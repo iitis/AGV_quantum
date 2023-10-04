@@ -9,8 +9,8 @@ from dwave.system import (
 )
 #from scipy.optimize import linprog
 
-from src.LinearProg import LinearProg
-from src import get_results, load_results, store_result
+from AGV_quantum.LinearProg import LinearProg
+from AGV_quantum import get_results, load_results, store_result
 from typing import Optional
 
 def sim_anneal(

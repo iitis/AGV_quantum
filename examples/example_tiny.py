@@ -6,11 +6,11 @@ from dwave.system import DWaveSampler
 import time
 import os
 
-from src import create_stations_list, create_agv_list, create_graph, create_same_way_dict
-from src import print_ILP_size, LinearAGV
-from src import QuadraticAGV
-from src import agv_routes_as_edges
-from src import plot_train_diagram
+from AGV_quantum import create_stations_list, create_agv_list, create_graph, create_same_way_dict
+from AGV_quantum import print_ILP_size, LinearAGV
+from AGV_quantum import QuadraticAGV
+from AGV_quantum import agv_routes_as_edges
+from AGV_quantum import plot_train_diagram
 
 cwd = os.getcwd()
 

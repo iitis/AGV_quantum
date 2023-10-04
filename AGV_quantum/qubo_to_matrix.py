@@ -1,5 +1,5 @@
-from src import load_linear_prog_object
-from src import qubo_to_matrix
+from AGV_quantum import load_linear_prog_object
+from AGV_quantum import qubo_to_matrix
 import scipy.sparse as sparse
 
 if __name__ == "__main__":

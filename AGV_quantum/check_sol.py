@@ -1,7 +1,7 @@
 import pickle
 import os
 import dimod
-from src import get_results
+from AGV_quantum import get_results
 
 
 from pathlib import Path

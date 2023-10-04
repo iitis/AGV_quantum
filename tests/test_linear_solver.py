@@ -1,8 +1,8 @@
 import unittest
 import numpy as np
-from src import create_graph, create_iterators, create_same_way_dict, create_agv_list
-from src import create_stations_list, agv_routes_as_edges, see_non_zero_variables
-from src import print_ILP_size, LinearAGV
+from AGV_quantum import create_graph, create_iterators, create_same_way_dict, create_agv_list
+from AGV_quantum import create_stations_list, agv_routes_as_edges, see_non_zero_variables
+from AGV_quantum import print_ILP_size, LinearAGV
 
 
 class SingleStation(unittest.TestCase):

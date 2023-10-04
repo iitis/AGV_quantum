@@ -8,10 +8,10 @@ from dimod import SampleSet
 from docplex.mp.model import Model
 from docplex.mp.model_reader import ModelReader
 from typing import Optional
-from src.LinearProg import LinearProg
+from AGV_quantum.LinearProg import LinearProg
 import dimod
-from src import get_results
-from src import process_result
+from AGV_quantum import get_results
+from AGV_quantum import process_result
 
 cwd = os.getcwd()
 

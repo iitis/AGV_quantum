@@ -1,6 +1,6 @@
 import unittest
-from src import LinearProg
-from src import sim_anneal, annealing, process_results
+from AGV_quantum import LinearProg
+from AGV_quantum import sim_anneal, annealing, process_results
 import dimod
 from scipy.optimize import linprog
 import numpy as np

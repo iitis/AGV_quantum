@@ -3,7 +3,7 @@ import pickle
 from typing import Any
 import dimod
 from dimod import SampleSet
-from src import LinearProg
+from AGV_quantum import LinearProg
 
 
 def get_objective(lp: LinearProg, sample: dict) -> float:

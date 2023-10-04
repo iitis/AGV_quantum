@@ -1,4 +1,4 @@
-from src import LinearAGV
+from AGV_quantum import LinearAGV
 import dimod
 from cpp_pyqubo import Binary, Constraint, Placeholder
 from pyqubo import LogEncInteger

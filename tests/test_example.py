@@ -1,5 +1,5 @@
-from src import create_stations_list, create_agv_list
-from src import print_ILP_size, LinearAGV
+from AGV_quantum import create_stations_list, create_agv_list
+from AGV_quantum import print_ILP_size, LinearAGV
 import time
 import unittest
 
