@@ -2,7 +2,7 @@
 max-line-length=240
 
 [BASIC]
-good-names=x,y,i,dx,dy
+good-names=x,y,i,dx,dy, AGV_quantum
 
 [MESSAGES CONTROL]
 disable=W1514
