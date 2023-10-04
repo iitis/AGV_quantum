@@ -2,7 +2,7 @@ from AGV_quantum.LinearProg import LinearProg
 import pickle
 from docplex.mp.model import Model
 from docplex.mp.solution import SolveSolution
-from AGV_quantum.process_results import get_results
+from AGV_quantum import get_results
 import dimod
 from docplex.mp.progress import ProgressListener, ProgressClock, TextProgressListener
 from typing import Union
