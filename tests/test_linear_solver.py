@@ -1,3 +1,5 @@
+from typing import Callable, Dict, List, Tuple
+
 import unittest
 import numpy as np
 from AGV_quantum import create_graph, create_iterators, create_same_way_dict, create_agv_list

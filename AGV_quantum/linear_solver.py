@@ -1,6 +1,7 @@
 from curses import A_LEFT
 import itertools
 import numpy as np
+from typing import Callable, Dict, List, Tuple
 
 from AGV_quantum import see_non_zero_variables, create_graph, create_iterators, create_agv_list
 from typing import Optional
