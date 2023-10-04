@@ -2,6 +2,7 @@ attrs==21.2.0
 certifi==2021.10.8
 Deprecated==1.2.13
 dimod==0.12.3
+docplex==2.23.222
 dwave-cloud-client==0.10.3
 dwave-greedy==0.3.0
 dwave-hybrid==0.6.9
