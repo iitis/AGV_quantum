@@ -1,5 +1,7 @@
 attrs==21.2.0
 certifi==2021.10.8
+coverage==7.2.1
+coverage-badge==1.1.0
 Deprecated==1.2.13
 dimod==0.12.3
 docplex==2.23.222
