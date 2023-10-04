@@ -162,7 +162,7 @@ def annealing(
     sim_anneal_var_dict=None,
     load=False,
     store=True,
-) -> list[dict]:
+):
     """Performs the annealing experiment
 
     :param lp: The linear program instance
