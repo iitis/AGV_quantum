@@ -1,4 +1,4 @@
-from typing import Dict, Tuple
+from typing import Callable, Dict, List, Tuple
 
 import os
 import neal
