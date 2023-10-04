@@ -1,3 +1,5 @@
+from typing import Tuple
+
 import os
 import neal
 import dimod
