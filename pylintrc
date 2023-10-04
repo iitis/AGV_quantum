@@ -1,0 +1,8 @@
+[FORMAT]
+max-line-length=240
+
+[BASIC]
+good-names=x,y,i,dx,dy
+
+[MESSAGES CONTROL]
+disable=W1514
