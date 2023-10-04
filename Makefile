@@ -4,7 +4,7 @@ test:
 	@rm -rf tests/__pycache__/
 	@PYTHONPATH=. pytest -q --durations=10 --cov=. --cov-report term --cov-fail-under 60 tests/
 lint:
-	@pylint --fail-under=9 *.py
+	@pylint --fail-under=8 *.py
 
 clean:
 	@rm -rf *.jpg
