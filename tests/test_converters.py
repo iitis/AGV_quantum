@@ -32,12 +32,11 @@ class BQMConverter(unittest.TestCase):
 
     def test_feasibility_check(self):
         """
-        this test demenostrates check of feasilbity of the solution TODO Tomek we will use it for TN case
+        this test demenostrates check of feasilbity of the solution 
         """
         make_probabilistic_test = True
         bqm = self.lp.bqm
-        sampleset = sim_anneal(bqm, beta_range=(5, 100), num_sweeps=1000, num_reads=1000)
-        # this is nost important line, it changes [0,1] encoding to linear
+        sampleset = sim_anneal(bqm, beta_range=(0.01, 10), num_sweeps=1000, num_reads=1000)
         sampleset = self.lp.interpreter(sampleset)
 
         prob=self.lp
