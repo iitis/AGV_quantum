@@ -24,12 +24,4 @@ jobs:
     - name: Running test
       run: |
         make test
-    - name: Badge creation
-      run: |
-        coverage-badge -o coverage.svg
-    - uses: actions/upload-artifact@v3
-      with:
-        name: coverage-badge
-        path: coverage.svg
-    - name: Upload coverage reports to Codecov
-      uses: codecov/codecov-action@v3
+    
