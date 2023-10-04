@@ -11,7 +11,7 @@ from dwave.system import (
 )
 #from scipy.optimize import linprog
 
-from AGV_quantum.LinearProg import LinearProg
+from AGV_quantum import LinearProg
 from AGV_quantum import get_results, load_results, store_result
 from typing import Optional
 
@@ -132,7 +132,7 @@ def get_file_name(
     return os.path.join(folder, fname)
 
 
-def get_parameters(real_anneal_var_dict: dict[str, float]):
+def get_parameters(real_anneal_var_dict):
     """Extracts/sets parameters for annealing experiment
 
     :param real_anneal_var_dict: Parameters for QA experiment
