@@ -32,3 +32,8 @@ In folder ```annealing_results``` there are results on quantum and hybrid device
 In folder ```lp_files``` there are results of classical solver on the ILP.
 
 
+### Citing this work
+
+The code was partially supported by:
+-  Foundation for Polish Science (FNP) under grant number TEAM NET POIR.04.04.00-00-17C1/18-00 
+-  National Science Centre, Poland under grant number 2022/47/B/ST6/02380, and under grant number 2020/38/E/ST3/00269
