@@ -1,8 +1,9 @@
-from AGV_quantum import LinearAGV
 import dimod
 from cpp_pyqubo import Binary, Constraint, Placeholder
 from pyqubo import LogEncInteger
 from pyqubo import Binary
+
+from AGV_quantum import LinearAGV
 
 
 class QuadraticAGV:
