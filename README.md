@@ -21,7 +21,7 @@ There are optional boolean parameters (```1``` yes, ```0``` no): ```--solve_line
 
 Example: 
 
-```python  -m run_examples  --solve_linear 1 --train_diagram 1 -- example "small"```
+```python  -m run_examples  --solve_linear 1 --train_diagram 1 --example "small"```
 
 following examples are supported: ```"tiny", "smallest", "small", "medium_small", "medium", "large", "largest"```
 
