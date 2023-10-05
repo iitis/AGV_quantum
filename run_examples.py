@@ -95,7 +95,7 @@ if __name__ == "__main__":
         model.to_bqm_qubo_ising(p)
         if ising_size:
             print("n.o. qubits", model._count_qubits())
-            print("n.o. quandratic cuplings", model._count_quadratic_couplings())
+            print("n.o. quandratic couplings", model._count_quadratic_couplings())
             print("n.o. linear fields", model._count_linear_fields())
         else:
             model.to_cqm()
