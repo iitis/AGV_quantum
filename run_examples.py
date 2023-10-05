@@ -41,31 +41,32 @@ parser.add_argument(
 args = parser.parse_args()
 cwd = os.getcwd()
 if args.example == "tiny":
-    from examples.example_tiny import *
+    from examples.example_tiny import M, tracks, tracks_len, agv_routes, d_max, tau_pass, tau_headway, tau_operation, weights, initial_conditions
     save_path = os.path.join(cwd, "..", "annealing_results", "tiny_2_AGV")
 if args.example == "smallest":
-    from examples.example_smallest import *
+    from examples.example_smallest import M, tracks, tracks_len, agv_routes, d_max, tau_pass, tau_headway, tau_operation, weights, initial_conditions
     save_path = os.path.join(cwd, "..", "annealing_results", "2_AGV")
 if args.example == "small":
-    from examples.example_small import *
+    from examples.example_small import M, tracks, tracks_len, agv_routes, d_max, tau_pass, tau_headway, tau_operation, weights, initial_conditions
     save_path = os.path.join(cwd, "..", "annealing_results", "4_AGV")
 if args.example == "medium_small":
-    from examples.example_medium_small import *
+    from examples.example_medium_small import M, tracks, tracks_len, agv_routes, d_max, tau_pass, tau_headway, tau_operation, weights, initial_conditions
     save_path = os.path.join(cwd, "..", "annealing_results", "6_AGV")
 if args.example == "medium":
-    from examples.example_medium import *
+    from examples.example_medium import M, tracks, tracks_len, agv_routes, d_max, tau_pass, tau_headway, tau_operation, weights, initial_conditions
     save_path = os.path.join(cwd, "..", "annealing_results", "7_AGV")
 if args.example == "large":
-    from examples.example_large import *
+    from examples.example_large import M, tracks, tracks_len, agv_routes, d_max, tau_pass, tau_headway, tau_operation, weights, initial_conditions
     save_path = os.path.join(cwd, "..", "annealing_results", "12_AGV")
 if args.example == "largest":
-    from examples.example_largest import *
+    from examples.example_largest import M, tracks, tracks_len, agv_routes, d_max, tau_pass, tau_headway, tau_operation, weights, initial_conditions
     save_path = os.path.join(cwd, "..", "annealing_results", "15_AGV")
 else:
     print(f"example {args.example} not suported")
 
 solve_linear = args.solve_linear
 solve_quadratic = args.solve_quadratic
+
 
 if __name__ == "__main__":
 
