@@ -1,4 +1,4 @@
-"exacute examples"
+"execute examples"
 
 import pickle
 import time
