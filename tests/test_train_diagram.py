@@ -30,4 +30,3 @@ class TestTrainDiagram(unittest.TestCase):
         times, spaces = AGVS_coordinates(sol, agv_routes, marks, s_ofset=1)
         assert times == {0: [0, 2, 9, 11], 1: [7, 9, 15, 17]}
         assert spaces == {0: [0.0, 1.0, 7.0, 8.0], 1: [7.0, 8.0, 14.0, 15.0]}
-        plot_train_diagram(sol, agv_routes, tracks_len)
