@@ -1,18 +1,10 @@
-# 2 AGV example
-from dimod.sampleset import SampleSet
-import dimod
-import minorminer
-from dwave.system import DWaveSampler
-import time
+# 2 AGV tiny example
+
 import os
 
 from AGV_quantum import create_stations_list, create_agv_list, create_graph, create_same_way_dict
-from AGV_quantum import print_ILP_size, LinearAGV
-from AGV_quantum import QuadraticAGV
 from AGV_quantum import agv_routes_as_edges
-from AGV_quantum import plot_train_diagram
 
-cwd = os.getcwd()
 
 M = 5
 tracks = [("s0", "s1"), ("s1", "s0"),
@@ -42,55 +34,4 @@ tau_operation = {(agv, station): 2 for agv in J for station in stations}
 initial_conditions = {("in", 0, "s0"): 0, ("in", 1, "s1"): 7}
 
 weights = {j: 1 for j in J}
-
-
-import argparse
-parser = argparse.ArgumentParser("Solve linear or quadratic") 
-parser.add_argument(
-    "--solve_linear",
-    type=int,
-    help="Solve the problem on CPLEX",
-    default=1,
-)
-parser.add_argument(
-    "--train_diagram",
-    type=int,
-    help="Make train diagram for CPLEX solution",
-    default=0,
-)
-parser.add_argument(
-    "--solve_quadratic",
-    type=int,
-    help="Solve using hybrid quantum-classical approach",
-    default=0,
-)
-
-args = parser.parse_args()
-
-solve_linear = args.solve_linear
-solve_quadratic = args.solve_quadratic
-
-if __name__ == "__main__":
-
-    AGV = LinearAGV(M, tracks, tracks_len, agv_routes, d_max, tau_pass, tau_headway, tau_operation, weights,
-                    initial_conditions)
-    print_ILP_size(AGV.A_ub, AGV.b_ub, AGV.A_eq, AGV.b_eq)
-
-    if solve_linear:
-        model = AGV.create_linear_model()
-        model.print_information()
-        begin = time.time()
-        sol = model.solve()
-        end = time.time()
-        print("time: ", end-begin)
-        model.print_solution(print_zeros=True)
-        # AGV.nice_print(model, sol) <- WIP
-        if args.train_diagram:
-            plot_train_diagram(sol, agv_routes, tracks_len, 3)
-
-
-    if solve_quadratic:
-        model = QuadraticAGV(AGV)
-        p = 5
-        model.to_bqm_qubo_ising(p)
 

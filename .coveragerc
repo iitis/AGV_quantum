@@ -1,4 +1,4 @@
 [run]
 branch = True
 omit =
-    AGV_quantum/train_diagram.py, examples/*
+    run_examples.py, examples/*

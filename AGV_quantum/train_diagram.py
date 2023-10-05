@@ -7,6 +7,17 @@ mpl.rc("font", family="serif")
 mpl.rc("font", size=10)
 
 
+def get_number_zones(track_len):
+    """counts number of zones in example"""
+    zones = []
+    for tup in track_len.keys():
+        for el in tup:
+            if el not in zones:
+                zones.append(el)
+    return len(zones)    
+
+
+
 def zones_location(track_len, n_zones, s_ofset):
     """determines zones locations and borders in space for the plot"""
     marks = {f"s{k}":0 for k in range(n_zones)} 
@@ -37,8 +48,9 @@ def AGVS_coordinates(sol, agv_routes, marks, s_ofset):
     return times, spaces
 
 
-def plot_train_diagram(sol, agv_routes, track_len, n_zones):
+def plot_train_diagram(sol, agv_routes, track_len):
     """plots and saves train diagram"""
+    n_zones = get_number_zones(track_len)
     plt.figure(figsize=(4, 3))
     s_ofset = 1.75  # the size of the station
     marks, zone_borders = zones_location(track_len, n_zones, s_ofset)
@@ -46,7 +58,10 @@ def plot_train_diagram(sol, agv_routes, track_len, n_zones):
     colors = {0: "black", 1: "red", 2: "green", 3: "blue", 4: "orange", 5: "brown", 6: "cyan"}
     
     for agv in agv_routes:
-        plt.plot(times[agv], spaces[agv], "o-", label=f"$AGV_{agv}$ ", color=colors[agv], linewidth=0.85, markersize=2)
+        if n_zones < 8:
+            plt.plot(times[agv], spaces[agv], "o-", label=f"$AGV_{agv}$ ", color=colors[agv], linewidth=0.85, markersize=2)
+        else:
+            plt.plot(times[agv], spaces[agv], "o-", label=f"$AGV_{agv}$ ", linewidth=0.85, markersize=2)
         plt.legend(loc='upper center', bbox_to_anchor=(0.5, 1.45), ncol = 3)
 
     for el in zone_borders:

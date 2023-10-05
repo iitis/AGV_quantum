@@ -1,16 +1,7 @@
 # 4 AGV 5 zoneas d_max = 10 example
-import pickle
-import time
-import os
 
 from AGV_quantum import create_stations_list, create_agv_list, create_graph, create_same_way_dict, agv_routes_as_edges
-from AGV_quantum import plot_train_diagram
-from AGV_quantum import print_ILP_size, LinearAGV
-from AGV_quantum import QuadraticAGV
-from AGV_quantum import annealing, constrained_solver, hybrid_anneal
 
-
-cwd = os.getcwd()
 
 M = 28
 tracks = [("s0", "s1"), ("s1", "s0"),
@@ -49,73 +40,4 @@ initial_conditions = {("in", 0, "s0"): 0, ("in", 1, "s1"): 8, ("in", 2, "s4"): 8
 
 weights = {j: 1 for j in J}
 
-import argparse
-parser = argparse.ArgumentParser("Solve linear or quadratic") 
-parser.add_argument(
-    "--solve_linear",
-    type=int,
-    help="Solve the problem on CPLEX",
-    default=1,
-)
-parser.add_argument(
-    "--train_diagram",
-    type=int,
-    help="Make train diagram for CPLEX solution",
-    default=0,
-)
-parser.add_argument(
-    "--solve_quadratic",
-    type=int,
-    help="Solve using hybrid quantum-classical approach",
-    default=0,
-)
 
-args = parser.parse_args()
-
-solve_linear = args.solve_linear
-solve_quadratic = args.solve_quadratic
-
-if __name__ == "__main__":
-
-    AGV = LinearAGV(M, tracks, tracks_len, agv_routes, d_max, tau_pass, tau_headway, tau_operation, weights,
-                    initial_conditions)
-    print_ILP_size(AGV.A_ub, AGV.b_ub, AGV.A_eq, AGV.b_eq)
-
-    if solve_linear:
-        model = AGV.create_linear_model()
-        model.print_information()
-        begin = time.time()
-        sol = model.solve()
-        end = time.time()
-        print("time: ", end-begin)
-        model.print_solution(print_zeros=True)
-        # AGV.nice_print(model, sol) <- WIP
-        if args.train_diagram:
-            plot_train_diagram(sol, agv_routes, tracks_len, 5)
-
-    if solve_quadratic:
-        hybrid = "bqm" # select hybrid solver bqm or cqm
-        p = 5 # penalty for QUBO creation
-
-        model = QuadraticAGV(AGV)
-        model.to_bqm_qubo_ising(p)
-        model.to_cqm()
-        cwd = os.getcwd()
-        save_path = os.path.join(cwd, "..", "annealing_results", "4_AGV")
-        cqm = model.cqm
-        bqm = model.bqm
-        if hybrid == "cqm":
-            sampleset = constrained_solver(cqm)
-        elif hybrid == "bqm":
-            sampleset = hybrid_anneal(bqm)
-        else:
-            sampleset = 0  # To implement
-        info = sampleset.info
-        print(sampleset)
-        print(info)
-
-        with open(os.path.join(save_path, f"new_{hybrid}_info.pkl"), "wb") as f:
-            pickle.dump(info, f)
-
-        with open(os.path.join(save_path, f"new_{hybrid}.pkl"), "wb") as f:
-            pickle.dump(sampleset.to_serializable(), f)
