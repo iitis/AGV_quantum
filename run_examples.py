@@ -83,32 +83,36 @@ if __name__ == "__main__":
         model.print_solution(print_zeros=True)
         # AGV.nice_print(model, sol) <- WIP
         if args.train_diagram:
-            print("xxxxxxxxx")
-            print(sol)
             plot_train_diagram(sol, agv_routes, tracks_len)
 
     if solve_quadratic:
+        ising_size = True
         hybrid = "bqm" # select hybrid solver bqm or cqm
         p = 5 # penalty for QUBO creation
 
         model = QuadraticAGV(AGV)
         model.to_bqm_qubo_ising(p)
-        model.to_cqm()
-        cwd = os.getcwd()
-        cqm = model.cqm
-        bqm = model.bqm
-        if hybrid == "cqm":
-            sampleset = constrained_solver(cqm)
-        elif hybrid == "bqm":
-            sampleset = hybrid_anneal(bqm)
+        if ising_size:
+            print("n.o. qubits", model._count_qubits())
+            print("n.o. quandratic cuplings", model._count_quadratic_couplings())
+            print("n.o. linear fields", model._count_linear_fields())
         else:
-            sampleset = 0  # To implement
-        info = sampleset.info
-        print(sampleset)
-        print(info)
+            model.to_cqm()
+            cwd = os.getcwd()
+            cqm = model.cqm
+            bqm = model.bqm
+            if hybrid == "cqm":
+                sampleset = constrained_solver(cqm)
+            elif hybrid == "bqm":
+                sampleset = hybrid_anneal(bqm)
+            else:
+                sampleset = 0  # To implement
+            info = sampleset.info
+            print(sampleset)
+            print(info)
 
-        with open(os.path.join(save_path, f"new_{hybrid}_info.pkl"), "wb") as f:
-            pickle.dump(info, f)
+            with open(os.path.join(save_path, f"new_{hybrid}_info.pkl"), "wb") as f:
+                pickle.dump(info, f)
 
-        with open(os.path.join(save_path, f"new_{hybrid}.pkl"), "wb") as f:
-            pickle.dump(sampleset.to_serializable(), f)
+            with open(os.path.join(save_path, f"new_{hybrid}.pkl"), "wb") as f:
+                pickle.dump(sampleset.to_serializable(), f)
