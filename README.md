@@ -4,24 +4,26 @@
 
 In directory ```examples``` there are AGVs scheduling problems. In order of increasing size of the problem these are:
 
-- example_tiny.py
-- example_smallest.py
-- example_small.py
-- example_medium_small.py
-- example_medium.py
-- example_large.py
-- example_largest.py
+- example_tiny.py         - 2 AGVs reduced size
+- example_smallest.py     - 2 AGVs
+- example_small.py        - 4 AGVs
+- example_medium_small.py - 6 AGVs
+- example_medium.py       - 7 AGVs
+- example_large.py        - 12 AGVs
+- example_largest.py      - 15 AGVs
 
 
 ## Usage 
 
-To run this project in terminal use path/to/project> python -m examples.file 
+To run this project in terminal use path/to/project> python -m run_examples 
 
 There are optional boolean parameters (```1``` yes, ```0``` no): ```--solve_linear``` - solve on CPLEX , ```--train_diagram``` - plot "train diagram" for given problem ```--solve_quadratic``` - solve on hybrid quantum classical (the particular solver and penalty parameter can be set in the script).
 
 Example: 
 
-```python  -m examples.example_smallest --solve_linear 1 --train_diagram 1 ```
+```python  -m run_examples  --solve_linear 1 --train_diagram 1 -- example "small"```
+
+following examples are supported: ```"tiny", "smallest", "small", "medium_small", "medium", "large", "largest"```
 
 To run tests use path/to/project> python3 -m unittest
 

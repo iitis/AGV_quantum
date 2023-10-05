@@ -1,4 +1,3 @@
-from typing import Callable, Dict, List, Tuple
 import time
 import unittest
 
@@ -6,8 +5,6 @@ from AGV_quantum import create_stations_list, create_agv_list
 from AGV_quantum import print_ILP_size, LinearAGV, QuadraticAGV
 
 
-
-#cwd = os.getcwd()
 
 class TestExample(unittest.TestCase):
 
@@ -70,6 +67,8 @@ class TestExample(unittest.TestCase):
         assert model_q.qubo[0][('x_0[0]', 'x_0[0]')] == -10.0
         model_q.to_cqm()
         print(model_q.cqm.constraints['eq_0'])
+
+        
 
 
     if __name__ == "__main__":
