@@ -1,6 +1,6 @@
 import unittest
 from AGV_quantum import LinearProg
-from AGV_quantum import sim_anneal, annealing, get_objective, analyze_constraints
+from AGV_quantum import sim_anneal, annealing, get_objective, analyze_constraints, get_file_name
 import dimod
 from scipy.optimize import linprog
 import numpy as np
@@ -8,6 +8,7 @@ import numpy as np
 class BQMConverter(unittest.TestCase):
 
     @classmethod
+
     def setUpClass(self):
         obj = [-1, -2]
         lhs_ineq = [[2, 1],[-4, 5], [1, -2]]

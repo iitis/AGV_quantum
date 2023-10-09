@@ -33,7 +33,7 @@ following examples are supported: ```"tiny", "smallest", "small", "medium_small"
 
 Tho check solutions use:
 
-```python -m check_sol.py --example "small" --hyb_solver "cqm"```
+```python -m check_sol --example "small" --hyb_solver "cqm"```
 
 
 To run tests use path/to/project> python3 -m unittest

@@ -4,23 +4,13 @@ import os
 import networkx as nx
 import pandas as pd
 import numpy as np
-from dimod import SampleSet
-from docplex.mp.model import Model
 from docplex.mp.model_reader import ModelReader
-from typing import Optional
 from AGV_quantum import LinearProg
 import dimod
 from AGV_quantum import get_results
 from AGV_quantum import process_result
 
 cwd = os.getcwd()
-
-
-def number_gen():
-    i = 1
-    while True:
-        yield i
-        i += 1
 
 
 def create_stations_list(tracks):
@@ -148,73 +138,6 @@ def see_non_zero_variables(vect: list, x_iter: list) -> dict:
     return return_dict
 
 
-def get_data4plot(res, agv_routes: dict, iterators: dict, complete_path, complete_path_rev, rev: list = []):
-
-    x_iter = iterators["x"]
-    sol = see_variables(res.x, x_iter)
-    J = create_agv_list(agv_routes)
-    times = {j: [] for j in J} 
-    paths = {j: [] for j in J}
-    
-    for j in J:
-        for s in agv_routes[j]:
-            if j in rev:
-                path = complete_path_rev
-            else:
-                path = complete_path
-            for way in ["in", "out"]:   
-                times[j].append(sol[(f'{way}', j, f'{s}')])
-                paths[j].append(path[f"{s}_{way}"])
-    return times, paths
-
-
-def nice_print(res, agv_routes: dict, weights: dict, d_max: dict, v_in: dict, v_out: dict, iterators: dict):
-    y_iter = iterators["y"]
-    z_iter = iterators["z"]
-    x_iter = iterators["x"]
-
-    sol = see_variables(res.x, x_iter)
-    J = create_agv_list(agv_routes)
-    s_final = {j: agv_routes[j][-1] for j in J}
-    L = {}
-    contributions_sum = 0
-    for j in J:
-        for x in sol.keys():
-            if x[0] == "in" and x[1] == j:
-                L[x] = sol[x]
-                for x2 in sol.keys():
-                    if x2[0] == "out" and x2[1] == j and x2[2] == x[2]:
-                        L[x2] = sol[x2]
-                        continue
-        v_out_j = v_out[j, s_final[j]]
-        diff = L[('out', j, s_final[j])] - v_out[j, s_final[j]]
-        contribution = weights[j] * (diff/d_max[j])
-        contributions_sum += contribution
-        print(f"{j} :", L, f"; v_out({j}, {s_final[j]}): {v_out_j} ; "
-                           f"difference: {diff} ; contribution: {contribution}")
-        L.clear()
-
-    for y in y_iter:
-        for x in sol.keys():
-            if y == x:
-                L[y] = sol[x]
-                continue
-    print("y :", L)
-    L.clear()
-
-    for z in z_iter:
-        for x in sol.keys():
-            if z == x:
-                L[z] = sol[x]
-                continue
-    print("z :", L)
-    L.clear()
-
-    print("weights :", weights)
-    print("d_max :", d_max)
-    print("objective function :", res.fun)
-    print("sum of contributions:", contributions_sum)
-
 
 def create_v_in_out(tracks_len: dict, agv_routes: dict, tau_operation: dict, iterators: dict, initial_conditions: dict):
     t_in_iter = iterators["t"]
@@ -238,29 +161,6 @@ def create_v_in_out(tracks_len: dict, agv_routes: dict, tau_operation: dict, ite
     v_out = {(j, s): v_in[(j, s)] + tau_operation[(j, s)] for _, j, s in t_in_iter}
     return v_in, v_out
 
-# def print_equations(A_ub: np.ndarray, b_ub: np.ndarray, A_eq: np.ndarray, b_eq, iterators):
-
-
-def print_time(results: SampleSet):
-
-    print(f"qpu_access_time: {results.info['qpu_access_time'] * 1e-6} seconds, "
-          f"charge_time: {results.info['charge_time'] * 1e-6} seconds,"
-          f" run_time: {results.info['run_time'] * 1e-6} seconds")
-
-
-def print_best_feasible(results: SampleSet):
-    feasible = results.filter(lambda d: d.is_feasible)
-    print(feasible.first)
-
-
-def print_equations(array: np.ndarray, vect: np.ndarray, x_iter: list):
-    for row in array:
-        print(see_non_zero_variables(row, x_iter))
-
-
-def load_docpex_model(path: str) -> Model:
-    m = ModelReader.read(path)
-    return m
 
 
 def qubo_to_matrix(qubo: dict, lp: LinearProg) -> np.ndarray:
@@ -277,7 +177,6 @@ def qubo_to_matrix(qubo: dict, lp: LinearProg) -> np.ndarray:
     array = np.triu(array)
     return array
 
-#-212459.75   -112,475
 
 def check_solution_list(sol: list, lp: LinearProg):
     data = sorted(list(lp.bqm.variables))
@@ -303,65 +202,3 @@ def compute_energy(sol: list, lp: LinearProg):
     for edge, value in lp.qubo[0].items():
         s += sol_dict[edge[0]] * sol_dict[edge[1]] * value
     return s
-
-    # sol = np.array(sol)
-    # return np.matmul(np.matmul(sol, matrix), sol.transpose())
-
-
-def make_spinglass_qubo(lp, nane, p: Optional[int] = None):
-    p = 5 if p is None else p
-    lp._to_bqm_qubo_ising(p)
-
-    qubo = lp.qubo[0]
-    qubo = dict(sorted(qubo.items()))
-
-    number = number_gen()
-
-    linear_qubo = []
-    for key1, key2 in qubo.keys():
-        if key1 == key2:
-            linear_qubo.append(key1)
-
-    key_numbers = {key: next(number) for key in linear_qubo}
-    spinglass_qubo = {}
-    for (key1, key2), value in qubo.items():
-        spinglass_qubo[(key_numbers[key1], key_numbers[key2])] = value
-
-    print(spinglass_qubo)
-
-    with open(os.path.join(cwd, "..", "qubo", "tiny_qubo_spinglass.txt"), "w") as f:
-        f.write(f"# offset: {lp.qubo[1]} \n")
-        for (i, j), v in spinglass_qubo.items():
-            if i == j:
-                f.write(f"{i} {j} {v} \n")
-        for (i, j), v in spinglass_qubo.items():
-            if i != j:
-                f.write(f"{i} {j} {v} \n")
-
-
-def make_spinglass_ising(lp, name, p: Optional[float] = None):
-    p = 5 if p is None else p
-
-    lp._to_bqm_qubo_ising(p)
-    lin = lp.ising[0]
-    quad = lp.ising[1]
-    quad = dict(sorted(quad.items()))
-    ising_offset = lp.ising[2]
-
-    number = number_gen()
-    set_of_keys = set()
-    for i, j in quad.keys():
-        set_of_keys.add(i)
-        set_of_keys.add(j)
-    keys_number = {key: next(number) for key in set_of_keys}
-
-    with open(os.path.join(cwd, "..", "qubo", f"{name}_ising_spinglass.txt"), "w") as f:
-        f.write(f"# offset: {ising_offset} \n")
-        for key in set_of_keys:
-            num = keys_number[key]
-            v = lin[key] if key in lin.keys() else 0
-            f.write(str(num) + " " + str(num) + " " + str(v) + "\n")
-        for (i, j), v in quad.items():
-            ni = keys_number[i]
-            nj = keys_number[j]
-            f.write(str(ni) + " " + str(nj) + " " + str(v) + "\n")
