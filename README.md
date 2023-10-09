@@ -17,13 +17,24 @@ In directory ```examples``` there are AGVs scheduling problems. In order of incr
 
 To run this project in terminal use path/to/project> python -m run_examples 
 
-There are optional boolean parameters (```1``` yes, ```0``` no): ```--solve_linear``` - solve on CPLEX , ```--train_diagram``` - plot "train diagram" for given problem ```--solve_quadratic``` - solve on hybrid quantum classical (the particular solver and penalty parameter can be set in the script).
+There are optional boolean parameters (```1``` yes, ```0``` no): 
 
-Example: 
+- ```--solve_linear``` - if ```1``` solve ILP on CPLEX, if ```0``` solve on hybrid quantum classical 
+- ```--hyb_solver``` chose particular hybrid solver  ```"bqm"``` or ```"cqm"``` are supported, for ```"bqm"``` penalty parameter can be set in  the script (works if ```--solve_linear = 0```), 
+- ```--train_diagram``` - plot "train diagram" for given problem (works if ```--solve_linear = 1```).
+
+Examples: 
 
 ```python  -m run_examples  --solve_linear 1 --train_diagram 1 --example "small"```
 
+```python  -m run_examples  --solve_linear 0 --example "small" --hyb_solver "bqm"```
+
 following examples are supported: ```"tiny", "smallest", "small", "medium_small", "medium", "large", "largest"```
+
+Tho check solutions use:
+
+```python -m check_sol.py --example "small" --hyb_solver "cqm"```
+
 
 To run tests use path/to/project> python3 -m unittest
 
@@ -31,7 +42,7 @@ To run tests use path/to/project> python3 -m unittest
 
 In folder ```annealing_results``` there are results on quantum and hybrid devices.
 
-In folder ```lp_files``` there are results of classical solver on the ILP.
+In folder ```lp_files``` there are saved linear models for checkout of quantum solver.
 
 
 ### Citing this work
