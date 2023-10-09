@@ -15,26 +15,26 @@ parser = argparse.ArgumentParser("Solve linear or quadratic")
 parser.add_argument(
     "--solve_linear",
     type=int,
-    help="Solve the problem on CPLEX",
+    help="1 if solve the linear problem on CPLEX, 0 is solve the problem on hybrid quantum approach",
     default=1,
 )
 parser.add_argument(
     "--train_diagram",
     type=int,
-    help="Make train diagram for CPLEX solution",
-    default=0,
-)
-parser.add_argument(
-    "--solve_quadratic",
-    type=int,
-    help="Solve using hybrid quantum-classical approach",
+    help="Make train diagram for linear solution",
     default=0,
 )
 parser.add_argument(
     "--example",
     type=str,
-    help="chose example []",
+    help="chose example out of [tiny, smallest, small, medium_small, medium, large, largest]",
     default="smallest",
+)
+parser.add_argument(
+    "--hyb_solver",
+    type=str,
+    help="chose bqm or cqm",
+    default="bqm",
 )
 
 
@@ -42,30 +42,29 @@ args = parser.parse_args()
 cwd = os.getcwd()
 if args.example == "tiny":
     from examples.example_tiny import M, tracks, tracks_len, agv_routes, d_max, tau_pass, tau_headway, tau_operation, weights, initial_conditions
-    save_path = os.path.join(cwd, "..", "annealing_results", "tiny_2_AGV")
+    save_path = os.path.join(cwd, "annealing_results", "tiny_2_AGV")
 if args.example == "smallest":
     from examples.example_smallest import M, tracks, tracks_len, agv_routes, d_max, tau_pass, tau_headway, tau_operation, weights, initial_conditions
-    save_path = os.path.join(cwd, "..", "annealing_results", "2_AGV")
+    save_path = os.path.join(cwd, "annealing_results", "2_AGV")
 if args.example == "small":
     from examples.example_small import M, tracks, tracks_len, agv_routes, d_max, tau_pass, tau_headway, tau_operation, weights, initial_conditions
-    save_path = os.path.join(cwd, "..", "annealing_results", "4_AGV")
+    save_path = os.path.join(cwd, "annealing_results", "4_AGV")
 if args.example == "medium_small":
     from examples.example_medium_small import M, tracks, tracks_len, agv_routes, d_max, tau_pass, tau_headway, tau_operation, weights, initial_conditions
-    save_path = os.path.join(cwd, "..", "annealing_results", "6_AGV")
+    save_path = os.path.join(cwd, "annealing_results", "6_AGV")
 if args.example == "medium":
     from examples.example_medium import M, tracks, tracks_len, agv_routes, d_max, tau_pass, tau_headway, tau_operation, weights, initial_conditions
-    save_path = os.path.join(cwd, "..", "annealing_results", "7_AGV")
+    save_path = os.path.join(cwd, "annealing_results", "7_AGV")
 if args.example == "large":
     from examples.example_large import M, tracks, tracks_len, agv_routes, d_max, tau_pass, tau_headway, tau_operation, weights, initial_conditions
-    save_path = os.path.join(cwd, "..", "annealing_results", "12_AGV")
+    save_path = os.path.join(cwd, "annealing_results", "12_AGV")
 if args.example == "largest":
     from examples.example_largest import M, tracks, tracks_len, agv_routes, d_max, tau_pass, tau_headway, tau_operation, weights, initial_conditions
-    save_path = os.path.join(cwd, "..", "annealing_results", "15_AGV")
+    save_path = os.path.join(cwd, "annealing_results", "15_AGV")
 else:
     print(f"example {args.example} not suported")
 
 solve_linear = args.solve_linear
-solve_quadratic = args.solve_quadratic
 
 
 if __name__ == "__main__":
@@ -82,21 +81,34 @@ if __name__ == "__main__":
         end = time.time()
         print("time: ", end-begin)
         model.print_solution(print_zeros=True)
-        # AGV.nice_print(model, sol) <- WIP
+        #AGV.nice_print(model, sol) <- WIP
         if args.train_diagram:
             plot_train_diagram(sol, agv_routes, tracks_len)
 
-    if solve_quadratic:
-        ising_size = True
-        hybrid = "bqm" # select hybrid solver bqm or cqm
-        p = 5 # penalty for QUBO creation
+    else:
 
+        assert args.hyb_solver in ["bqm", "cqm"]
+
+        hybrid = args.hyb_solver
+        p = 5 # penalty for QUBO creation
         model = QuadraticAGV(AGV)
+        
+        # saves model for checks
+        lp_file = os.path.join(cwd, f"lp_files/lp_{args.example}.pkl")
+        if not os.path.isfile(lp_file):
+            with open(lp_file, "wb") as f:
+                    pickle.dump(model, f)
+
         model.to_bqm_qubo_ising(p)
-        if ising_size:
-            print("n.o. qubits", model._count_qubits())
-            print("n.o. quandratic couplings", model._count_quadratic_couplings())
-            print("n.o. linear fields", model._count_linear_fields())
+
+        # check if results are saved
+        is_file = os.path.isfile(os.path.join(save_path, f"new_{hybrid}_info.pkl"))
+        if is_file: 
+            print(".......... files exist ............")
+            if hybrid == "bqm":
+                print("n.o. qubits", model._count_qubits())
+                print("n.o. quandratic couplings", model._count_quadratic_couplings())
+                print("n.o. linear fields", model._count_linear_fields())
         else:
             model.to_cqm()
             cwd = os.getcwd()
@@ -111,7 +123,7 @@ if __name__ == "__main__":
             info = sampleset.info
             print(sampleset)
             print(info)
-
+            
             with open(os.path.join(save_path, f"new_{hybrid}_info.pkl"), "wb") as f:
                 pickle.dump(info, f)
 
