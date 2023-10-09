@@ -1,3 +1,4 @@
+# test solving simple example
 import time
 import unittest
 
@@ -36,11 +37,11 @@ class TestExample(unittest.TestCase):
                         initial_conditions)
         print_ILP_size(AGV.A_ub, AGV.b_ub, AGV.A_eq, AGV.b_eq)
 
-        
+
         model = AGV.create_linear_model()
         model.print_information()
-       
-        
+
+
         try:
             begin = time.time()
             sol = model.solve()
@@ -52,8 +53,8 @@ class TestExample(unittest.TestCase):
             is_cplex = False
 
         if is_cplex:
-            assert sol["y_0_1_s0"] == 1. 
-            assert sol["y_0_1_s1"] == 1. 
+            assert sol["y_0_1_s0"] == 1.
+            assert sol["y_0_1_s1"] == 1.
 
             assert sol["t_in_0_s0"] == 0.
             assert sol["t_out_0_s0"] == 1.
@@ -67,8 +68,6 @@ class TestExample(unittest.TestCase):
         assert model_q.qubo[0][('x_0[0]', 'x_0[0]')] == -10.0
         model_q.to_cqm()
         print(model_q.cqm.constraints['eq_0'])
-
-        
 
 
     if __name__ == "__main__":

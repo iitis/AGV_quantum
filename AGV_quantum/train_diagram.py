@@ -14,16 +14,16 @@ def get_number_zones(track_len):
         for el in tup:
             if el not in zones:
                 zones.append(el)
-    return len(zones)    
+    return len(zones)
 
 
 
 def zones_location(track_len, n_zones, s_ofset):
     """determines zones locations and borders in space for the plot"""
-    marks = {f"s{k}":0 for k in range(n_zones)} 
+    marks = {f"s{k}":0 for k in range(n_zones)}
     zone_borders = []
     prev_s = -100
-    x = 0 
+    x = 0
     for s in marks:
         if prev_s != -100:
             x = x + s_ofset + track_len[(f"{prev_s}", f"{s}")]
@@ -56,7 +56,7 @@ def plot_train_diagram(sol, agv_routes, track_len):
     marks, zone_borders = zones_location(track_len, n_zones, s_ofset)
     times, spaces = AGVS_coordinates(sol, agv_routes, marks, s_ofset)
     colors = {0: "black", 1: "red", 2: "green", 3: "blue", 4: "orange", 5: "brown", 6: "cyan"}
-    
+
     for agv in agv_routes:
         if n_zones < 8:
             plt.plot(times[agv], spaces[agv], "o-", label=f"$AGV_{agv}$ ", color=colors[agv], linewidth=0.85, markersize=2)
@@ -67,11 +67,11 @@ def plot_train_diagram(sol, agv_routes, track_len):
     for el in zone_borders:
         plt.axhline(y = el, color="gray", linewidth=0.5, linestyle=":")
         locs = [marks[k] for k in marks]
-    
+
     our_marks = [f"$s_{i}$" for i, _ in enumerate(marks) ]
 
     plt.yticks(locs, our_marks)
     plt.xlabel("time")
     plt.ylabel("zones")
-    plt.subplots_adjust(bottom=0.19, top = 0.75)        
+    plt.subplots_adjust(bottom=0.19, top = 0.75)
     plt.savefig("train_diagram.pdf")

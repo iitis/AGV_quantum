@@ -1,3 +1,4 @@
+# test helpers
 import unittest
 import networkx as nx
 from AGV_quantum import create_stations_list, create_agv_list, create_graph, create_t_iterator, create_y_iterator, create_z_iterator
@@ -55,7 +56,7 @@ class MultipleStationsNoOpposite(unittest.TestCase):
         cls.agv_routes = {0: ("s0", "s1"), 1: ("s0", "s2", "s3")}
         cls.graph = create_graph(cls.tracks, cls.agv_routes)
         cls.iterators = create_iterators(cls.graph, cls.agv_routes)
-        cls.d_max = {j: 10 for j in cls.agv_routes.keys()}
+        cls.d_max = {j: 10 for j in cls.agv_routes}
         cls.initial_conditions = {("in", 0, "s0"): 0, ("in", 1, "s0"): 2}
 
         cls.J = create_agv_list(cls.agv_routes)

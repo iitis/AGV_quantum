@@ -90,7 +90,7 @@ class LinearProg:
         pyqubo_model = H.compile()
         if pdict is None:
             pdict = {f"eq_{i}": 2 for i in range(self.num_eq)}
-        elif isinstance(pdict, int) or isinstance(pdict, float):
+        elif isinstance(pdict, (int, float)):
             pdict = {f"eq_{i}": pdict for i in range(self.num_eq)}
         pdict["obj"] = 1
         self.qubo = pyqubo_model.to_qubo(feed_dict=pdict)
@@ -123,11 +123,11 @@ class LinearProg:
         self.interpreter = lambda ss: interpreter(ss)
 
     @staticmethod
-    def _get_slack_ub(vars: list, coefs: list, offset: int) -> int:
+    def _get_slack_ub(problem_vars: list, coefs: list, offset: int) -> int:
         """Returns upper bound for slack variables
 
-        :param vars: List of variables (can be integer or binary)
-        :type vars: list
+        :param problem_vars: List of variables (can be integer or binary)
+        :type problem_vars: list
         :param coefs: List of coefficients for the inequality
         :type coefs: list
         :param offset: RHS of the inequality
@@ -136,7 +136,7 @@ class LinearProg:
         :rtype: int
         """
         ub = 0
-        for var, coef in zip(vars, coefs):
+        for var, coef in zip(problem_vars, coefs):
             if isinstance(var, LogEncInteger):
                 ub += coef * (var.value_range[1] if coef < 0 else var.value_range[0])
             else:
@@ -192,7 +192,7 @@ class LinearProg:
 
     def _count_qubits(self):
         model_vars = self.bqm.variables
-        return len(model_vars) 
+        return len(model_vars)
 
     def _count_quadratic_couplings(self):
         """
@@ -207,11 +207,9 @@ class LinearProg:
     def _count_linear_fields(self):
         """
         return number of local fields hs
-        """ 
+        """
         count = 0
         for h in self.bqm.linear.values():
             if h != 0:
                 count = count + 1
-        return count             
- 
-
+        return count

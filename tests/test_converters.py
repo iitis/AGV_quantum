@@ -1,9 +1,10 @@
 import unittest
-from AGV_quantum import LinearProg
-from AGV_quantum import sim_anneal, annealing, get_objective, analyze_constraints, get_file_name
 import dimod
 from scipy.optimize import linprog
 import numpy as np
+from AGV_quantum import LinearProg
+from AGV_quantum import sim_anneal, annealing, get_objective, analyze_constraints
+
 
 class BQMConverter(unittest.TestCase):
 
@@ -56,14 +57,14 @@ class BQMConverter(unittest.TestCase):
             dict_list.append(rdict)
         ret = sorted(dict_list, key=lambda d: d["energy"])[0]
         if make_probabilistic_test:
-            assert ret["feasible"] == True
-            assert ret["feas_constraints"][1] == 0 
+            assert ret["feasible"] is True
+            assert ret["feas_constraints"][1] == 0
         assert ret["objective"] < -9.
 
 
     def test_bqm_soln_sim(self):
         dict_list = annealing(self.lp, "sim", "test_1", load=False, store=False)
-        soln = (next((l for l in dict_list if l["feasible"]), None))
+        soln = next((l for l in dict_list if l["feasible"]), None)
         assert soln["objective"] == self.obj
         assert (list(soln["sample"].values()) == self.x).all()
 
@@ -73,11 +74,14 @@ class BQMConverter(unittest.TestCase):
         this test compare bqm with qubo, we shall use it as well
         """
 
-        vars = ['x_1[3]', 'eq_3_slack[3]', 'x_0[2]', 'eq_3_slack[4]', 'eq_2_slack[2]', 'eq_2_slack[4]', 'x_1[0]', 'eq_2_slack[1]', 'eq_1_slack[2]', 'x_0[0]', 'eq_3_slack[2]', 'x_0[1]', 'x_1[1]', 'eq_3_slack[0]', 'x_0[3]', 'x_1[2]', 'eq_1_slack[1]', 'eq_2_slack[0]', 'eq_2_slack[3]', 'eq_2_slack[5]', 'eq_1_slack[3]', 'eq_1_slack[4]', 'eq_1_slack[0]', 'eq_3_slack[1]']
+        model_vars = ['x_1[3]', 'eq_3_slack[3]', 'x_0[2]', 'eq_3_slack[4]', 'eq_2_slack[2]', 'eq_2_slack[4]', 'x_1[0]', 
+                'eq_2_slack[1]', 'eq_1_slack[2]', 'x_0[0]', 'eq_3_slack[2]', 'x_0[1]', 'x_1[1]', 'eq_3_slack[0]', 
+                'x_0[3]', 'x_1[2]', 'eq_1_slack[1]', 'eq_2_slack[0]', 'eq_2_slack[3]', 'eq_2_slack[5]', 'eq_1_slack[3]',
+                  'eq_1_slack[4]', 'eq_1_slack[0]', 'eq_3_slack[1]']
 
         # variables
-        for var in vars:
-            assert var in self.lp.bqm.variables
+        for v in model_vars:
+            assert v in self.lp.bqm.variables
 
 
         vars = self.lp.bqm.variables
@@ -99,7 +103,7 @@ class BQMConverter(unittest.TestCase):
                     if (vars[i], vars[j]) in Js:
                         J = Js[vars[i], vars[j]]
                         count = count + 1
-                        try: 
+                        try:
                             assert J == self.lp.qubo[0][(vars[i], vars[j])]
                         except:
                             assert J == self.lp.qubo[0][(vars[j], vars[i])]
@@ -113,7 +117,7 @@ class BQMConverter(unittest.TestCase):
 
     def test_ising(self):
 
-        assert len(self.lp.ising[0]) == self.lp._count_qubits()    # these are fields, 
+        assert len(self.lp.ising[0]) == self.lp._count_qubits()    # these are fields,
         assert len(self.lp.ising[1]) == self.lp._count_quadratic_couplings()   # these are quadratic couplings
         self.lp.ising[2]  # this is energy ofset
 

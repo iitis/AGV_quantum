@@ -152,7 +152,7 @@ class LinearAGV:
         for y1, y2 in itertools.combinations(self.y_iter, r=2):
             if y1[2] == y2[2] and y1[0] == y2[1] and y1[1] == y2[0]:
                 t_vect = [0 for _ in self.t_iter]
-                y_vect = [1 if (y == y1 or y == y2) else 0 for y in self.y_iter]
+                y_vect = [1 if y in (y1, y2) else 0 for y in self.y_iter]
                 z_vect = [0 for _ in self.z_iter]
                 PVY.append(t_vect + y_vect + z_vect)
                 PVY_b.append(1)
@@ -171,7 +171,7 @@ class LinearAGV:
                 if z1[0] == z2[1] and z1[1] == z2[0] and z1[2] == z2[3] and z1[3] == z2[2]:
                     t_vect = [0 for _ in self.t_iter]
                     y_vect = [0 for _ in self.y_iter]
-                    z_vect = [1 if z == z1 or z == z2 else 0 for z in self.z_iter]
+                    z_vect = [1 if z in (z1, z2) else 0 for z in self.z_iter]
                     PVZ.append(t_vect + y_vect + z_vect)
                     PVZ_b.append(1)
 
@@ -234,7 +234,6 @@ class LinearAGV:
 
         MH = []
         MH_b = []
-        # TODO add condition s*
         for j1, j2, s, sp in tau_headway.keys():
             t_in_vect = [0 for _ in self.t_in_iter]
             t_out_vect = [1 if t == ("out", j1, s) else -1 if t == ("out", j2, s) else 0 for t in

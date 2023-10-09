@@ -1,6 +1,6 @@
-"""tests plotting train diagram and auciliary functions"""
+# tests plotting train diagram and auciliary functions
 import unittest
-from AGV_quantum import plot_train_diagram, get_number_zones, zones_location, AGVS_coordinates
+from AGV_quantum import get_number_zones, zones_location, AGVS_coordinates
 
 
 
@@ -9,7 +9,6 @@ class TestTrainDiagram(unittest.TestCase):
     @classmethod
 
     def test_treain_diagram(self):
-        assert 1 == 1
 
         tracks_len = {("s0", "s1"): 6, ("s1", "s0"): 6,
               ("s1", "s2"): 6, ("s2", "s1"): 6,

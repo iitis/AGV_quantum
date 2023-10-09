@@ -3,6 +3,7 @@
 import pickle
 import time
 import os
+import argparse
 
 from AGV_quantum import plot_train_diagram
 from AGV_quantum import print_ILP_size, LinearAGV
@@ -10,8 +11,7 @@ from AGV_quantum import QuadraticAGV
 from AGV_quantum import constrained_solver, hybrid_anneal
 
 
-import argparse
-parser = argparse.ArgumentParser("Solve linear or quadratic") 
+parser = argparse.ArgumentParser("Solve linear or quadratic")
 parser.add_argument(
     "--solve_linear",
     type=int,
@@ -92,18 +92,18 @@ if __name__ == "__main__":
         hybrid = args.hyb_solver
         p = 5 # penalty for QUBO creation
         model = QuadraticAGV(AGV)
-        
+
         # saves model for checks
         lp_file = os.path.join(cwd, f"lp_files/lp_{args.example}.pkl")
         if not os.path.isfile(lp_file):
             with open(lp_file, "wb") as f:
-                    pickle.dump(model, f)
+                pickle.dump(model, f)
 
         model.to_bqm_qubo_ising(p)
 
         # check if results are saved
         is_file = os.path.isfile(os.path.join(save_path, f"new_{hybrid}_info.pkl"))
-        if is_file: 
+        if is_file:
             print(".......... files exist ............")
             if hybrid == "bqm":
                 print("n.o. qubits", model._count_qubits())
@@ -123,7 +123,7 @@ if __name__ == "__main__":
             info = sampleset.info
             print(sampleset)
             print(info)
-            
+
             with open(os.path.join(save_path, f"new_{hybrid}_info.pkl"), "wb") as f:
                 pickle.dump(info, f)
 

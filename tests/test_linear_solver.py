@@ -1,3 +1,4 @@
+# detailed test of linear model creation
 from typing import Callable, Dict, List, Tuple
 
 import unittest
@@ -16,8 +17,8 @@ class SingleStation(unittest.TestCase):
         cls.initial_conditions = {("in", 0, "s0"): 1, ("in", 1, "s0"): 2}
         cls.graph = create_graph(cls.tracks, cls.agv_routes)
         cls.iterators = create_iterators(cls.graph, cls.agv_routes)
-        cls.d_max = {j: 10 for j in cls.agv_routes.keys()}
-        
+        cls.d_max = {j: 10 for j in cls.agv_routes}
+
         cls.x_iter = cls.iterators["x"]
         cls.t_in_iter = cls.iterators["t_in"]
         cls.t_out_iter = cls.iterators["t_out"]
@@ -34,7 +35,7 @@ class SingleStation(unittest.TestCase):
     # def test_create_bounds_single(self): TODO
 
     def test_single_line_matrix_single(self):
-        SL, SL_b = LinearAGV._create_single_line_matrix(self, self.M)
+        SL, _ = LinearAGV._create_single_line_matrix(self, self.M)
         self.assertTrue(np.array_equal(SL, np.array([])))
 
 
@@ -48,8 +49,8 @@ class MultipleStationsNoOpposite(unittest.TestCase):
         cls.graph = create_graph(cls.tracks, cls.agv_routes)
         cls.iterators = create_iterators(cls.graph, cls.agv_routes)
         cls.initial_conditions = {("in", 0, "s0"): 1, ("in", 1, "s0"): 3, ("in", 2, "s2"): 0}
-        cls.d_max = {j: 100 for j in cls.agv_routes.keys()}
-        cls.weights = {j: 1 for j in cls.agv_routes.keys()}
+        cls.d_max = {j: 100 for j in cls.agv_routes}
+        cls.weights = {j: 1 for j in cls.agv_routes}
         cls.tracks_len = {("s0", "s1"): 1, ("s1", "s0"): 1, ("s0", "s2"): 2, ("s2", "s3"): 2}
 
         all_same_way = create_same_way_dict(cls.agv_routes)
@@ -57,7 +58,7 @@ class MultipleStationsNoOpposite(unittest.TestCase):
         stations = create_stations_list(cls.tracks)
         agv_routes_as_e = agv_routes_as_edges(cls.agv_routes)
 
-        cls.tau_headway = {(j, jp, s, sp): 2 for (j, jp) in all_same_way.keys() for (s, sp) in all_same_way[(j, jp)]}
+        cls.tau_headway = {(j, jp, s, sp): 2 for (j, jp) in all_same_way for (s, sp) in all_same_way[(j, jp)]}
         cls.tau_pass = {(j, s, sp): cls.tracks_len[(s, sp)] for j in J for s, sp in agv_routes_as_e[j]}
         cls.tau_operation = {(agv, station): 2 for agv in J for station in stations}
 
@@ -103,12 +104,12 @@ class MultipleStationsNoOpposite(unittest.TestCase):
         self.assertTrue(np.array_equal(MPT_b, np.array([-1 * tau_p for tau_p in self.tau_pass.values()])))
 
     def test_junction_condition_matrix(self):
-        JC, JC_b = LinearAGV._create_junction_condition_matrix(self, self.M,  self.agv_routes, self.tau_operation)
+        JC, _ = LinearAGV._create_junction_condition_matrix(self, self.M,  self.agv_routes, self.tau_operation)
         self.assertEqual(len(self.iterators["y"]), 6)
         self.assertEqual(JC.shape, (13, len(self.x_iter)))
 
     def test_single_line_matrix(self):
-        SL, SL_b = LinearAGV._create_single_line_matrix(self, self.M)
+        SL, _ = LinearAGV._create_single_line_matrix(self, self.M)
         self.assertTrue(np.array_equal(SL, np.array([])))
 
     def test_no_overtake_matrix(self):
@@ -126,7 +127,7 @@ class MultipleStationsNoOpposite(unittest.TestCase):
                                           self.weights, self.initial_conditions)
         print_ILP_size(AGV.A_ub, AGV.b_ub, AGV.A_eq, AGV.b_eq)
 
- 
+
         model = AGV.create_linear_model()
         model.print_information()
         #sol = model.solve()  CPLEX not found
@@ -144,15 +145,15 @@ class TwoStationsOpposite(unittest.TestCase):
         cls.iterators = create_iterators(cls.graph, cls.agv_routes)
 
         cls.initial_conditions = {("in", 0, "s0"): 0, ("in", 1, "s0"): 0}
-        cls.d_max = {j: 100 for j in cls.agv_routes.keys()}
-        cls.weights = {j: 1 for j in cls.agv_routes.keys()}
+        cls.d_max = {j: 100 for j in cls.agv_routes}
+        cls.weights = {j: 1 for j in cls.agv_routes}
 
         all_same_way = create_same_way_dict(cls.agv_routes)
         J = create_agv_list(cls.agv_routes)
         stations = create_stations_list(cls.tracks)
         agv_routes_as_e = agv_routes_as_edges(cls.agv_routes)
 
-        cls.tau_headway = {(j, jp, s, sp): 2 for (j, jp) in all_same_way.keys() for (s, sp) in all_same_way[(j, jp)]}
+        cls.tau_headway = {(j, jp, s, sp): 2 for (j, jp) in all_same_way for (s, sp) in all_same_way[(j, jp)]}
         cls.tau_pass = {(j, s, sp): cls.tracks_len[(s, sp)] for j in J for s, sp in agv_routes_as_e[j]}
         cls.tau_operation = {(agv, station): 2 for agv in J for station in stations}
 
@@ -176,7 +177,7 @@ class TwoStationsOpposite(unittest.TestCase):
         JC, JC_b = LinearAGV._create_junction_condition_matrix(self, self.M,  self.agv_routes, self.tau_operation)
         SL, SL_b = LinearAGV._create_single_line_matrix(self, self.M)
 
-        if MPT.size >= 2 and MH.size >= 2:  # TO DO more sensible, for now is hack
+        if MPT.size >= 2 and MH.size >= 2:  # TODO more sensible, for now is hack
             if SL.size > 0:
                 A_ub = np.concatenate((MPT, MH, JC, SL))
                 b_ub = np.concatenate((MPT_b, MH_b, JC_b, SL_b))
@@ -213,8 +214,8 @@ class OneSameWayOneOpposite(unittest.TestCase):
         cls.agv_routes = {0: ("s0", "s1"), 1: ("s0", "s1", "s2"), 2: ("s2", "s1")}
         cls.graph = create_graph(cls.tracks, cls.agv_routes)
         cls.iterators = create_iterators(cls.graph, cls.agv_routes)
-        cls.d_max = {j: 10 for j in cls.agv_routes.keys()}
-        cls.weights = {j:1 for j in cls.agv_routes.keys()}
+        cls.d_max = {j: 10 for j in cls.agv_routes}
+        cls.weights = {j:1 for j in cls.agv_routes}
         cls.tracks_len = {("s0", "s1"): 1, ("s1", "s2"): 2, ("s2", "s1"): 2}
         cls.initial_conditions = {("in", 0, "s0"): 1, ("in", 1, "s0"): 3, ("in", 2, "s2"): 0}
         all_same_way = create_same_way_dict(cls.agv_routes)
@@ -222,7 +223,7 @@ class OneSameWayOneOpposite(unittest.TestCase):
         stations = create_stations_list(cls.tracks)
         agv_routes_as_e = agv_routes_as_edges(cls.agv_routes)
 
-        cls.tau_headway = {(j, jp, s, sp): 2 for (j, jp) in all_same_way.keys() for (s, sp) in all_same_way[(j, jp)]}
+        cls.tau_headway = {(j, jp, s, sp): 2 for (j, jp) in all_same_way for (s, sp) in all_same_way[(j, jp)]}
         cls.tau_pass = {(j, s, sp): cls.tracks_len[(s, sp)] for j in J for s, sp in agv_routes_as_e[j]}
         cls.tau_operation = {(agv, station): 2 for agv in J for station in stations}
 
@@ -267,7 +268,7 @@ class OneSameWayOneOpposite(unittest.TestCase):
                                           self.weights, self.initial_conditions)
         print_ILP_size(AGV.A_ub, AGV.b_ub, AGV.A_eq, AGV.b_eq)
 
- 
+
         model = AGV.create_linear_model()
         model.print_information()
         #sol = model.solve()  CPLEX not found

@@ -36,11 +36,11 @@ graph = create_graph(tracks, agv_routes)
 d_max = {i: 40 for i in J}
 tau_pass = {(j, s, sp): tracks_len[(s, sp)] for j in J for s, sp in agv_routes_as_e[j]}
 tau_headway = {(j, jp, s, sp): 2 if (s, sp) != ("s2", "s3") and (s, sp) != ("s3", "s2") else 0
-               for (j, jp) in all_same_way.keys() for (s, sp) in all_same_way[(j, jp)]}
+               for (j, jp) in all_same_way for (s, sp) in all_same_way[(j, jp)]}
 
 tau_operation = {(agv, station): 2 for agv in J for station in stations}
 
-initial_conditions = {("in", 0, "s0"): 0, ("in", 1, "s0"): 0, ("in", 2, "s4"): 8, 
+initial_conditions = {("in", 0, "s0"): 0, ("in", 1, "s0"): 0, ("in", 2, "s4"): 8,
                       ("in", 3, "s2"): 15, ("in", 4, "s6"): 0, ("in", 5, "s5"): 0}
 
 weights = {j: 1 for j in J}

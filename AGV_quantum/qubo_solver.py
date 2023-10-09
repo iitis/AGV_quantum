@@ -127,7 +127,7 @@ def get_file_name(
     """
     folder = os.path.join("annealing_results", input_name)
     fname = f"{method}"
-    if num_reads != None:
+    if num_reads is not None:
         fname += f"_{num_reads}_{annealing_time}_{chain_strength}"
     return os.path.join(folder, fname)
 
@@ -242,4 +242,3 @@ def annealing(
     if method != "cqm":
         sampleset = lp.interpreter(sampleset)
     return get_results(sampleset, prob=lp)
-

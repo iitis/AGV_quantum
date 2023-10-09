@@ -1,12 +1,11 @@
-#from collections import OrderedDict
+#helpers
 import itertools
 import os
 import networkx as nx
 import pandas as pd
 import numpy as np
-from docplex.mp.model_reader import ModelReader
-from AGV_quantum import LinearProg
 import dimod
+from AGV_quantum import LinearProg
 from AGV_quantum import get_results
 from AGV_quantum import process_result
 
@@ -23,7 +22,7 @@ def create_stations_list(tracks):
     return list(set(stations))
 
 
-def agv_routes_as_edges(agv_routes): 
+def agv_routes_as_edges(agv_routes):
     """ """
     return_dict = {}
     for j in agv_routes.keys():
@@ -102,7 +101,7 @@ def create_z_iterator(graph: nx.Graph, agv_routes):
     agv_routes_as_edges_dict = agv_routes_as_edges(agv_routes)
 
     for j1, j2 in list(itertools.permutations(J, r=2)):
-        if j1 in agv_routes_as_edges_dict.keys() and j2 in agv_routes_as_edges_dict.keys():
+        if j1 in agv_routes_as_edges_dict and j2 in agv_routes_as_edges_dict:
             for s, sp in agv_routes_as_edges_dict[j1]:
                 if graph.number_of_edges(s, sp) < 2 and (sp, s) in agv_routes_as_edges_dict[j2]:
                     z_iter.append((j1, j2, s, sp))
@@ -131,7 +130,7 @@ def see_variables(vect: list, x_iter: list) -> dict:
 
 def see_non_zero_variables(vect: list, x_iter: list) -> dict:
     return_dict = {}
-    for i in range(len(x_iter)):
+    for i, _ in enumerate(x_iter):
         if vect[i] != 0:
             return_dict[x_iter[i]] = vect[i]
 
@@ -181,10 +180,9 @@ def qubo_to_matrix(qubo: dict, lp: LinearProg) -> np.ndarray:
 def check_solution_list(sol: list, lp: LinearProg):
     data = sorted(list(lp.bqm.variables))
     sol_dict = {data[i]: sol[i] for i in range(len(sol))}
-    qubo = lp.qubo[0]
     offset = lp.qubo[1]
     print(offset)
-    #matrix = qubo_to_matrix(qubo, lp)
+    #matrix = qubo_to_matrix(lp.qubo[0], lp)
     energy = compute_energy(sol, lp)
     sampleset = dimod.SampleSet.from_samples(dimod.as_samples(sol_dict), 'BINARY', energy)
     sampleset = lp.interpreter(sampleset)
