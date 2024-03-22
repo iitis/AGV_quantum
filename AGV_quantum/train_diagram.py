@@ -51,18 +51,18 @@ def AGVS_coordinates(sol, agv_routes, marks, s_ofset):
 def plot_train_diagram(sol, agv_routes, track_len):
     """plots and saves train diagram"""
     n_zones = get_number_zones(track_len)
-    plt.figure(figsize=(4, 3))
+    plt.figure(figsize=(4.5, 2.2))
     s_ofset = 1.75  # the size of the station
     marks, zone_borders = zones_location(track_len, n_zones, s_ofset)
     times, spaces = AGVS_coordinates(sol, agv_routes, marks, s_ofset)
-    colors = {0: "black", 1: "red", 2: "green", 3: "blue", 4: "orange", 5: "brown", 6: "cyan"}
+    colors = {0: "black", 1: "red", 2: "green", 3: "blue", 4: "orange", 5: "brown", 6: "gray"}
 
     for agv in agv_routes:
         if n_zones < 8:
             plt.plot(times[agv], spaces[agv], "o-", label=f"$AGV_{agv}$ ", color=colors[agv], linewidth=0.85, markersize=2)
         else:
             plt.plot(times[agv], spaces[agv], "o-", label=f"$AGV_{agv}$ ", linewidth=0.85, markersize=2)
-        plt.legend(loc='upper center', bbox_to_anchor=(0.5, 1.45), ncol = 3)
+        plt.legend(loc='center right', bbox_to_anchor=(1.4, 0.5), ncol = 1)
 
     for el in zone_borders:
         plt.axhline(y = el, color="gray", linewidth=0.5, linestyle=":")
@@ -73,5 +73,5 @@ def plot_train_diagram(sol, agv_routes, track_len):
     plt.yticks(locs, our_marks)
     plt.xlabel("time")
     plt.ylabel("zones")
-    plt.subplots_adjust(bottom=0.19, top = 0.75)
+    plt.subplots_adjust(bottom=0.19, right = 0.75)
     plt.savefig("train_diagram.pdf")
