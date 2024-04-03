@@ -67,6 +67,12 @@ if __name__ == '__main__':
     elif hybrid == "cqm":
         print(sampleset.info)
         solutions = get_results(sampleset, lp)
+        k = 0
         for sol in solutions:
             if sol["feasible"]:
-                print(sol)
+                k = k+1
+                #print(sol['objective'])
+                if k == 1:
+                    print(sol)
+        print("no solutions", len(solutions))
+        print("feasibility percentage", k/len(solutions))

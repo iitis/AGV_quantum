@@ -55,14 +55,14 @@ def plot_train_diagram(sol, agv_routes, track_len):
     s_ofset = 1.75  # the size of the station
     marks, zone_borders = zones_location(track_len, n_zones, s_ofset)
     times, spaces = AGVS_coordinates(sol, agv_routes, marks, s_ofset)
-    colors = {0: "black", 1: "red", 2: "green", 3: "blue", 4: "orange", 5: "brown", 6: "gray"}
+    colors = {0: "black", 1: "gray", 2: "silver", 3: "firebrick", 4: "red", 5: "orange", 6: "gold", 7: "navy", 8: "blue", 9: "violet", 10: "green", 11: "lime", 12: "cyan", 13: "teal", 14: "indygo"}
 
     for agv in agv_routes:
         if n_zones < 8:
             plt.plot(times[agv], spaces[agv], "o-", label=f"$AGV_{agv}$ ", color=colors[agv], linewidth=0.85, markersize=2)
         else:
             plt.plot(times[agv], spaces[agv], "o-", label=f"$AGV_{agv}$ ", linewidth=0.85, markersize=2)
-        plt.legend(loc='center right', bbox_to_anchor=(1.4, 0.5), ncol = 1)
+        plt.legend(loc='center right', bbox_to_anchor=(1.4, 0.5), ncol = 1, fontsize = 8)
 
     for el in zone_borders:
         plt.axhline(y = el, color="gray", linewidth=0.5, linestyle=":")
