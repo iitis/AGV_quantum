@@ -22,4 +22,4 @@ from .qubo_solver import (
     sim_anneal, annealing, constrained_solver, hybrid_anneal, get_file_name
 )
 
-from .train_diagram import plot_train_diagram, get_number_zones, zones_location, AGVS_coordinates
+from .train_diagram import plot_train_diagram, get_number_zones, zones_location, AGVS_coordinates, make_sol

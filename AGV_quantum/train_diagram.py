@@ -33,6 +33,14 @@ def zones_location(track_len, n_zones, s_ofset):
         prev_s = s
     return marks, zone_borders
 
+def make_sol(t_iter, CQM_sol):
+    d = {}
+    for (i, el) in enumerate(t_iter):
+        (e, agv, s) = el
+        d[f"t_{e}_{agv}_{s}"] = CQM_sol[f"x_{i}"]
+    return d
+
+
 def AGVS_coordinates(sol, agv_routes, marks, s_ofset):
     """ determines coordinates of AGVs in space and time to get their paths on the plot """
     times = {}
@@ -48,10 +56,10 @@ def AGVS_coordinates(sol, agv_routes, marks, s_ofset):
     return times, spaces
 
 
-def plot_train_diagram(sol, agv_routes, track_len):
+def plot_train_diagram(sol, agv_routes, track_len, title= ""):
     """plots and saves train diagram"""
     n_zones = get_number_zones(track_len)
-    plt.figure(figsize=(4.5, 2.2))
+    plt.figure(figsize=(2.5, 3.2))
     s_ofset = 1.75  # the size of the station
     marks, zone_borders = zones_location(track_len, n_zones, s_ofset)
     times, spaces = AGVS_coordinates(sol, agv_routes, marks, s_ofset)
@@ -62,16 +70,18 @@ def plot_train_diagram(sol, agv_routes, track_len):
             plt.plot(times[agv], spaces[agv], "o-", label=f"$AGV_{agv}$ ", color=colors[agv], linewidth=0.85, markersize=2)
         else:
             plt.plot(times[agv], spaces[agv], "o-", label=f"$AGV_{agv}$ ", linewidth=0.85, markersize=2)
-        plt.legend(loc='center right', bbox_to_anchor=(1.4, 0.5), ncol = 1, fontsize = 8)
+    if "CQM" not in title:
+        plt.legend(loc='center right', bbox_to_anchor=(1.65, 0.5), ncol = 1, fontsize = 8)
+        plt.subplots_adjust(left = 0.1, bottom=0.19, right = 0.7)
 
     for el in zone_borders:
         plt.axhline(y = el, color="gray", linewidth=0.5, linestyle=":")
         locs = [marks[k] for k in marks]
 
     our_marks = [f"$s_{i}$" for i, _ in enumerate(marks) ]
-
+    plt.title(title)
     plt.yticks(locs, our_marks)
     plt.xlabel("time")
     plt.ylabel("zones")
-    plt.subplots_adjust(bottom=0.19, right = 0.75)
-    plt.savefig("train_diagram.pdf")
+    plt.subplots_adjust(left = 0.2, bottom=0.19)
+    plt.savefig(f"train_diagram{title}.pdf")

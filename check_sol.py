@@ -3,7 +3,7 @@ import os
 import dimod
 import numpy as np
 import csv
-from AGV_quantum import get_results, LinearProg
+from AGV_quantum import get_results, LinearAGV, make_sol, plot_train_diagram
 
 
 from pathlib import Path
@@ -59,9 +59,11 @@ if args.example == "smallest":
     sol_folder = Path("annealing_results/2_AGV")
 if args.example == "small":
     sol_folder = Path("annealing_results/4_AGV")
+    from examples.example_small import M, tracks, tracks_len, agv_routes, d_max, tau_pass, tau_headway, tau_operation, weights, initial_conditions
 if args.example == "medium_small":
     sol_folder = Path("annealing_results/6_AGV")
 if args.example == "medium":
+    from examples.example_medium import M, tracks, tracks_len, agv_routes, d_max, tau_pass, tau_headway, tau_operation, weights, initial_conditions
     sol_folder = Path("annealing_results/7_AGV")
 if args.example == "large":
     sol_folder = Path("annealing_results/12_AGV")
@@ -94,6 +96,8 @@ if __name__ == '__main__':
 
 
     elif hybrid == "cqm":
+        AGV = LinearAGV(M, tracks, tracks_len, agv_routes, d_max, tau_pass, tau_headway, tau_operation, weights,
+                    initial_conditions)
 
         obj = []
         solutions = get_results(sampleset, lp)
@@ -102,6 +106,10 @@ if __name__ == '__main__':
             if sol["feasible"]:
                 k = k+1
                 obj.append(sol['objective'])
+                print(k)
+                if k == 1 or k == 60:
+                    d = make_sol(AGV.t_iter, sol["sample"])
+                    plot_train_diagram(d, agv_routes, tracks_len, f"CQM objective = {sol['objective']}")
         print("no solutions", len(solutions))
         print("feasibility percentage", k/len(solutions))
 
