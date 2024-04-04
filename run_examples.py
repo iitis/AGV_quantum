@@ -83,6 +83,7 @@ if __name__ == "__main__":
         model.print_solution(print_zeros=True)
         #AGV.nice_print(model, sol) <- WIP
         if args.train_diagram:
+            print(AGV.x_iter )
             print(agv_routes)
             plot_train_diagram(sol, agv_routes, tracks_len)
 

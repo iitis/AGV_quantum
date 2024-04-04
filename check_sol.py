@@ -1,10 +1,39 @@
 import pickle
 import os
 import dimod
+import numpy as np
+import csv
 from AGV_quantum import get_results, LinearProg
 
 
 from pathlib import Path
+
+
+def obj_hist(hist_feas):
+    xs_f = list(set(hist_feas))
+    xs_f = np.sort(xs_f)
+    ys_f = np.array([hist_feas.count(x) for x in xs_f])
+    return {"value":xs_f, "count":ys_f}
+
+
+def csv_write_hist(file_name, hist, key1 = "value", key2 = "count"):
+    """ 
+    write histogram to csv 
+
+    input:
+    - file_name: string - csv file name
+    - hist: dict - containing histogram
+    - key1: string - key for value in histogram
+    - key2: string - key for counts in histogram
+    """
+    with open(file_name, 'w', newline='', encoding="utf-8") as csvfile:
+        fieldnames = [key1, key2]
+        value = hist[key1]
+        count = hist[key2]
+        writer = csv.DictWriter(csvfile, fieldnames=fieldnames)
+        for i,v in enumerate(value):
+            writer.writerow({key1: v, key2: count[i]})
+
 
 import argparse
 parser = argparse.ArgumentParser("Solve linear or quadratic") 
@@ -65,14 +94,18 @@ if __name__ == '__main__':
 
 
     elif hybrid == "cqm":
-        print(sampleset.info)
+
+        obj = []
         solutions = get_results(sampleset, lp)
         k = 0
         for sol in solutions:
             if sol["feasible"]:
                 k = k+1
-                #print(sol['objective'])
-                if k == 1:
-                    print(sol)
+                obj.append(sol['objective'])
         print("no solutions", len(solutions))
         print("feasibility percentage", k/len(solutions))
+
+        d = obj_hist(obj)
+        file_name = f"{sol_folder}/obj_hist.csv"
+        csv_write_hist(file_name, d, key1 = "value", key2 = "count")
+
