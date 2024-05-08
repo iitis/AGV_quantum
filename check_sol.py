@@ -9,10 +9,21 @@ from AGV_quantum import get_results, LinearAGV, make_sol, plot_train_diagram
 from pathlib import Path
 
 
+def std_from_hist(value, counts):
+    mean = np.average(value, weights=counts)
+    var = np.average((value - mean)**2, weights=counts)
+    return mean, np.sqrt(var)
+
+
 def obj_hist(hist_feas):
     xs_f = list(set(hist_feas))
     xs_f = np.sort(xs_f)
     ys_f = np.array([hist_feas.count(x) for x in xs_f])
+    print(xs_f)
+    print(ys_f)
+    mean, std = std_from_hist(xs_f, ys_f)
+    print("mean (hist) = ", mean)
+    print("std (hist) = ", std)
     return {"value":xs_f, "count":ys_f}
 
 
@@ -47,11 +58,12 @@ parser.add_argument(
     "--hyb_solver",
     type=str,
     help="chose bqm or cqm",
-    default="bqm",
+    default="cqm",
 )
 
 args = parser.parse_args()
 cwd = os.getcwd()
+train_diagram = False
 
 if args.example == "tiny":
     sol_folder = Path("annealing_results/tiny_2_AGV")
@@ -65,6 +77,7 @@ if args.example == "medium_small":
 if args.example == "medium":
     from examples.example_medium import M, tracks, tracks_len, agv_routes, d_max, tau_pass, tau_headway, tau_operation, weights, initial_conditions
     sol_folder = Path("annealing_results/7_AGV")
+    train_diagram = True
 if args.example == "large":
     sol_folder = Path("annealing_results/12_AGV")
 if args.example == "largest":
@@ -96,8 +109,6 @@ if __name__ == '__main__':
 
 
     elif hybrid == "cqm":
-        AGV = LinearAGV(M, tracks, tracks_len, agv_routes, d_max, tau_pass, tau_headway, tau_operation, weights,
-                    initial_conditions)
 
         obj = []
         solutions = get_results(sampleset, lp)
@@ -106,8 +117,9 @@ if __name__ == '__main__':
             if sol["feasible"]:
                 k = k+1
                 obj.append(sol['objective'])
-                print(k)
-                if k == 1 or k == 60:
+                if train_diagram and (k == 1 or k == 60):
+                    AGV = LinearAGV(M, tracks, tracks_len, agv_routes, d_max, tau_pass, tau_headway, tau_operation, weights,
+                    initial_conditions)
                     d = make_sol(AGV.t_iter, sol["sample"])
                     plot_train_diagram(d, agv_routes, tracks_len, f"CQM objective = {sol['objective']}")
         print("no solutions", len(solutions))
