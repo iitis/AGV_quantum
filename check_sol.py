@@ -65,6 +65,9 @@ args = parser.parse_args()
 cwd = os.getcwd()
 train_diagram = False
 
+count = "_2"
+count = ""
+
 if args.example == "tiny":
     sol_folder = Path("annealing_results/tiny_2_AGV")
 if args.example == "smallest":
@@ -82,6 +85,9 @@ if args.example == "large":
     sol_folder = Path("annealing_results/12_AGV")
 if args.example == "largest":
     sol_folder = Path("annealing_results/15_AGV")
+if args.example == "largest_ever":
+    sol_folder = Path("annealing_results/21_AGV")
+
 
 lp_folder = Path(f"lp_files/lp_{args.example}.pkl")
 
@@ -89,7 +95,7 @@ assert args.hyb_solver in ["bqm", "cqm"]
 
 hybrid = args.hyb_solver
 
-with open(os.path.join(cwd, sol_folder, f"new_{hybrid}.pkl"), "rb") as f:
+with open(os.path.join(cwd, sol_folder, f"new_{hybrid}{count}.pkl"), "rb") as f:
     sampleset = pickle.load(f)
 
 with open(os.path.join(cwd, lp_folder), "rb") as f:
@@ -109,7 +115,6 @@ if __name__ == '__main__':
 
 
     elif hybrid == "cqm":
-
         obj = []
         solutions = get_results(sampleset, lp)
         k = 0
@@ -126,6 +131,6 @@ if __name__ == '__main__':
         print("feasibility percentage", k/len(solutions))
 
         d = obj_hist(obj)
-        file_name = f"{sol_folder}/obj_hist.csv"
+        file_name = f"{sol_folder}/obj_hist{count}.csv"
         csv_write_hist(file_name, d, key1 = "value", key2 = "count")
 

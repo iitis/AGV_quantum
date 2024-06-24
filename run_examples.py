@@ -34,33 +34,38 @@ parser.add_argument(
     "--hyb_solver",
     type=str,
     help="chose bqm or cqm",
-    default="bqm",
+    default="cqm",
 )
 
+count = "_2"
+#count = "_10"
 
 args = parser.parse_args()
 cwd = os.getcwd()
 if args.example == "tiny":
     from examples.example_tiny import M, tracks, tracks_len, agv_routes, d_max, tau_pass, tau_headway, tau_operation, weights, initial_conditions
     save_path = os.path.join(cwd, "annealing_results", "tiny_2_AGV")
-if args.example == "smallest":
+elif args.example == "smallest":
     from examples.example_smallest import M, tracks, tracks_len, agv_routes, d_max, tau_pass, tau_headway, tau_operation, weights, initial_conditions
     save_path = os.path.join(cwd, "annealing_results", "2_AGV")
-if args.example == "small":
+elif args.example == "small":
     from examples.example_small import M, tracks, tracks_len, agv_routes, d_max, tau_pass, tau_headway, tau_operation, weights, initial_conditions
     save_path = os.path.join(cwd, "annealing_results", "4_AGV")
-if args.example == "medium_small":
+elif args.example == "medium_small":
     from examples.example_medium_small import M, tracks, tracks_len, agv_routes, d_max, tau_pass, tau_headway, tau_operation, weights, initial_conditions
     save_path = os.path.join(cwd, "annealing_results", "6_AGV")
-if args.example == "medium":
+elif args.example == "medium":
     from examples.example_medium import M, tracks, tracks_len, agv_routes, d_max, tau_pass, tau_headway, tau_operation, weights, initial_conditions
     save_path = os.path.join(cwd, "annealing_results", "7_AGV")
-if args.example == "large":
+elif args.example == "large":
     from examples.example_large import M, tracks, tracks_len, agv_routes, d_max, tau_pass, tau_headway, tau_operation, weights, initial_conditions
     save_path = os.path.join(cwd, "annealing_results", "12_AGV")
-if args.example == "largest":
+elif args.example == "largest":
     from examples.example_largest import M, tracks, tracks_len, agv_routes, d_max, tau_pass, tau_headway, tau_operation, weights, initial_conditions
     save_path = os.path.join(cwd, "annealing_results", "15_AGV")
+elif args.example == "largest_ever":
+    from examples.example_largest_ever import M, tracks, tracks_len, agv_routes, d_max, tau_pass, tau_headway, tau_operation, weights, initial_conditions
+    save_path = os.path.join(cwd, "annealing_results", "21_AGV")
 else:
     print(f"example {args.example} not suported")
 
@@ -102,7 +107,7 @@ if __name__ == "__main__":
         model.to_bqm_qubo_ising(p)
 
         # check if results are saved
-        is_file = os.path.isfile(os.path.join(save_path, f"new_{hybrid}_info.pkl"))
+        is_file = os.path.isfile(os.path.join(save_path, f"new_{hybrid}_info{count}.pkl"))
         if is_file:
             print(".......... files exist ............")
             if hybrid == "bqm":
@@ -124,8 +129,8 @@ if __name__ == "__main__":
             print(sampleset)
             print(info)
 
-            with open(os.path.join(save_path, f"new_{hybrid}_info.pkl"), "wb") as f:
+            with open(os.path.join(save_path, f"new_{hybrid}_info{count}.pkl"), "wb") as f:
                 pickle.dump(info, f)
 
-            with open(os.path.join(save_path, f"new_{hybrid}.pkl"), "wb") as f:
+            with open(os.path.join(save_path, f"new_{hybrid}{count}.pkl"), "wb") as f:
                 pickle.dump(sampleset.to_serializable(), f)
