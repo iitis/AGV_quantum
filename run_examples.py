@@ -37,8 +37,8 @@ parser.add_argument(
     default="cqm",
 )
 
-count = "_2"
-#count = "_10"
+count = "_10"
+count = ""
 
 args = parser.parse_args()
 cwd = os.getcwd()

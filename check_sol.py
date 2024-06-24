@@ -65,7 +65,7 @@ args = parser.parse_args()
 cwd = os.getcwd()
 train_diagram = False
 
-count = "_2"
+count = "_10"
 count = ""
 
 if args.example == "tiny":
