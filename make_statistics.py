@@ -109,7 +109,18 @@ if __name__ == "__main__":
     sizes = examples.keys()
 
 
+    key = 'qpu_access_time'
+    print_info(key, sizes)
 
+    key = 'run_time'
+    print_info(key, sizes)
+
+    print("feasibility perc")
+    for size in sizes:
+        perc = feas_cqm_array(examples, size)
+        print(np.mean(perc), np.std(perc))
+
+    print("objective")
     for size in sizes:
         obj = obj_cqm_array(examples, size)
         obj = obj/optimum[size]
@@ -118,16 +129,10 @@ if __name__ == "__main__":
         print(np.mean(obj), np.std(obj))
 
 
-    for size in sizes:
-        perc = feas_cqm_array(examples, size)
-        print(np.mean(perc), np.std(perc))
 
 
-    key = 'qpu_access_time'
-    print_info(key, sizes)
 
-    key = 'run_time'
-    print_info(key, sizes)
+
 
 
 
