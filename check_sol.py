@@ -65,8 +65,8 @@ args = parser.parse_args()
 cwd = os.getcwd()
 train_diagram = False
 
-count = "_10"
-count = ""
+#count = "_10"
+count = "_1"
 
 if args.example == "tiny":
     sol_folder = Path("annealing_results/tiny_2_AGV")
@@ -111,17 +111,20 @@ if __name__ == '__main__':
         lp.to_bqm_qubo_ising(p)
         sampleset = lp.interpreter(sampleset)
         solutions = get_results(sampleset, lp)
-        print(solutions)
+        #print(solutions)
 
 
     elif hybrid == "cqm":
         obj = []
         solutions = get_results(sampleset, lp)
+        print(lp.nvars)
+        print(sampleset.info)
         k = 0
         for sol in solutions:
             if sol["feasible"]:
                 k = k+1
                 obj.append(sol['objective'])
+                print(sol['objective'])
                 if train_diagram and (k == 1 or k == 60):
                     AGV = LinearAGV(M, tracks, tracks_len, agv_routes, d_max, tau_pass, tau_headway, tau_operation, weights,
                     initial_conditions)
