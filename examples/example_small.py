@@ -13,7 +13,7 @@ from scipy.optimize import linprog
 from src.LinearProg import LinearProg
 from src.process_results import get_results, load_results, print_results, store_result
 from math import sqrt
-
+root = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 cwd = os.getcwd()
 
 M = 28
@@ -75,5 +75,6 @@ if __name__ == "__main__":
     if solve_quadratic:
         model = QuadraticAGV(AGV)
         p = 5
-        model.to_bqm_qubo_ising(p)
+        model.set_vars()
+        utils.save_ising_as_csv(model, "small", os.path.join(root, "qubo"))
 

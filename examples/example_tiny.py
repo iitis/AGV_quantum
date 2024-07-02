@@ -18,9 +18,10 @@ from math import sqrt
 from src.LinearProg import LinearProg
 from src.process_results import print_results
 from src.quadratic_solver_CPLEX import quadratic_solve_qubo, check_solution, save_results
-from src.utils import check_solution_list
+from src.utils import check_solution_list, make_spinglass_qubo, save_qubo_as_csv, save_ising_as_csv
 
 cwd = os.getcwd()
+root = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
 M = 5
 tracks = [("s0", "s1"), ("s1", "s0"),
@@ -73,6 +74,8 @@ if __name__ == "__main__":
 
     if solve_quadratic:
         model = QuadraticAGV(AGV)
+        model.set_vars()
         p = 5
-        model.to_bqm_qubo_ising(p)
+
+        save_ising_as_csv(model, "tiny", os.path.join(root, "qubo"))
 

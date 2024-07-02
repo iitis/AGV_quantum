@@ -4,6 +4,8 @@ from src.linear_solver import print_ILP_size, LinearAGV
 from src.quadratic_solver import QuadraticAGV
 import pickle
 import time
+import os
+root = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
 from src.LinearProg import LinearProg
 from src.process_results import print_results
@@ -73,5 +75,6 @@ if __name__ == "__main__":
     if solve_quadratic:
         model = QuadraticAGV(AGV)
         p = 5
-        model.to_bqm_qubo_ising(p)
+        model.set_vars()
+        utils.save_ising_as_csv(model, "medium_small", os.path.join(root, "qubo"))
 

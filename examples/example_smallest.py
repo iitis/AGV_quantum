@@ -13,7 +13,7 @@ import os
 from src.LinearProg import LinearProg
 from src.process_results import print_results
 from math import sqrt, log10
-
+root = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 M = 20
 tracks = [("s0", "s1"), ("s1", "s0"),
           ("s1", "s2"), ("s2", "s1"),
@@ -71,6 +71,7 @@ if __name__ == "__main__":
     if solve_quadratic:
         model = QuadraticAGV(AGV)
         p = 5
-        model.to_bqm_qubo_ising(p)
+        model.set_vars()
+        utils.save_ising_as_csv(model, "smallest", os.path.join(root, "qubo"))
 
 ""

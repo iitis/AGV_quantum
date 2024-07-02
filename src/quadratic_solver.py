@@ -1,14 +1,25 @@
-from src.linear_solver import LinearAGV
+""" implementation of quadratic (or D-Wace cqm) solver for quantum, hybrid and simulations """
 import dimod
 from cpp_pyqubo import Binary, Constraint, Placeholder
 from pyqubo import LogEncInteger
 from pyqubo import Binary
 
+from src.linear_solver import LinearAGV
+
 
 class QuadraticAGV:
-
+    """class containing quadratic model of the problem i.e. QUBO, bqm or Ising"""
     def __init__(self, lin_agv: LinearAGV):
         self.lin_agv = lin_agv
+        self.c = lin_agv.c
+        self.A_ub = lin_agv.A_ub
+        self.A_eq = lin_agv.A_eq
+        self.b_ub = lin_agv.b_ub
+        self.b_eq = lin_agv.b_eq
+        self.bounds = lin_agv.bounds
+        self.nvars = len(self.lin_agv.bounds)
+        self.var_names = [f"x_{i}" for i in range(self.nvars)]
+
 
     def set_vars(self):
         """Sets the number of variables and variable names"""
@@ -31,35 +42,35 @@ class QuadraticAGV:
         )
         H = 0
         ind = 0
-        vars = []
+        model_vars = []
         for (lb, ub) in bounds:
             if lb == 0 and ub == 1:
-                vars.append(Binary(f"x_{ind}"))
+                model_vars.append(Binary(f"x_{ind}"))
             else:
-                vars.append(LogEncInteger(f"x_{ind}", (lb, ub)))
+                model_vars.append(LogEncInteger(f"x_{ind}", (lb, ub)))
             ind += 1
 
-        pyqubo_obj = sum(var * coef for var, coef in zip(vars, c) if coef != 0)
+        pyqubo_obj = sum(var * coef for var, coef in zip(model_vars, c) if coef != 0)
         H += Placeholder("obj") * pyqubo_obj
 
         num_eq = 0
         if A_eq is not None:
-            for i in range(len(A_eq)):
+            for i, _ in enumerate(A_eq):
                 expr = sum(
-                    A_eq[i][j] * vars[j] for j in range(self.nvars) if A_eq[i][j] != 0
+                    A_eq[i][j] * model_vars[j] for j in range(self.nvars) if A_eq[i][j] != 0
                 )
                 expr -= b_eq[i]
                 H += Constraint(Placeholder(f"eq_{num_eq}") * expr ** 2, f"eq_{num_eq}")
                 num_eq += 1
         if A_ub is not None:
-            for i in range(len(A_ub)):
+            for i, _ in enumerate(A_ub):
                 expr = sum(
-                    A_ub[i][j] * vars[j] for j in range(self.nvars) if A_ub[i][j] != 0
+                    A_ub[i][j] * model_vars[j] for j in range(self.nvars) if A_ub[i][j] != 0
                 )
                 expr -= b_ub[i]
                 slack = LogEncInteger(
                     f"eq_{num_eq}_slack",
-                    (0, self._get_slack_ub(vars, A_ub[i], b_ub[i])),
+                    (0, self._get_slack_ub(model_vars, A_ub[i], b_ub[i])),
                 )
 
                 H += Constraint(
@@ -71,9 +82,9 @@ class QuadraticAGV:
 
         self.num_eq = num_eq
         pyqubo_model = H.compile()
-        if pdict == None:
+        if pdict is None:
             pdict = {f"eq_{i}": 2 for i in range(self.num_eq)}
-        elif type(pdict) == int or type(pdict) == float:
+        elif isinstance(pdict, int) or isinstance(pdict, float):
             pdict = {f"eq_{i}": pdict for i in range(self.num_eq)}
         pdict["obj"] = 1
         self.qubo = pyqubo_model.to_qubo(feed_dict=pdict)
@@ -106,10 +117,10 @@ class QuadraticAGV:
         self.interpreter = lambda ss: interpreter(ss)
 
     @staticmethod
-    def _get_slack_ub(vars: list, coefs: list, offset: int) -> int:
+    def _get_slack_ub(model_vars: list, coefs: list, offset: int) -> int:
         """Returns upper bound for slack variables
 
-        :param vars: List of variables (can be integer or binary)
+        :param model_vars: List of variables (can be integer or binary)
         :type vars: list
         :param coefs: List of coefficients for the inequality
         :type coefs: list
@@ -119,7 +130,7 @@ class QuadraticAGV:
         :rtype: int
         """
         ub = 0
-        for var, coef in zip(vars, coefs):
+        for var, coef in zip(model_vars, coefs):
             if type(var) == LogEncInteger:
                 ub += coef * (var.value_range[1] if coef < 0 else var.value_range[0])
             else:
@@ -129,7 +140,7 @@ class QuadraticAGV:
         assert int(result) == result
         return int(result)
 
-    def _to_cqm(self):
+    def to_cqm(self):
         """Converts linear program into constrained quadratic model"""
         c, A_ub, b_ub, A_eq, b_eq, bounds = (
             self.c,
@@ -142,7 +153,7 @@ class QuadraticAGV:
 
         ind = 0
         vars = []
-        for (lb, ub) in self.bounds:
+        for (lb, ub) in bounds:
             if lb == 0 and ub == 1:
                 vars.append(dimod.Binary(f"x_{ind}"))
             else:
@@ -174,8 +185,8 @@ class QuadraticAGV:
         self.cqm = cqm
 
     def _count_qubits(self):
-        vars = self.bqm.variables
-        return len(vars)
+        model_vars = self.bqm.variables
+        return len(model_vars)
 
 
     def _count_quadratic_couplings(self):

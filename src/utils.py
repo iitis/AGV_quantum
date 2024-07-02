@@ -1,3 +1,4 @@
+import pickle
 from collections import OrderedDict
 import itertools
 import os
@@ -306,11 +307,11 @@ def compute_energy(sol: list, lp: LinearProg):
     # return np.matmul(np.matmul(sol, matrix), sol.transpose())
 
 
-def make_spinglass_qubo(lp, nane, p: Optional[int] = None):
+def make_spinglass_qubo(quadratic_model, name, save_path, p: Optional[int] = None):
     p = 5 if p is None else p
-    lp._to_bqm_qubo_ising(p)
+    quadratic_model.to_bqm_qubo_ising(p)
 
-    qubo = lp.qubo[0]
+    qubo = quadratic_model.qubo[0]
     qubo = dict(sorted(qubo.items()))
 
     number = number_gen()
@@ -327,8 +328,8 @@ def make_spinglass_qubo(lp, nane, p: Optional[int] = None):
 
     print(spinglass_qubo)
 
-    with open(os.path.join(cwd, "..", "qubo", "tiny_qubo_spinglass.txt"), "w") as f:
-        f.write(f"# offset: {lp.qubo[1]} \n")
+    with open(os.path.join(save_path, f"{name}_qubo.txt"), "w") as f:
+        f.write(f"# offset: {quadratic_model.qubo[1]} \n")
         for (i, j), v in spinglass_qubo.items():
             if i == j:
                 f.write(f"{i} {j} {v} \n")
@@ -363,6 +364,80 @@ def make_spinglass_ising(lp, name, p: Optional[float] = None):
             ni = keys_number[i]
             nj = keys_number[j]
             f.write(str(ni) + " " + str(nj) + " " + str(v) + "\n")
+
+
+def save_qubo_as_csv(quadratic_model, name, save_path, p: Optional[int] = None):
+    p = 5 if p is None else p
+    quadratic_model.to_bqm_qubo_ising(p)
+
+    qubo = quadratic_model.qubo[0]
+    qubo = dict(sorted(qubo.items()))
+    variables = set()
+    for (k1, k2) in qubo.keys():
+        variables.add(k1)
+        variables.add(k2)
+    renumerate = {var: num+1 for num, var in enumerate(variables)}
+    num_to_var = {v: k for k, v in renumerate.items()}
+
+    spinglass_qubo = {}
+    for (key1, key2), value in qubo.items():
+        spinglass_qubo[(renumerate[key1], renumerate[key2])] = value
+    spinglass_qubo = dict(sorted(spinglass_qubo.items()))
+
+    with open(os.path.join(save_path, f"{name}_qubo.csv"), "w") as f:
+        f.write(f"# offset: {quadratic_model.qubo[1]} \n")
+        for (i, j), v in spinglass_qubo.items():
+            if i == j:
+                f.write(f"{i} {j} {v} \n")
+        for (i, j), v in spinglass_qubo.items():
+            if i != j:
+                f.write(f"{i} {j} {v} \n")
+
+    with open(os.path.join(save_path, f"{name}_qubo_renumeration.pkl"), "wb") as f:
+        data = [renumerate, num_to_var]
+        pickle.dump(data, f)
+
+
+def save_ising_as_h5(quadratic_model, name, save_path, p: Optional[int] = None):
+    p = 5 if p is None else p
+    quadratic_model.to_bqm_qubo_ising(p)
+
+
+def save_ising_as_csv(quadratic_model, name, save_path, p: Optional[int] = None):
+    p = 5 if p is None else p
+    quadratic_model.to_bqm_qubo_ising(p)
+
+    ising_linear = quadratic_model.ising[0]
+    ising_quadratic = quadratic_model.ising[1]
+    offset = quadratic_model.ising[2]
+    variables = set()
+
+    for k1, k2 in ising_quadratic.keys():
+        variables.add(k1)
+        variables.add(k2)
+    renumerate = {var: num + 1 for num, var in enumerate(variables)}
+    num_to_var = {v: k for k, v in renumerate.items()}
+
+    spinglass_ising_linear = {}
+    for key, value in ising_linear.items():
+        spinglass_ising_linear[renumerate[key]] = value
+    spinglass_ising_linear = dict(sorted(spinglass_ising_linear.items()))
+
+    spinglass_ising_quadratic = {}
+    for (key1, key2), value in ising_quadratic.items():
+        spinglass_ising_quadratic[(renumerate[key1], renumerate[key2])] = value
+    spinglass_ising_quadratic = dict(sorted(spinglass_ising_quadratic.items()))
+
+    with open(os.path.join(save_path, f"{name}_ising.csv"), "w") as f:
+        f.write(f"# offset: {offset} \n")
+        for i, v in spinglass_ising_linear.items():
+            f.write(f"{i} {i} {v} \n")
+        for (i, j), v in spinglass_ising_quadratic.items():
+            f.write(f"{i} {j} {v} \n")
+
+    with open(os.path.join(save_path, f"{name}_ising_renumeration.pkl"), "wb") as f:
+        data = [renumerate, num_to_var]
+        pickle.dump(data, f)
 
 
 # DEPRECATED
