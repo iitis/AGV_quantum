@@ -9,8 +9,6 @@ from AGV_quantum import get_results
 
 
 
-n_vars = {2:16, 4:36, }
-
 
 def read_single_file(size, k, solver):
 
@@ -81,7 +79,7 @@ def read_smapleset(size, k, solver):
 
 def print_info(key, sizes):
     print(key)
-    no_qbits = []
+    no_vars = []
     means = []
     stds = []
     for size in sizes:
@@ -96,19 +94,19 @@ def print_info(key, sizes):
         m = np.mean(series/k)
         s = np.std(series/k)
 
-        no_qbits.append(vars)
+        no_vars.append(vars)
         means.append(m)
         stds.append(s)
         
 
         print(vars, m, m-s, m+s)
 
-    return no_qbits, means, stds
+    return no_vars, means, stds
 
 
 def print_obj(sizes, examples, optimum):
 
-    no_qbits = []
+    no_vars = []
     means = []
     stds = []
 
@@ -123,19 +121,19 @@ def print_obj(sizes, examples, optimum):
         print(vars, m,m-s, m+s)
 
 
-        no_qbits.append(vars)
+        no_vars.append(vars)
         means.append(m)
         stds.append(s)
         
         print(obj)
         print(np.mean(obj), np.std(obj))
 
-    return no_qbits, means, stds
+    return no_vars, means, stds
 
 
 def print_feas(sizes, examples):
 
-    no_qbits = []
+    no_vars = []
     means = []
     stds = []
 
@@ -149,25 +147,25 @@ def print_feas(sizes, examples):
         print(vars, m,m-s, m+s)
 
 
-        no_qbits.append(vars)
+        no_vars.append(vars)
         means.append(m)
         stds.append(s)
 
     
-    return no_qbits, means, stds
+    return no_vars, means, stds
 
 
 
 
-def csv_write(file_name, no_qbits, means, stds):
+def csv_write(file_name, no_vars, means, stds):
     with open(file_name, 'w', newline='', encoding="utf-8") as csvfile:
-        fieldnames = ["no_qbits", "mean", "mean-std", "mean+std"]
+        fieldnames = ["no_vars", "mean", "mean-std", "mean+std"]
 
         writer = csv.DictWriter(csvfile, fieldnames=fieldnames)
-        for i,v in enumerate(no_qbits):
+        for i,v in enumerate(no_vars):
             m = means[i]
             s = stds[i]
-            writer.writerow({"no_qbits": v, "mean": np.round(m, 4), "mean-std": np.round(m-s, 4), "mean+std": np.round(m+s, 4)})
+            writer.writerow({"no_vars": v, "mean": np.round(m, 4), "mean-std": np.round(m-s, 4), "mean+std": np.round(m+s, 4)})
 
 
 
@@ -188,30 +186,30 @@ if __name__ == "__main__":
 
 
     key = 'qpu_access_time'
-    no_qbits, means, stds = print_info(key, sizes)
+    no_vars, means, stds = print_info(key, sizes)
 
     file = "article_plots/CQM_QPU_time.csv"
-    csv_write(file, no_qbits, means, stds)
+    csv_write(file, no_vars, means, stds)
 
     key = 'run_time'
-    no_qbits, means, stds = print_info(key, sizes)
+    no_vars, means, stds = print_info(key, sizes)
 
     file = "article_plots/time_CQM.csv"
-    csv_write(file, no_qbits, means, stds)
+    csv_write(file, no_vars, means, stds)
 
-    no_qbits, means, stds = print_feas(sizes, examples)
+    no_vars, means, stds = print_feas(sizes, examples)
 
     file = "article_plots/feasibility_CQM.csv"
-    csv_write(file, no_qbits, means, stds)
+    csv_write(file, no_vars, means, stds)
 
     # TODO we do not have yet CPLEX largest ever
     examples = {2:"smallest", 4:"small", 6:"medium_small", 7:"medium", 12:"large", 15:"largest"}
     sizes = examples.keys()
 
-    no_qbits, means, stds = print_obj(sizes, examples, optimum)
+    no_vars, means, stds = print_obj(sizes, examples, optimum)
 
     file = "article_plots/obj_CQM.csv"
-    csv_write(file, no_qbits, means, stds)
+    csv_write(file, no_vars, means, stds)
 
 
 
