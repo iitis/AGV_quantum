@@ -4,13 +4,14 @@
 
 In directory ```examples``` there are AGVs scheduling problems. In order of increasing size of the problem these are:
 
-- example_tiny.py         - 2 AGVs reduced size
-- example_smallest.py     - 2 AGVs, 4 zones
-- example_small.py        - 4 AGVs, 4 zones
-- example_medium_small.py - 6 AGVs, 7 zones
-- example_medium.py       - 7 AGVs, 7 zones
-- example_large.py        - 12 AGVs, 7 zones
-- example_largest.py      - 15 AGVs, 7 zones
+- example_tiny.py          - 2 AGVs reduced size
+- example_smallest.py      - 2 AGVs, 4 zones
+- example_small.py         - 4 AGVs, 4 zones
+- example_medium_small.py  - 6 AGVs, 7 zones
+- example_medium.py        - 7 AGVs, 7 zones
+- example_large.py         - 12 AGVs, 7 zones
+- example_largest.py       - 15 AGVs, 7 zones
+- example_largest_ever.py  - 21 AGVs, 7 zones
 
 
 ## Usage 
