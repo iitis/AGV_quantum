@@ -179,7 +179,7 @@ if __name__ == "__main__":
 
     #sizes = [2,4,6,7,12,15,21]
 
-    optimum = {2:4, 4: 8.2, 6: 3.22, 7: 4.25, 12: 9.175,  15: 10.975 }
+    optimum = {2:4, 4: 8.2, 6: 3.22, 7: 4.25, 12: 9.175,  15: 10.975, 21:  17.625}
 
     examples = {2:"smallest", 4:"small", 6:"medium_small", 7:"medium", 12:"large", 15:"largest", 21:"largest_ever"}
     sizes = examples.keys()
@@ -202,8 +202,6 @@ if __name__ == "__main__":
     file = "article_plots/feasibility_CQM.csv"
     csv_write(file, no_vars, means, stds)
 
-    # TODO we do not have yet CPLEX largest ever
-    examples = {2:"smallest", 4:"small", 6:"medium_small", 7:"medium", 12:"large", 15:"largest"}
     sizes = examples.keys()
 
     no_vars, means, stds = print_obj(sizes, examples, optimum)
