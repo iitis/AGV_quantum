@@ -106,7 +106,8 @@ def analyze_constraints(lp, sample):
             result[f"eq_{num_eq}"] = expr <= lp.b_ub[i]
             num_eq += 1
 
-    return result, sum(x is False for x in result.values())
+    not_feas = list(result.values()).count(False)
+    return result, not_feas
 
 
 def process_result(sampleset: list):
