@@ -91,7 +91,7 @@ class QuadraticAGV:
         self.ising = pyqubo_model.to_ising(feed_dict=pdict)
         self.bqm = pyqubo_model.to_bqm(feed_dict=pdict)
 
-        def interpreter(sampleset: dimod.SampleSet):
+        def interpreter(sampleset: dimod.SampleSet, vartype: str):
             """This is an interpreter function for binary quadratic model. It decodes the binary variables in the sample back to integer variables using pyqubo
 
             :param sampleset: Sampleset to analyze
@@ -103,7 +103,7 @@ class QuadraticAGV:
             energies = [d.energy for d in sampleset.data()]
             for sample in sampleset.samples():
                 decoded = pyqubo_model.decode_sample(
-                    dict(sample), vartype="BINARY", feed_dict=pdict
+                    dict(sample), vartype=vartype, feed_dict=pdict
                 )
 
                 decoded_dict = {**decoded.subh, **decoded.sample}
@@ -113,8 +113,7 @@ class QuadraticAGV:
             return dimod.SampleSet.from_samples(
                 dimod.as_samples(result), "INTEGER", energy=energies)
 
-
-        self.interpreter = lambda ss: interpreter(ss)
+        self.interpreter = lambda ss, var: interpreter(ss, var)
 
     @staticmethod
     def _get_slack_ub(model_vars: list, coefs: list, offset: int) -> int:
