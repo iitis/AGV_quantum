@@ -66,7 +66,7 @@ cwd = os.getcwd()
 train_diagram = False
 
 count = "_10"
-count = ""
+count = "_1"
 
 if args.example == "tiny":
     sol_folder = Path("annealing_results/tiny_2_AGV")

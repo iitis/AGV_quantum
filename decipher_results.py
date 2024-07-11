@@ -138,19 +138,21 @@ def print_results(dict_list):
 
 if __name__ == '__main__':
     ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-    path_to_results = os.path.join(ROOT, "ising", "sbm_results", "H100_results.csv")
-    path_to_annealing = os.path.join(ROOT, "annealing_results", "tiny_2_AGV", "new_bqm.pkl")
+    path_to_results = os.path.join(ROOT, "AGV_quantum", "ising", "sbm_results", "H100_results.csv")
+    path_to_annealing = os.path.join(ROOT, "AGV_quantum", "annealing_results", "tiny_2_AGV", "new_bqm.pkl")
 
     size = "tiny"
     instance = f"{size}_ising"
-    path_to_renumeration = os.path.join(ROOT, "ising", f"{instance}_renumeration.pkl")
-    path_to_lp = os.path.join(ROOT, "lp_files", f"lp_{size}.pkl")
+    path_to_renumeration = os.path.join(ROOT, "AGV_quantum", "ising", f"{instance}_renumeration.pkl")
+    path_to_lp = os.path.join(ROOT, "AGV_quantum", "lp_files", f"lp_{size}.pkl")
 
 
     results = pd.read_csv(path_to_results, sep=";")
     ising_solution = results[results["instance"] == f"{instance}.csv"]
+    print(ising_solution)
     state = ising_solution["state"].item()
     state = eval(state)
+    state = [(k+1)//2 for k in state]
     solution = {i + 1: state[i] for i in range(len(state))}
 
     with open(path_to_renumeration, "rb") as f:
@@ -163,6 +165,6 @@ if __name__ == '__main__':
     model = QuadraticAGV(lp)
     model.to_bqm_qubo_ising()
     sampleset = dimod.SampleSet.from_samples(solutions_vars, vartype=dimod.SPIN, energy=ising_solution["energy"].item())
-    decrypted_sapleset = model.interpreter(sampleset, "SPIN")
+    decrypted_sapleset = model.interpreter(sampleset, "BIN")
     decrypted_results = get_results(decrypted_sapleset, lp)
     print(decrypted_results)
