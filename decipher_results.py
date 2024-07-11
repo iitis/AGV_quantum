@@ -141,7 +141,7 @@ if __name__ == '__main__':
     path_to_results = os.path.join(ROOT, "AGV_quantum", "ising", "sbm_results", "H100_results.csv")
     path_to_annealing = os.path.join(ROOT, "AGV_quantum", "annealing_results", "tiny_2_AGV", "new_bqm.pkl")
 
-    size = "tiny"
+    size = "small"
     instance = f"{size}_ising"
     path_to_renumeration = os.path.join(ROOT, "AGV_quantum", "ising", f"{instance}_renumeration.pkl")
     path_to_lp = os.path.join(ROOT, "AGV_quantum", "lp_files", f"lp_{size}.pkl")

@@ -119,6 +119,7 @@ if __name__ == '__main__':
         energy_computed = dimod.utilities.ising_energy(solution_vars_ising, lp.ising[0], lp.ising[1])
 
         print("Ising energy", energy_computed)
+        print("Ising offset", lp.ising[2])
 
         print("Ising energy + offset", energy_computed + lp.ising[2])
         
