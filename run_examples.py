@@ -74,6 +74,8 @@ solve_linear = args.solve_linear
 
 if __name__ == "__main__":
 
+    not_qubo_method = ""
+
     AGV = LinearAGV(M, tracks, tracks_len, agv_routes, d_max, tau_pass, tau_headway, tau_operation, weights,
                     initial_conditions)
     print_ILP_size(AGV.A_ub, AGV.b_ub, AGV.A_eq, AGV.b_eq)
@@ -111,7 +113,7 @@ if __name__ == "__main__":
         print("n.o. linear fields", model._count_linear_fields())
 
         # check if results are saved
-        is_file = os.path.isfile(os.path.join(save_path, f"new_{hybrid}_info{count}.pkl"))
+        is_file = os.path.isfile(os.path.join(save_path, f"new{not_qubo_method}_{hybrid}_info{count}.pkl"))
         if is_file:
             print(".......... files exist ............")
 
@@ -130,8 +132,8 @@ if __name__ == "__main__":
             print(sampleset)
             print(info)
 
-            with open(os.path.join(save_path, f"new_{hybrid}_info{count}.pkl"), "wb") as f:
+            with open(os.path.join(save_path, f"new{not_qubo_method}_{hybrid}_info{count}.pkl"), "wb") as f:
                 pickle.dump(info, f)
 
-            with open(os.path.join(save_path, f"new_{hybrid}{count}.pkl"), "wb") as f:
+            with open(os.path.join(save_path, f"new{not_qubo_method}_{hybrid}{count}.pkl"), "wb") as f:
                 pickle.dump(sampleset.to_serializable(), f)

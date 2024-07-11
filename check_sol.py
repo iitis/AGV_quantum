@@ -66,7 +66,7 @@ cwd = os.getcwd()
 train_diagram = False
 
 count = "_10"
-count = "_1"
+count = ""
 
 if args.example == "tiny":
     sol_folder = Path("annealing_results/tiny_2_AGV")
@@ -109,12 +109,31 @@ if __name__ == '__main__':
         print(sampleset.info)
         p=5
         lp.to_bqm_qubo_ising(p)
-        sampleset = lp.interpreter(sampleset)
+
+        for d in sampleset.data():  # TODO this is UGLY but the loop has always one element
+            solution_vars = d.sample
+
+        solution_vars_ising = {k:2*v-1 for k, v in solution_vars.items()}
+        
+  
+        energy_computed = dimod.utilities.ising_energy(solution_vars_ising, lp.ising[0], lp.ising[1])
+
+        print("Ising energy", energy_computed)
+
+        print("Ising energy + offset", energy_computed + lp.ising[2])
+        
+
+
+
+        sampleset = lp.interpreter(sampleset, "BIN")
+        
         solutions = get_results(sampleset, lp)
         print(solutions[0]['energy'])
         
         constraints = len(solutions[0]['feas_constraints'][0])
         not_feas = solutions[0]['feas_constraints'][1]
+
+        #print(solutions[0])
 
         print("feasible", solutions[0]['feasible'])
         print("n.o. constraints", constraints)

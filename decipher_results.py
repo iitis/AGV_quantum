@@ -141,7 +141,7 @@ if __name__ == '__main__':
     path_to_results = os.path.join(ROOT, "AGV_quantum", "ising", "sbm_results", "H100_results.csv")
     path_to_annealing = os.path.join(ROOT, "AGV_quantum", "annealing_results", "tiny_2_AGV", "new_bqm.pkl")
 
-    size = "smallest"
+    size = "tiny"
     instance = f"{size}_ising"
     path_to_renumeration = os.path.join(ROOT, "AGV_quantum", "ising", f"{instance}_renumeration.pkl")
     path_to_lp = os.path.join(ROOT, "AGV_quantum", "lp_files", f"lp_{size}.pkl")
@@ -157,6 +157,7 @@ if __name__ == '__main__':
     solution_ising = {i + 1: state_ising[i] for i in range(len(state_ising))}
 
 
+
     with open(path_to_renumeration, "rb") as f:
         var_to_nums, nums_to_var = pickle.load(f)
     solutions_vars = {nums_to_var[k]: val for k, val in solution.items()}
@@ -166,14 +167,16 @@ if __name__ == '__main__':
         lp = pickle.load(f2)
 
     model = QuadraticAGV(lp)
-    model.to_bqm_qubo_ising()
+    p = 5 # TODO this has to be added
+    model.to_bqm_qubo_ising(p)
+
 
     energy_computed = dimod.utilities.ising_energy(solutions_vars_ising, model.ising[0], model.ising[1])
 
     sampleset = dimod.SampleSet.from_samples(solutions_vars, vartype=dimod.BINARY, energy=ising_solution["energy"].item())
     decrypted_sapleset = model.interpreter(sampleset, "BIN")
     decrypted_results = get_results(decrypted_sapleset, lp)
-    print(decrypted_results)
+
     print("Feasible", decrypted_results[0]["feasible"])
     broken_constr = decrypted_results[0]["feas_constraints"][1]
     constraints = len(decrypted_results[0]["feas_constraints"][0])
@@ -182,3 +185,4 @@ if __name__ == '__main__':
     print("prec broken constr", broken_constr/constraints)
     print("energy computed", energy_computed)
     print("ising offset", model.ising[2])
+    print("energy + offset", energy_computed + model.ising[2])
