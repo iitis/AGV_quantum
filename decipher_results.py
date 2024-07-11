@@ -168,3 +168,9 @@ if __name__ == '__main__':
     decrypted_sapleset = model.interpreter(sampleset, "BIN")
     decrypted_results = get_results(decrypted_sapleset, lp)
     print(decrypted_results)
+    print("Feasible", decrypted_results[0]["feasible"])
+    broken_constr = decrypted_results[0]["feas_constraints"][1]
+    constraints = len(decrypted_results[0]["feas_constraints"][0])
+    print("broken constraints", broken_constr)
+    print("constraints", constraints)
+    print("prec broken constr", broken_constr/constraints)
