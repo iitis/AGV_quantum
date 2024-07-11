@@ -5,10 +5,12 @@ import networkx as nx
 import pandas as pd
 import numpy as np
 import dimod
+import pickle
+
 from AGV_quantum import LinearProg
 from AGV_quantum import get_results
 from AGV_quantum import process_result
-
+from typing import Optional
 cwd = os.getcwd()
 
 
@@ -200,3 +202,41 @@ def compute_energy(sol: list, lp: LinearProg):
     for edge, value in lp.qubo[0].items():
         s += sol_dict[edge[0]] * sol_dict[edge[1]] * value
     return s
+
+
+def save_ising_as_csv(quadratic_model, name, save_path, p: Optional[int] = None):
+    p = 5 if p is None else p
+    quadratic_model.to_bqm_qubo_ising(p)
+
+    ising_linear = quadratic_model.ising[0]
+    ising_quadratic = quadratic_model.ising[1]
+    offset = quadratic_model.ising[2]
+    variables = set()
+
+    for k1, k2 in ising_quadratic.keys():
+        variables.add(k1)
+        variables.add(k2)
+    renumerate = {var: num + 1 for num, var in enumerate(variables)}
+    num_to_var = {v: k for k, v in renumerate.items()}
+
+    spinglass_ising_linear = {}
+    for key, value in ising_linear.items():
+        spinglass_ising_linear[renumerate[key]] = value
+    spinglass_ising_linear = dict(sorted(spinglass_ising_linear.items()))
+
+    spinglass_ising_quadratic = {}
+    for (key1, key2), value in ising_quadratic.items():
+        spinglass_ising_quadratic[(renumerate[key1], renumerate[key2])] = value
+    spinglass_ising_quadratic = dict(sorted(spinglass_ising_quadratic.items()))
+
+    with open(os.path.join(save_path, f"{name}_ising.csv"), "w") as f:
+        f.write(f"# offset: {offset}\n")
+        for i, v in spinglass_ising_linear.items():
+            f.write(f"{i} {i} {v}\n")
+        for (i, j), v in spinglass_ising_quadratic.items():
+            f.write(f"{i} {j} {v}\n")
+
+    with open(os.path.join(save_path, f"{name}_ising_renumeration.pkl"), "wb") as f:
+        data = [renumerate, num_to_var]
+        pickle.dump(data, f)
+
