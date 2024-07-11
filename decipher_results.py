@@ -158,6 +158,13 @@ if __name__ == '__main__':
 
 
 
+    path_to_results_hybrid = os.path.join(ROOT, "AGV_quantum", "ising", "hybrid", "results_hybrid.csv")
+    results_hybrid = pd.read_csv(path_to_results_hybrid, sep=",")
+
+    print(results_hybrid)
+
+
+
     with open(path_to_renumeration, "rb") as f:
         var_to_nums, nums_to_var = pickle.load(f)
     solutions_vars = {nums_to_var[k]: val for k, val in solution.items()}
