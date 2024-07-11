@@ -141,7 +141,7 @@ if __name__ == '__main__':
     path_to_results = os.path.join(ROOT, "AGV_quantum", "ising", "sbm_results", "H100_results.csv")
     path_to_annealing = os.path.join(ROOT, "AGV_quantum", "annealing_results", "tiny_2_AGV", "new_bqm.pkl")
 
-    size = "small"
+    size = "tiny"
     instance = f"{size}_ising"
     path_to_renumeration = os.path.join(ROOT, "AGV_quantum", "ising", f"{instance}_renumeration.pkl")
     path_to_lp = os.path.join(ROOT, "AGV_quantum", "lp_files", f"lp_{size}.pkl")
@@ -164,7 +164,7 @@ if __name__ == '__main__':
 
     model = QuadraticAGV(lp)
     model.to_bqm_qubo_ising()
-    sampleset = dimod.SampleSet.from_samples(solutions_vars, vartype=dimod.SPIN, energy=ising_solution["energy"].item())
+    sampleset = dimod.SampleSet.from_samples(solutions_vars, vartype=dimod.BINARY, energy=ising_solution["energy"].item())
     decrypted_sapleset = model.interpreter(sampleset, "BIN")
     decrypted_results = get_results(decrypted_sapleset, lp)
     print(decrypted_results)
