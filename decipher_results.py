@@ -150,20 +150,26 @@ if __name__ == '__main__':
     results = pd.read_csv(path_to_results, sep=";")
     ising_solution = results[results["instance"] == f"{instance}.csv"]
     print(ising_solution)
-    state = ising_solution["state"].item()
-    state = eval(state)
-    state = [(k+1)//2 for k in state]
+    state_ising = ising_solution["state"].item()
+    state_ising = eval(state_ising)
+    state = [(k+1)//2 for k in state_ising]
     solution = {i + 1: state[i] for i in range(len(state))}
+    solution_ising = {i + 1: state_ising[i] for i in range(len(state_ising))}
+
 
     with open(path_to_renumeration, "rb") as f:
         var_to_nums, nums_to_var = pickle.load(f)
     solutions_vars = {nums_to_var[k]: val for k, val in solution.items()}
+    solutions_vars_ising = {nums_to_var[k]: val for k, val in solution_ising.items()}
 
     with open(path_to_lp, "rb") as f2:
         lp = pickle.load(f2)
 
     model = QuadraticAGV(lp)
     model.to_bqm_qubo_ising()
+
+    energy_computed = dimod.utilities.ising_energy(solutions_vars_ising, model.ising[0], model.ising[1])
+
     sampleset = dimod.SampleSet.from_samples(solutions_vars, vartype=dimod.BINARY, energy=ising_solution["energy"].item())
     decrypted_sapleset = model.interpreter(sampleset, "BIN")
     decrypted_results = get_results(decrypted_sapleset, lp)
@@ -174,3 +180,5 @@ if __name__ == '__main__':
     print("broken constraints", broken_constr)
     print("constraints", constraints)
     print("prec broken constr", broken_constr/constraints)
+    print("energy computed", energy_computed)
+    print("ising offset", model.ising[2])
