@@ -1,4 +1,4 @@
 [run]
 branch = True
 omit =
-    run_examples.py, examples/*, check_sol.py, lp_files.py
+    run_examples.py, examples/*, check_sol.py, lp_files.py, decipher_results.py
