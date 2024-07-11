@@ -106,14 +106,15 @@ if __name__ == "__main__":
 
         model.to_bqm_qubo_ising(p)
 
+        print("n.o. qubits", model._count_qubits())
+        print("n.o. quandratic couplings", model._count_quadratic_couplings())
+        print("n.o. linear fields", model._count_linear_fields())
+
         # check if results are saved
         is_file = os.path.isfile(os.path.join(save_path, f"new_{hybrid}_info{count}.pkl"))
         if is_file:
             print(".......... files exist ............")
-            if hybrid == "bqm":
-                print("n.o. qubits", model._count_qubits())
-                print("n.o. quandratic couplings", model._count_quadratic_couplings())
-                print("n.o. linear fields", model._count_linear_fields())
+
         else:
             model.to_cqm()
             cwd = os.getcwd()

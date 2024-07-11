@@ -65,8 +65,8 @@ args = parser.parse_args()
 cwd = os.getcwd()
 train_diagram = False
 
-#count = "_10"
-count = "_1"
+count = "_10"
+count = ""
 
 if args.example == "tiny":
     sol_folder = Path("annealing_results/tiny_2_AGV")
@@ -111,7 +111,15 @@ if __name__ == '__main__':
         lp.to_bqm_qubo_ising(p)
         sampleset = lp.interpreter(sampleset)
         solutions = get_results(sampleset, lp)
-        #print(solutions)
+        print(solutions[0]['energy'])
+        
+        constraints = len(solutions[0]['feas_constraints'][0])
+        not_feas = solutions[0]['feas_constraints'][1]
+
+        print("feasible", solutions[0]['feasible'])
+        print("n.o. constraints", constraints)
+        print("broken feas", not_feas)
+        print("precentage broken", not_feas/constraints)
 
 
     elif hybrid == "cqm":
