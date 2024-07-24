@@ -138,10 +138,11 @@ def print_results(dict_list):
 
 if __name__ == '__main__':
     ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-    path_to_results = os.path.join(ROOT, "AGV_quantum", "ising", "sbm_results", "H100_results.csv")
+    #path_to_results = os.path.join(ROOT, "AGV_quantum", "ising", "sbm_results", "H100_results.csv")
+    path_to_results = os.path.join(ROOT, "AGV_quantum", "ising", "sbm_results", "avg_sbm.csv")
     path_to_annealing = os.path.join(ROOT, "AGV_quantum", "annealing_results", "tiny_2_AGV", "new_bqm.pkl")
 
-    size = "small"
+    size = "largest_ever"
     instance = f"{size}_ising"
     path_to_renumeration = os.path.join(ROOT, "AGV_quantum", "ising", f"{instance}_renumeration.pkl")
     path_to_lp = os.path.join(ROOT, "AGV_quantum", "lp_files", f"lp_{size}.pkl")
@@ -156,12 +157,6 @@ if __name__ == '__main__':
     solution = {i + 1: state[i] for i in range(len(state))}
     solution_ising = {i + 1: state_ising[i] for i in range(len(state_ising))}
 
-
-
-    path_to_results_hybrid = os.path.join(ROOT, "AGV_quantum", "ising", "hybrid", "results_hybrid.csv")
-    results_hybrid = pd.read_csv(path_to_results_hybrid, sep=",")
-
-    print(results_hybrid)
 
 
 
